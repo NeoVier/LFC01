@@ -3,8 +3,11 @@ module Main exposing (..)
 import Browser
 import File exposing (File)
 import File.Select as Select
+import Models.Automata
 import Task
 import Types.Types as Types
+import Utils.Parsing.Automata
+import Utils.Utils as Utils
 import View.View as View
 
 
@@ -35,9 +38,21 @@ update msg model =
         Types.AFDSelected file ->
             ( model, Task.perform Types.AFDLoaded (File.toString file) )
 
-        -- TODO
         Types.AFDLoaded content ->
-            ( model, Cmd.none )
+            case Utils.Parsing.Automata.parseFiniteDeterministic content of
+                Nothing ->
+                    ( { model | currentAutomaton = Err "Erro ao ler o autômato" }
+                    , Cmd.none
+                    )
+
+                Just automaton ->
+                    ( { model
+                        | currentAutomaton =
+                            Ok (Models.Automata.FiniteDeterministic automaton)
+                        , afds = automaton :: model.afds
+                      }
+                    , Cmd.none
+                    )
 
 
 

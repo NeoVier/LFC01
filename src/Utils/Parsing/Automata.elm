@@ -6,7 +6,6 @@ import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
-import Tests.Automata
 import Utils.Utils as Utils
 
 
@@ -59,7 +58,12 @@ parseFiniteDeterministic text =
 
         alphabet : Maybe Alphabet.Alphabet
         alphabet =
-            Maybe.map (\line -> String.split "," line |> Alphabet.Alphabet) (Array.get 2 lines)
+            Maybe.map
+                (\line ->
+                    String.split "," line
+                        |> Alphabet.Alphabet
+                )
+                (Array.get 3 lines)
 
         readTransition : String -> Maybe Transition.DeterministicTransition
         readTransition line =
@@ -74,7 +78,7 @@ parseFiniteDeterministic text =
                     getStateWithMaybes prevStateIndex states
 
                 nextStateIndex =
-                    Array.get 1 items
+                    Array.get 2 items
 
                 nextState =
                     getStateWithMaybes nextStateIndex states
@@ -82,7 +86,7 @@ parseFiniteDeterministic text =
                 -- TODO Make this better
                 symbol : Maybe Alphabet.Symbol
                 symbol =
-                    case Array.get 2 items of
+                    case Array.get 1 items of
                         Nothing ->
                             Nothing
 
@@ -105,8 +109,7 @@ parseFiniteDeterministic text =
 
         transitions : Maybe (List Transition.DeterministicTransition)
         transitions =
-            Array.map readTransition lines
-                |> Array.toList
+            List.map readTransition (List.drop 4 (Array.toList lines))
                 |> Utils.listOfMaybesToMaybeList
     in
     Maybe.map5 Automata.AFD states initialState finalStates alphabet transitions

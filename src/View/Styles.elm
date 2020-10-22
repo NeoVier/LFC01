@@ -26,6 +26,21 @@ mainAreaStyles =
     ]
 
 
+leftPanelStyles : List (Attribute msg)
+leftPanelStyles =
+    [ style "grid-column" "1", style "height" "100%", style "width" "100%" ]
+
+
+historyViewStyles : List (Attribute msg)
+historyViewStyles =
+    [ style "list-style" "none", style "text-align" "left" ]
+
+
+historyViewItemStyles : List (Attribute msg)
+historyViewItemStyles =
+    [ style "border" "solid 1px red", style "padding" "1em 2em" ]
+
+
 currentAutomatonTitleStyles : List (Attribute msg)
 currentAutomatonTitleStyles =
     [ style "text-align" "center" ]
@@ -52,3 +67,19 @@ tableRowStyles =
 tableItemStyles : List (Attribute msg)
 tableItemStyles =
     [ style "border" "1px solid black", style "padding" "1em 2em" ]
+
+
+rightPanelStyles : List (Attribute msg)
+rightPanelStyles =
+    [ style "grid-column" "3"
+    , style "height" "100%"
+    , style "width" "100%"
+    , style "display" "flex"
+    , style "flex-direction" "column"
+    , style "align-items" "center"
+    ]
+
+
+rightPanelButtonStyles : List (Attribute msg)
+rightPanelButtonStyles =
+    [ style "padding" "1em 1.5em" ]

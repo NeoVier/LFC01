@@ -14,10 +14,10 @@ import View.Styles exposing (..)
 viewCurrentAutomaton : Types.Model -> Html Types.Msg
 viewCurrentAutomaton model =
     case model.currentAutomaton of
-        Nothing ->
-            h1 [] [ text "Nenhum autômato selecionado" ]
+        Err message ->
+            h1 [] [ text message ]
 
-        Just automaton ->
+        Ok automaton ->
             case automaton of
                 Automata.FiniteDeterministic afd ->
                     viewAFD afd

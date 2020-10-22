@@ -27,7 +27,11 @@ view model =
                 ]
             , div Styles.rightPanelStyles
                 [ h3 Styles.currentAutomatonTitleStyles [ text "Controles" ]
-                , button (onClick Types.AFDRequested :: Styles.rightPanelButtonStyles) [ text "Carregar autômato finito" ]
+                , button
+                    (onClick Types.AFDRequested
+                        :: Styles.rightPanelButtonStyles
+                    )
+                    [ text "Carregar autômato finito" ]
                 ]
             ]
         ]
@@ -35,4 +39,11 @@ view model =
 
 historyView : Types.Model -> Html Types.Msg
 historyView model =
-    ul Styles.historyViewStyles (List.map (\x -> li Styles.historyViewItemStyles [ text "AFD" ]) model.afds)
+    ul Styles.historyViewStyles
+        (List.map
+            (\x ->
+                li Styles.historyViewItemStyles
+                    [ text "AFD" ]
+            )
+            model.afds
+        )

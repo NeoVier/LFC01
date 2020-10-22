@@ -33,12 +33,12 @@ leftPanelStyles =
 
 historyViewStyles : List (Attribute msg)
 historyViewStyles =
-    [ style "list-style" "none", style "text-align" "left" ]
+    [ style "list-style" "none", style "margin" "0", style "padding" "0" ]
 
 
 historyViewItemStyles : List (Attribute msg)
 historyViewItemStyles =
-    [ style "border" "solid 1px red", style "padding" "1em 2em" ]
+    [ style "padding" "1em 2em", style "text-align" "center" ]
 
 
 currentAutomatonTitleStyles : List (Attribute msg)

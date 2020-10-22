@@ -1,8 +1,29 @@
 # Manipulating Regular and Context-Free Languages
 
-Professora: Jerusa Marchi
+Professor: Jerusa Marchi
 
-Aluno: Henrique da Cunha Buss
+Student: Henrique da Cunha Buss
+
+## Roadmap
+
+### First Submission (items 1-7, 05/11)
+
+- [x] Display AF - 22/10
+- [x] Parse AF - 22/10
+- [x] Add AF to history - 22/10
+- [x] Read AF from file - 22/10
+- [ ] Display AFND
+- [ ] Parse AFND
+- [ ] Add AFND to history
+- [ ] Convert AFND to AFD
+- [ ] Recognize sentences with AFs
+- [ ] Minimize AFD
+- [ ] Work on GR
+- [ ] Work on ER
+
+### Second Submission (items 8-12, 02/12)
+
+- [ ] Start
 
 ## Tasks
 

@@ -3,12 +3,7 @@ module Main exposing (..)
 import Browser
 import File exposing (File)
 import File.Select as Select
-import Models.Alphabet as Alphabet
-import Models.Automata as Automata
-import Models.State as State
-import Models.Transition as Transition
 import Task
-import Tests.Automata
 import Types.Types as Types
 import View.View as View
 

@@ -18,7 +18,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 7. Converting ER to AFD (using syntactic tree-based algorithm)
 8. Reading, writing and editing GLC
 9. Transforming GLC to a GLC in normal Chomsky form
-10. Left-recusion elimination
+10. Left-recursion elimination
 11. Factoration
 12. Recognizing sentences in AP (implementing one of the analysis tables)
 

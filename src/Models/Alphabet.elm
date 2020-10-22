@@ -6,4 +6,4 @@ type alias Alphabet =
 
 
 type alias Symbol =
-    { value : String }
+    String

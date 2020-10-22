@@ -1,5 +1,6 @@
 module Models.State exposing (..)
 
 
-type alias State =
-    { label : String }
+type State
+    = Valid String
+    | Dead

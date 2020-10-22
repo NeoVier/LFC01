@@ -1,4 +1,7 @@
-module Tests.Automata exposing (afdTest0)
+-- module Tests.Automata exposing (afdTest0)
+
+
+module Tests.Automata exposing (..)
 
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
@@ -8,37 +11,37 @@ import Models.Transition as Transition
 
 stateTest0 : State.State
 stateTest0 =
-    State.State "test0"
+    State.Valid "test0"
 
 
 stateTest1 : State.State
 stateTest1 =
-    State.State "test1"
+    State.Valid "test1"
 
 
 stateTest2 : State.State
 stateTest2 =
-    State.State "test2"
+    State.Valid "test2"
 
 
 stateTest3 : State.State
 stateTest3 =
-    State.State "test3"
+    State.Valid "test3"
 
 
 stateTest4 : State.State
 stateTest4 =
-    State.State "test4"
+    State.Valid "test4"
 
 
 symbolTest0 : Alphabet.Symbol
 symbolTest0 =
-    Alphabet.Symbol "a"
+    "a"
 
 
 symbolTest1 : Alphabet.Symbol
 symbolTest1 =
-    Alphabet.Symbol "b"
+    "b"
 
 
 alphabetTest : Alphabet.Alphabet
@@ -81,7 +84,7 @@ transition3 =
 afdTest0 : Automata.AFD
 afdTest0 =
     Automata.AFD
-        [ stateTest0, stateTest1, stateTest2, stateTest4 ]
+        [ stateTest0, stateTest1, stateTest2, stateTest3, stateTest4 ]
         stateTest0
         [ stateTest4 ]
         alphabetTest

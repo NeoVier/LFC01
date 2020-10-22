@@ -7,6 +7,7 @@ import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Types.Types as Types
+import Utils.Utils as Utils
 
 
 view : Types.Model -> Html Types.Msg
@@ -27,14 +28,18 @@ view model =
 viewAFD : Automata.AFD -> Html Types.Msg
 viewAFD afd =
     table []
-        [ tr []
-            ([ th [] [ text "Estados" ] ] ++ alphabetAsHeader afd.alphabet)
-        ]
+        (viewAFDHeader afd :: getAFDRows afd)
+
+
+viewAFDHeader : Automata.AFD -> Html Types.Msg
+viewAFDHeader afd =
+    tr []
+        ([ th [] [ text "Estados" ] ] ++ alphabetAsHeader afd.alphabet)
 
 
 alphabetAsHeader : Alphabet.Alphabet -> List (Html Types.Msg)
 alphabetAsHeader alphabet =
-    List.map (\symbol -> th [] [ text symbol.value ]) alphabet.symbols
+    List.map (\symbol -> th [] [ text symbol ]) (List.sort alphabet.symbols)
 
 
 getAFDRows : Automata.AFD -> List (Html Types.Msg)
@@ -44,4 +49,47 @@ getAFDRows afd =
 
 getStateRow : Automata.AFD -> State.State -> Html Types.Msg
 getStateRow afd prevState =
-    text ""
+    case prevState of
+        State.Dead ->
+            text ""
+
+        State.Valid label ->
+            let
+                isInitial =
+                    prevState == afd.initialState
+
+                isFinal =
+                    List.member prevState afd.finalStates
+
+                prefix =
+                    if isInitial && isFinal then
+                        "->* "
+
+                    else if isInitial then
+                        "-> "
+
+                    else if isFinal then
+                        "* "
+
+                    else
+                        ""
+
+                transitions =
+                    Utils.getFlatOutTransitionsDeterministic afd prevState
+                        |> Utils.sortTransitionsDeterministic
+            in
+            tr []
+                (td []
+                    [ text (prefix ++ label)
+                    ]
+                    :: List.map
+                        (\transition ->
+                            case transition.nextState of
+                                State.Dead ->
+                                    td [] [ text "-" ]
+
+                                State.Valid nextLabel ->
+                                    td [] [ text nextLabel ]
+                        )
+                        transitions
+                )

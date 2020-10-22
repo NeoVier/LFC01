@@ -5,10 +5,24 @@ import Models.State as State
 import Models.Transition as Transition
 
 
+type Automaton
+    = FiniteDeterministic AFD
+    | FiniteNonDeterministic AFND
+
+
 type alias AFD =
     { states : List State.State
     , initialState : State.State
     , finalStates : List State.State
     , alphabet : Alphabet.Alphabet
-    , transitions : Transition.DeterministicTransition
+    , transitions : List Transition.DeterministicTransition
+    }
+
+
+type alias AFND =
+    { states : List State.State
+    , initialState : State.State
+    , finalStates : List State.State
+    , alphabet : Alphabet.Alphabet
+    , transitions : List Transition.NonDeterministicTransition
     }

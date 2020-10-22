@@ -10,7 +10,7 @@ Create an application, with a GUI, to manipulate Finite Automata, Regular
 Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
 1. Reading, writing and editing AF, GR and ER
-2. Converting AFND (with and without epsilon)
+2. Converting AFND (with and without epsilon) to AFD
 3. Converting AFD to GR and GR to AFND
 4. Recognizing sentences in AF
 5. Minimizing AFD

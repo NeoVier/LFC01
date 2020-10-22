@@ -3,83 +3,52 @@ module Main exposing (..)
 import Browser
 import File exposing (File)
 import File.Select as Select
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Models.Alphabet as Alphabet
 import Models.Automata as Automata
+import Models.State as State
+import Models.Transition as Transition
 import Task
+import Tests.Automata
+import Types.Types as Types
+import View.View as View
 
 
 
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program () Types.Model Types.Msg
 main =
     Browser.element
-        { init = init
-        , view = view
+        { init = Types.init
+        , view = View.view
         , update = update
         , subscriptions = subscriptions
         }
 
 
 
--- MODEL
-
-
-type alias Model =
-    { afds : List Automata.AFD
-    , newAFD : Maybe String
-    }
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Model [] Nothing, Cmd.none )
-
-
-
 -- UPDATE
 
 
-type Msg
-    = AFDRequested
-    | AFDSelected File
-    | AFDLoaded String
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Types.Msg -> Types.Model -> ( Types.Model, Cmd Types.Msg )
 update msg model =
     case msg of
-        AFDRequested ->
-            ( model, Select.file [ "text/txt" ] AFDSelected )
+        Types.AFDRequested ->
+            ( model, Select.file [ "text/txt" ] Types.AFDSelected )
 
-        AFDSelected file ->
-            ( model, Task.perform AFDLoaded (File.toString file) )
+        Types.AFDSelected file ->
+            ( model, Task.perform Types.AFDLoaded (File.toString file) )
 
-        AFDLoaded content ->
-            ( { model | newAFD = Just content }, Cmd.none )
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
-    case model.newAFD of
-        Nothing ->
-            button [ onClick AFDRequested ] [ text "Carregar AFD" ]
-
-        Just content ->
-            p [ style "white-space" "pre" ] [ text content ]
+        -- TODO
+        Types.AFDLoaded content ->
+            ( model, Cmd.none )
 
 
 
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Types.Model -> Sub Types.Msg
 subscriptions model =
     Sub.none

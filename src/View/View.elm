@@ -34,7 +34,9 @@ viewAFD afd =
 viewAFDHeader : Automata.AFD -> Html Types.Msg
 viewAFDHeader afd =
     tr []
-        ([ th [] [ text "Estados" ] ] ++ alphabetAsHeader afd.alphabet)
+        ([ th [] [ text "Estados" ] ]
+            ++ alphabetAsHeader afd.alphabet
+        )
 
 
 alphabetAsHeader : Alphabet.Alphabet -> List (Html Types.Msg)
@@ -80,8 +82,7 @@ getStateRow afd prevState =
             in
             tr []
                 (td []
-                    [ text (prefix ++ label)
-                    ]
+                    [ text (prefix ++ label) ]
                     :: List.map
                         (\transition ->
                             case transition.nextState of

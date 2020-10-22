@@ -1,35 +1,11 @@
 module Utils.Utils exposing (..)
 
+import Html exposing (a)
 import List exposing (concatMap, filter, foldr, map, member, sortWith)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
-
-
-normalizeTransitionsDeterministic : Automata.AFD -> Automata.AFD
-normalizeTransitionsDeterministic afd =
-    let
-        symbolsUsed =
-            concatMap (\transition -> transition.conditions) afd.transitions
-
-        missing =
-            filter (\symbol -> not (member symbol symbolsUsed)) afd.alphabet.symbols
-    in
-    afd
-
-
-
--- normalizeTransitionDeterministic :
---     Transition.DeterministicTransition
---     -> Alphabet.Alphabet
---     -> Transition.DeterministicTransition
--- normalizeTransitionDeterministic t a =
---     let
---         missing =
---             filter (\symbol -> not (member symbol t.conditions)) a.symbols
---     in
---     t
 
 
 getOutTransitionsDeterministic :
@@ -84,3 +60,22 @@ sortTransitionsDeterministic :
     -> List Transition.DeterministicTransition
 sortTransitionsDeterministic =
     sortWith compareTransitions
+
+
+elementAt : Int -> List a -> Maybe a
+elementAt idx list =
+    List.drop idx list |> List.head
+
+
+filterMaybe : (a -> Bool) -> a -> Maybe a
+filterMaybe f x =
+    if f x then
+        Just x
+
+    else
+        Nothing
+
+
+listOfMaybesToMaybeList : List (Maybe a) -> Maybe (List a)
+listOfMaybesToMaybeList =
+    List.foldr (Maybe.map2 (::)) (Just [])

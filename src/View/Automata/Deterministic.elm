@@ -1,36 +1,21 @@
 module View.Automata.Deterministic exposing (viewAFD)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
 import Utils.Utils as Utils
+import View.Automata.Common as VC
 import View.Styles exposing (..)
 
 
 viewAFD : Automata.AFD -> Html msg
 viewAFD afd =
     table tableStyles
-        (viewAutomataHeader afd.alphabet
+        (VC.viewAutomataHeader (Alphabet.Deterministic afd.alphabet)
             :: getAutomatonRows afd
         )
-
-
-viewAutomataHeader : Alphabet.DeterministicAlphabet -> Html msg
-viewAutomataHeader alphabet =
-    tr tableRowStyles
-        ([ th tableItemStyles [ text "Estados" ] ]
-            ++ alphabetAsHeader alphabet
-        )
-
-
-alphabetAsHeader : Alphabet.DeterministicAlphabet -> List (Html msg)
-alphabetAsHeader alphabet =
-    List.map (\symbol -> th tableItemStyles [ text symbol ])
-        (List.sort alphabet)
 
 
 getAutomatonRows : Automata.AFD -> List (Html msg)
@@ -76,16 +61,16 @@ getStateRow afd prevState =
                     [ text (prefix ++ label) ]
                     :: List.map
                         (\transition ->
-                            viewDeterministicTransition transition
+                            viewFlatDeterministicTransition transition
                         )
                         transitions
                 )
 
 
-viewDeterministicTransition :
+viewFlatDeterministicTransition :
     Transition.DeterministicTransition
     -> Html msg
-viewDeterministicTransition transition =
+viewFlatDeterministicTransition transition =
     case transition.nextState of
         State.Dead ->
             td tableItemStyles [ text "-" ]

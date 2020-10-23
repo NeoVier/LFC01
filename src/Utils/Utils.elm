@@ -29,6 +29,14 @@ getOutTransitionsDeterministic afd prevState =
         :: existing
 
 
+getOutTransitionsNonDeterministic :
+    Automata.AFND
+    -> State.State
+    -> List Transition.NonDeterministicTransition
+getOutTransitionsNonDeterministic afnd prevState =
+    []
+
+
 getFlatTransitionDeterministic :
     Transition.DeterministicTransition
     -> List Transition.DeterministicTransition

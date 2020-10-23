@@ -7,7 +7,6 @@ import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
-import Types.Types as Types exposing (Msg)
 import Utils.Utils as Utils
 import View.Styles exposing (..)
 

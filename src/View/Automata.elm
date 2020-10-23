@@ -10,6 +10,7 @@ import Models.Transition as Transition
 import Types.Types as Types exposing (Msg)
 import Utils.Utils as Utils
 import View.Automata.Deterministic as VAFD
+import View.Automata.NonDeterministic as VAFND
 import View.Styles exposing (..)
 
 
@@ -25,22 +26,7 @@ viewCurrentAutomaton model =
                     VAFD.viewAFD afd
 
                 Automata.FiniteNonDeterministic afnd ->
-                    viewAFND afnd
-
-
-viewAFND : Automata.AFND -> Html msg
-viewAFND afnd =
-    text ""
-
-
-
--- case afnd.alphabet of
---     Alphabet.NDA symbols epsilon ->
---         table tableStyles
---             (viewAutomataHeader symbols
---                 ++ [ "&" ]
---                 :: getAutomatonRows (Automata.FiniteNonDeterministic afnd)
---             )
+                    VAFND.viewAFND afnd
 
 
 viewNonDeterministicTransition :

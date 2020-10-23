@@ -2,6 +2,7 @@ module Types.Types exposing (..)
 
 import File exposing (File)
 import Models.Automata as Automata
+import Utils.Utils exposing (filterMaybe)
 
 
 
@@ -14,14 +15,19 @@ type alias Model =
     }
 
 
+
+-- init _ =
+--     ( Model []
+--         (Err
+--             "Nenhum autômato carregado"
+--         )
+--     , Cmd.none
+--     )
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model []
-        (Err
-            "Nenhum autômato carregado"
-        )
-    , Cmd.none
-    )
+    ( Model [] (Ok (Automata.FiniteNonDeterministic Automata.afnd0)), Cmd.none )
 
 
 
@@ -32,3 +38,6 @@ type Msg
     = AFDRequested
     | AFDSelected File
     | AFDLoaded String
+    | AFNDRequested
+    | AFNDSelected File
+    | AFNDLoaded String

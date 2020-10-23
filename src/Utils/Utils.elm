@@ -23,7 +23,7 @@ getOutTransitionsDeterministic afd prevState =
 
         missingSymbols =
             filter (\symbol -> not (member symbol existingSymbols))
-                afd.alphabet.symbols
+                afd.alphabet
     in
     Transition.DeterministicTransition prevState State.Dead missingSymbols
         :: existing
@@ -79,3 +79,22 @@ filterMaybe f x =
 listOfMaybesToMaybeList : List (Maybe a) -> Maybe (List a)
 listOfMaybesToMaybeList =
     List.foldr (Maybe.map2 (::)) (Just [])
+
+
+getEpsilonTransitions : Automata.Automaton -> List Transition.NonDeterministicTransition
+getEpsilonTransitions automaton =
+    case automaton of
+        Automata.FiniteDeterministic afd ->
+            []
+
+        Automata.FiniteNonDeterministic afnd ->
+            filter
+                (\transition ->
+                    case transition.conditions of
+                        Transition.NoEpsilon _ ->
+                            False
+
+                        Transition.WithEpsilon _ ->
+                            True
+                )
+                afnd.transitions

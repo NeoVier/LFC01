@@ -18,6 +18,11 @@ type alias DeterministicTransition =
 
 type alias NonDeterministicTransition =
     { prevState : State.State
-    , nextState : State.State
-    , conditions : List (Maybe Alphabet.Symbol)
+    , nextStates : List State.State
+    , conditions : NonDeterministicConditions
     }
+
+
+type NonDeterministicConditions
+    = NoEpsilon (List Alphabet.Symbol)
+    | WithEpsilon (List Alphabet.Symbol)

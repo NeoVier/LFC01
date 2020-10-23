@@ -54,6 +54,15 @@ update msg model =
                     , Cmd.none
                     )
 
+        Types.AFNDRequested ->
+            ( model, Select.file [ "text/txt" ] Types.AFNDSelected )
+
+        Types.AFNDSelected file ->
+            ( model, Task.perform Types.AFNDLoaded (File.toString file) )
+
+        Types.AFNDLoaded content ->
+            ( model, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS

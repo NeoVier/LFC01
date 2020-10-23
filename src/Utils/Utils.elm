@@ -34,7 +34,36 @@ getOutTransitionsNonDeterministic :
     -> State.State
     -> List Transition.NonDeterministicTransition
 getOutTransitionsNonDeterministic afnd prevState =
-    []
+    let
+        existing : List Transition.NonDeterministicTransition
+        existing =
+            filter (\transition -> transition.prevState == prevState)
+                afnd.transitions
+
+        existingSymbols : List Alphabet.Symbol
+        existingSymbols =
+            concatMap
+                (\transition ->
+                    case transition.conditions of
+                        Transition.NoEpsilon symbols ->
+                            symbols
+
+                        Transition.WithEpsilon symbols ->
+                            "&" :: symbols
+                )
+                existing
+
+        missingSymbols : List Alphabet.Symbol
+        missingSymbols =
+            case afnd.alphabet of
+                Alphabet.NDA alph epsilon ->
+                    filter (\symbol -> not (member symbol existingSymbols))
+                        ("&" :: alph)
+    in
+    Transition.NonDeterministicTransition prevState
+        [ State.Dead ]
+        (Transition.WithEpsilon (filter (\x -> x /= "&") missingSymbols))
+        :: existing
 
 
 getFlatTransitionDeterministic :

@@ -5,6 +5,7 @@ import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
+import Utils.Utils as Utils
 import View.Automata.Common as VC
 import View.Styles exposing (..)
 
@@ -48,8 +49,22 @@ getStateRow afnd prevState =
 
                     else
                         ""
+
+                transitions =
+                    Utils.getOutTransitionsNonDeterministic afnd prevState
             in
-            text "valid"
+            tr tableRowStyles
+                (td [] [ text (prefix ++ label) ]
+                    :: List.map
+                        (\transition ->
+                            viewNonDeterministicTransition transition
+                        )
+                        transitions
+                )
+
+
+
+-- TODO Fix this
 
 
 viewNonDeterministicTransition :

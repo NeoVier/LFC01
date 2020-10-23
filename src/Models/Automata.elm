@@ -97,7 +97,7 @@ transition3 : Transition.NonDeterministicTransition
 transition3 =
     Transition.NonDeterministicTransition state3
         [ state4 ]
-        (Transition.NoEpsilon [ "b" ])
+        (Transition.WithEpsilon [ "b" ])
 
 
 afnd0 : AFND

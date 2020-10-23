@@ -35,12 +35,10 @@ getOutTransitionsNonDeterministic :
     -> List Transition.NonDeterministicTransition
 getOutTransitionsNonDeterministic afnd prevState =
     let
-        existing : List Transition.NonDeterministicTransition
         existing =
             filter (\transition -> transition.prevState == prevState)
                 afnd.transitions
 
-        existingSymbols : List Alphabet.Symbol
         existingSymbols =
             concatMap
                 (\transition ->
@@ -49,20 +47,36 @@ getOutTransitionsNonDeterministic afnd prevState =
                             symbols
 
                         Transition.WithEpsilon symbols ->
-                            "&" :: symbols
+                            symbols
                 )
                 existing
 
-        missingSymbols : List Alphabet.Symbol
         missingSymbols =
             case afnd.alphabet of
                 Alphabet.NDA alph epsilon ->
                     filter (\symbol -> not (member symbol existingSymbols))
-                        ("&" :: alph)
+                        alph
+
+        hasEpsilon =
+            List.any
+                (\transition ->
+                    case transition.conditions of
+                        Transition.NoEpsilon _ ->
+                            False
+
+                        Transition.WithEpsilon _ ->
+                            True
+                )
+                existing
     in
     Transition.NonDeterministicTransition prevState
         [ State.Dead ]
-        (Transition.WithEpsilon (filter (\x -> x /= "&") missingSymbols))
+        (if hasEpsilon then
+            Transition.NoEpsilon missingSymbols
+
+         else
+            Transition.WithEpsilon missingSymbols
+        )
         :: existing
 
 
@@ -75,6 +89,27 @@ getFlatTransitionDeterministic transition =
         transition.conditions
 
 
+getFlatTransitionNonDeterministic :
+    Transition.NonDeterministicTransition
+    -> List Transition.NonDeterministicTransition
+getFlatTransitionNonDeterministic transition =
+    case transition.conditions of
+        Transition.NoEpsilon conditions ->
+            map
+                (\condition ->
+                    { transition | conditions = Transition.NoEpsilon [ condition ] }
+                )
+                conditions
+
+        Transition.WithEpsilon conditions ->
+            map
+                (\condition ->
+                    { transition | conditions = Transition.WithEpsilon [ condition ] }
+                )
+                conditions
+                ++ [ { transition | conditions = Transition.WithEpsilon [] } ]
+
+
 getFlatOutTransitionsDeterministic :
     Automata.AFD
     -> State.State
@@ -84,19 +119,62 @@ getFlatOutTransitionsDeterministic afd state =
         |> concatMap getFlatTransitionDeterministic
 
 
-compareTransitions :
+getFlatOutTransitionsNonDeterministic :
+    Automata.AFND
+    -> State.State
+    -> List Transition.NonDeterministicTransition
+getFlatOutTransitionsNonDeterministic afnd state =
+    getOutTransitionsNonDeterministic afnd state
+        |> concatMap getFlatTransitionNonDeterministic
+
+
+compareTransitionsDeterministic :
     Transition.DeterministicTransition
     -> Transition.DeterministicTransition
     -> Order
-compareTransitions a b =
+compareTransitionsDeterministic a b =
     compare a.conditions b.conditions
+
+
+compareTransitionsNonDeterministic :
+    Transition.NonDeterministicTransition
+    -> Transition.NonDeterministicTransition
+    -> Order
+compareTransitionsNonDeterministic a b =
+    let
+        getSymbols x =
+            case x of
+                Transition.NoEpsilon symbols ->
+                    symbols
+
+                Transition.WithEpsilon symbols ->
+                    symbols
+    in
+    compare (getSymbols a.conditions) (getSymbols b.conditions)
+
+
+swapFirstAndLast : List a -> List a
+swapFirstAndLast xs =
+    case xs of
+        y :: ys ->
+            ys ++ [ y ]
+
+        otherwise ->
+            []
 
 
 sortTransitionsDeterministic :
     List Transition.DeterministicTransition
     -> List Transition.DeterministicTransition
 sortTransitionsDeterministic =
-    sortWith compareTransitions
+    sortWith compareTransitionsDeterministic
+
+
+sortTransitionsNonDeterministic :
+    List Transition.NonDeterministicTransition
+    -> List Transition.NonDeterministicTransition
+sortTransitionsNonDeterministic =
+    sortWith compareTransitionsNonDeterministic
 
 
 elementAt : Int -> List a -> Maybe a

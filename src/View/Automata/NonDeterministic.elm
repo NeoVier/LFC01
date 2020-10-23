@@ -51,35 +51,42 @@ getStateRow afnd prevState =
                         ""
 
                 transitions =
-                    Utils.getOutTransitionsNonDeterministic afnd prevState
+                    Utils.getFlatOutTransitionsNonDeterministic
+                        afnd
+                        prevState
+                        |> Utils.sortTransitionsNonDeterministic
+                        |> Utils.swapFirstAndLast
             in
             tr tableRowStyles
                 (td [] [ text (prefix ++ label) ]
                     :: List.map
                         (\transition ->
-                            viewNonDeterministicTransition transition
+                            viewFlatNonDeterministicTransition transition
                         )
                         transitions
                 )
 
 
-
--- TODO Fix this
-
-
-viewNonDeterministicTransition :
+viewFlatNonDeterministicTransition :
     Transition.NonDeterministicTransition
     -> Html msg
-viewNonDeterministicTransition transition =
-    td tableItemStyles
-        (List.map
-            (\next ->
-                case next of
-                    State.Dead ->
-                        text "-"
+viewFlatNonDeterministicTransition transition =
+    if transition.nextStates == [ State.Dead ] then
+        td tableItemStyles [ text "-" ]
 
-                    State.Valid nextLabel ->
-                        text (nextLabel ++ " ")
-            )
-            transition.nextStates
-        )
+    else
+        td tableItemStyles
+            [ List.map
+                (\state ->
+                    case state of
+                        State.Dead ->
+                            ""
+
+                        State.Valid label ->
+                            label
+                )
+                transition.nextStates
+                |> List.filter (\x -> x /= "")
+                |> String.join ", "
+                |> text
+            ]

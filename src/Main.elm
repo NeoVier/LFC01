@@ -4,9 +4,9 @@ import Browser
 import File exposing (File)
 import File.Select as Select
 import Models.Automata
+import Parsing.Automata as PAutomata
 import Task
 import Types.Types as Types
-import Utils.Parsing.Automata
 import Utils.Utils as Utils
 import View.View as View
 
@@ -39,7 +39,7 @@ update msg model =
             ( model, Task.perform Types.AFDLoaded (File.toString file) )
 
         Types.AFDLoaded content ->
-            case Utils.Parsing.Automata.parseFiniteDeterministic content of
+            case PAutomata.parseAFD content of
                 Nothing ->
                     ( { model | currentAutomaton = Err "Erro ao ler o autômato" }
                     , Cmd.none

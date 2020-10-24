@@ -106,7 +106,8 @@ parseNonDeterministicTransition :
 parseNonDeterministicTransition line states symbols =
     let
         items =
-            String.split "," line |> Array.fromList
+            String.split "," line
+                |> Array.fromList
 
         prevStateIndex =
             Array.get 0 items
@@ -199,9 +200,31 @@ parseAFND text =
         Nothing ->
             Nothing
 
-        Just (CommonItems states intialState finalStates symbols) ->
+        Just (CommonItems states initialState finalStates symbols) ->
             let
                 lines =
                     String.lines text |> List.drop 4
+
+                transitions =
+                    List.map
+                        (\line ->
+                            parseNonDeterministicTransition line states symbols
+                        )
+                        lines
+                        |> Utils.listOfMaybesToMaybeList
+
+                alphabet =
+                    Alphabet.NDA
+                        (List.filter
+                            (\x ->
+                                x /= "&"
+                            )
+                            symbols
+                        )
+                        Alphabet.Epsilon
             in
-            Nothing
+            Maybe.map
+                (\t ->
+                    Automata.AFND states initialState finalStates alphabet t
+                )
+                transitions

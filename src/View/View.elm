@@ -2,6 +2,7 @@ module View.View exposing (view)
 
 import Html exposing (..)
 import Html.Events exposing (onClick)
+import Models.Automata as Automata
 import Types.Types as Types
 import View.Automata as VAutomata
 import View.Styles as Styles
@@ -27,11 +28,16 @@ historyView : Types.Model -> Html Types.Msg
 historyView model =
     ul Styles.historyViewStyles
         (List.map
-            (\x ->
-                li Styles.historyViewItemStyles
-                    [ text "AFD" ]
+            (\automaton ->
+                case automaton of
+                    Automata.FiniteDeterministic _ ->
+                        li Styles.historyViewItemStyles
+                            [ text "AFD" ]
+
+                    Automata.FiniteNonDeterministic _ ->
+                        li Styles.historyViewItemStyles [ text "AFND" ]
             )
-            model.afds
+            model.automataHistory
         )
 
 

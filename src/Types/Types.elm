@@ -10,24 +10,19 @@ import Utils.Utils exposing (filterMaybe)
 
 
 type alias Model =
-    { afds : List Automata.AFD
+    { automataHistory : List Automata.Automaton
     , currentAutomaton : Result String Automata.Automaton
     }
 
 
-
--- init _ =
---     ( Model []
---         (Err
---             "Nenhum autômato carregado"
---         )
---     , Cmd.none
---     )
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model [] (Ok (Automata.FiniteNonDeterministic Automata.afnd0)), Cmd.none )
+    ( Model []
+        (Err
+            "Nenhum autômato carregado"
+        )
+    , Cmd.none
+    )
 
 
 

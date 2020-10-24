@@ -12,9 +12,9 @@ Student: Henrique da Cunha Buss
 - [x] Parse AF - 22/10
 - [x] Add AF to history - 22/10
 - [x] Read AF from file - 22/10
-- [ ] Display AFND
-- [ ] Parse AFND
-- [ ] Add AFND to history
+- [x] Display AFND
+- [x] Parse AFND
+- [x] Add AFND to history
 - [ ] Convert AFND to AFD
 - [ ] Recognize sentences with AFs
 - [ ] Minimize AFD

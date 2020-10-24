@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import File exposing (File)
 import File.Select as Select
-import Models.Automata
+import Models.Automata as Automata
 import Parsing.Automata as PAutomata
 import Task
 import Types.Types as Types
@@ -48,8 +48,11 @@ update msg model =
                 Just automaton ->
                     ( { model
                         | currentAutomaton =
-                            Ok (Models.Automata.FiniteDeterministic automaton)
-                        , afds = automaton :: model.afds
+                            Ok (Automata.FiniteDeterministic automaton)
+                        , automataHistory =
+                            Automata.FiniteDeterministic
+                                automaton
+                                :: model.automataHistory
                       }
                     , Cmd.none
                     )
@@ -61,7 +64,27 @@ update msg model =
             ( model, Task.perform Types.AFNDLoaded (File.toString file) )
 
         Types.AFNDLoaded content ->
-            ( model, Cmd.none )
+            case PAutomata.parseAFND content of
+                Nothing ->
+                    ( { model
+                        | currentAutomaton = Err "Erro ao ler o autômato"
+                      }
+                    , Cmd.none
+                    )
+
+                Just automaton ->
+                    ( { model
+                        | currentAutomaton =
+                            Ok
+                                (Automata.FiniteNonDeterministic
+                                    automaton
+                                )
+                        , automataHistory =
+                            Automata.FiniteNonDeterministic automaton
+                                :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
 
 
 

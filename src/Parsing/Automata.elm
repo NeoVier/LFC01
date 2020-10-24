@@ -98,6 +98,66 @@ parseDeterministicTransition line states alphabet =
         (Maybe.map (\x -> [ x ]) symbol)
 
 
+parseNonDeterministicTransition :
+    String
+    -> List State.State
+    -> List Alphabet.Symbol
+    -> Maybe Transition.NonDeterministicTransition
+parseNonDeterministicTransition line states symbols =
+    let
+        items =
+            String.split "," line |> Array.fromList
+
+        prevStateIndex =
+            Array.get 0 items
+
+        prevState =
+            Maybe.andThen String.toInt prevStateIndex
+                |> Maybe.andThen (\x -> Utils.elementAt x states)
+
+        nextStateIndexes =
+            Array.get 2 items |> Maybe.map (String.split "-")
+
+        nextStates : Maybe (List State.State)
+        nextStates =
+            Maybe.andThen
+                (\strIndexes ->
+                    List.map
+                        (\strIndex ->
+                            String.toInt strIndex
+                                |> Maybe.andThen (\x -> Utils.elementAt x states)
+                        )
+                        strIndexes
+                        |> Utils.listOfMaybesToMaybeList
+                )
+                nextStateIndexes
+
+        symbol =
+            Array.get 1 items
+                |> Maybe.andThen
+                    (Utils.filterMaybe
+                        (\x ->
+                            List.member x symbols
+                        )
+                    )
+
+        epsilon =
+            symbol == Just "&"
+
+        alphabet =
+            if epsilon then
+                Just (Transition.WithEpsilon [])
+
+            else
+                Maybe.map (\s -> Transition.NoEpsilon [ s ]) symbol
+    in
+    Maybe.map3
+        Transition.NonDeterministicTransition
+        prevState
+        nextStates
+        alphabet
+
+
 parseAFD : String -> Maybe Automata.AFD
 parseAFD text =
     let
@@ -114,7 +174,6 @@ parseAFD text =
                     String.lines text
                         |> List.drop 4
 
-                transitions : Maybe (List Transition.DeterministicTransition)
                 transitions =
                     List.map
                         (\line ->
@@ -128,3 +187,21 @@ parseAFD text =
                     Automata.AFD states initialState finalStates symbols t
                 )
                 transitions
+
+
+parseAFND : String -> Maybe Automata.AFND
+parseAFND text =
+    let
+        commons =
+            parseCommons text
+    in
+    case commons of
+        Nothing ->
+            Nothing
+
+        Just (CommonItems states intialState finalStates symbols) ->
+            let
+                lines =
+                    String.lines text |> List.drop 4
+            in
+            Nothing

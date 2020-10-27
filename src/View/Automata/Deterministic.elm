@@ -20,14 +20,23 @@ viewAFD afd =
 
 getAutomatonRows : Automata.AFD -> List (Html msg)
 getAutomatonRows afd =
+    -- List (List String)
     List.map (\state -> getStateRow afd state) afd.states
+        |> List.map
+            (\row ->
+                tr tableRowStyles
+                    (List.map
+                        (\entry -> td tableItemStyles [ text entry ])
+                        row
+                    )
+            )
 
 
-getStateRow : Automata.AFD -> State.State -> Html msg
+getStateRow : Automata.AFD -> State.State -> List String
 getStateRow afd prevState =
     case prevState of
         State.Dead ->
-            text ""
+            [ "" ]
 
         State.Valid label ->
             let
@@ -56,25 +65,38 @@ getStateRow afd prevState =
                         prevState
                         |> Utils.sortTransitionsDeterministic
             in
-            tr tableRowStyles
-                (td []
-                    [ text (prefix ++ label) ]
-                    :: List.map
-                        (\transition ->
-                            viewFlatDeterministicTransition transition
-                        )
-                        transitions
-                )
+            [ prefix
+                ++ label
+            ]
+                ++ List.map (\transition -> viewFlatDeterministicTransition transition)
+                    transitions
+
+
+
+-- tr tableRowStyles
+--     (td []
+--         [ text (prefix ++ label) ]
+--         :: List.map
+--             (\transition ->
+--                 viewFlatDeterministicTransition transition
+--             )
+--             transitions
+--     )
 
 
 viewFlatDeterministicTransition :
     Transition.DeterministicTransition
-    -> Html msg
+    -> String
 viewFlatDeterministicTransition transition =
     case transition.nextState of
         State.Dead ->
-            td tableItemStyles [ text "-" ]
+            -- td tableItemStyles [ text "-" ]
+            "-"
 
         State.Valid nextLabel ->
-            td tableItemStyles
-                [ text nextLabel ]
+            nextLabel
+
+
+
+-- td tableItemStyles
+--     [ text nextLabel ]

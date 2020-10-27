@@ -9,7 +9,7 @@
 module Utils.Utils exposing (..)
 
 import Html exposing (a)
-import List exposing (concatMap, filter, foldr, map, member, sortWith)
+import List exposing (concatMap, filter, foldr, map, member, sortBy, sortWith)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State

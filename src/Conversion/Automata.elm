@@ -30,7 +30,6 @@ afndToAfd afnd =
                     List.concatMap
                         (Utils.getEpsilonStar afnd)
                         (Utils.stateToListOfStates complexState)
-                        |> Debug.log "States"
                         |> List.concatMap
                             (\state ->
                                 Utils.getOutTransitionsNonDeterministic afnd
@@ -55,6 +54,7 @@ afndToAfd afnd =
         newTransitions =
             List.map CTransition.nonDeterministicToDeterministic
                 (afnd.transitions ++ newStatesTransitions)
+                |> Utils.sortTransitionsDeterministic
 
         newFinalStates =
             List.filter

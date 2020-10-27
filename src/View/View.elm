@@ -19,23 +19,34 @@ view model =
             Styles.mainAreaStyles
             [ viewLeftPanel model
             , viewCenterPanel model
-            , viewRightPanel
+            , viewRightPanel model
             ]
         ]
 
 
 historyView : Types.Model -> Html Types.Msg
 historyView model =
-    ul Styles.historyViewStyles
+    div Styles.historyViewStyles
         (List.map
             (\automaton ->
                 case automaton of
-                    Automata.FiniteDeterministic _ ->
-                        li Styles.historyViewItemStyles
+                    Automata.FiniteDeterministic afd ->
+                        button
+                            (Styles.historyViewItemStyles
+                                ++ [ onClick
+                                        (Types.SetAutomaton automaton)
+                                   ]
+                            )
                             [ text "AFD" ]
 
-                    Automata.FiniteNonDeterministic _ ->
-                        li Styles.historyViewItemStyles [ text "AFND" ]
+                    Automata.FiniteNonDeterministic afnd ->
+                        button
+                            (Styles.historyViewItemStyles
+                                ++ [ onClick
+                                        (Types.SetAutomaton automaton)
+                                   ]
+                            )
+                            [ text "AFND" ]
             )
             model.automataHistory
         )
@@ -58,23 +69,32 @@ viewCenterPanel model =
         ]
 
 
-viewRightPanel : Html Types.Msg
-viewRightPanel =
+viewRightPanel : Types.Model -> Html Types.Msg
+viewRightPanel model =
     div Styles.rightPanelStyles
-        [ h3 Styles.currentAutomatonTitleStyles [ text "Controles" ]
-        , button
-            (onClick Types.AFDRequested
-                :: Styles.rightPanelButtonStyles
-            )
-            [ text "Carregar autômato finito determinístico" ]
-        , button
-            (onClick Types.AFNDRequested
-                :: Styles.rightPanelButtonStyles
-            )
-            [ text "Carregar autômato finito não-determinístico" ]
-        , button
-            (onClick Types.ConvertAFNDToAFD
-                :: Styles.rightPanelButtonStyles
-            )
-            [ text "Converter AFND para AFD" ]
+        [ h3 Styles.currentAutomatonTitleStyles
+            [ text "Controles" ]
+        , div
+            Styles.rightPanelControlContainerStyles
+            [ button
+                (onClick Types.AFDRequested
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Carregar autômato finito determinístico" ]
+            , button
+                (onClick Types.AFNDRequested
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Carregar autômato finito não-determinístico" ]
+            , case model.currentAutomaton of
+                Ok (Automata.FiniteNonDeterministic _) ->
+                    button
+                        (onClick Types.ConvertAFNDToAFD
+                            :: Styles.rightPanelButtonStyles
+                        )
+                        [ text "Converter AFND para AFD" ]
+
+                otherwise ->
+                    text ""
+            ]
         ]

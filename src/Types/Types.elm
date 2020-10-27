@@ -1,6 +1,7 @@
 module Types.Types exposing (..)
 
 import File exposing (File)
+import Models.Automata as Automata
 import Models.Models as Models
 import Utils.Utils exposing (filterMaybe)
 
@@ -37,3 +38,4 @@ type Msg
     | AFNDSelected File
     | AFNDLoaded String
     | ConvertAFNDToAFD
+    | SetAutomaton Automata.Automaton

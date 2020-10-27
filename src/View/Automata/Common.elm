@@ -8,7 +8,7 @@ import View.Styles exposing (..)
 viewAutomataHeader : Alphabet.Alphabet -> Html msg
 viewAutomataHeader alphabet =
     tr tableRowStyles
-        ([ th tableItemStyles [ text "Estados" ] ] ++ alphabetHeader alphabet)
+        ([ th tableItemStyles [ text "ẟ" ] ] ++ alphabetHeader alphabet)
 
 
 alphabetHeader : Alphabet.Alphabet -> List (Html msg)
@@ -27,4 +27,4 @@ alphabetHeader alphabet =
                                 th tableItemStyles [ text symbol ]
                             )
                     )
-                        ++ [ th tableItemStyles [ text "&" ] ]
+                        ++ [ th tableItemStyles [ text "ε" ] ]

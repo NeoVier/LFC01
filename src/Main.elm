@@ -109,6 +109,11 @@ update msg model =
                 otherwise ->
                     ( model, Cmd.none )
 
+        Types.SetAutomaton automaton ->
+            ( { model | currentAutomaton = Ok automaton }
+            , Cmd.none
+            )
+
 
 
 -- SUBSCRIPTIONS

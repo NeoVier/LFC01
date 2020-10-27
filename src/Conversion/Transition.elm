@@ -1,5 +1,6 @@
 module Conversion.Transition exposing (nonDeterministicToDeterministic)
 
+import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
 import Utils.Utils as Utils
@@ -26,3 +27,25 @@ nonDeterministicToDeterministicConditions ndc =
         -- TODO
         Transition.WithEpsilon conditions ->
             conditions
+
+
+joinParentTransitions :
+    Automata.AFND
+    -> State.State
+    -> List Transition.NonDeterministicTransition
+joinParentTransitions afnd compositeState =
+    let
+        parentStates : List State.State
+        parentStates =
+            Utils.stateToListOfStates compositeState
+
+        parentTransitions : List Transition.NonDeterministicTransition
+        parentTransitions =
+            List.concatMap
+                (Utils.getOutTransitionsNonDeterministic afnd)
+                parentStates
+
+        groups =
+            Utils.groupByConditions parentTransitions
+    in
+    []

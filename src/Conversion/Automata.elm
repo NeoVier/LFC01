@@ -4,7 +4,8 @@ import Conversion.Alphabet as CAlphabet
 import Conversion.Transition as CTransition
 import Models.Automata as Automata
 import Models.State as State
-import Utils.Utils as Utils
+import Models.Transition as Transition
+import Utils.Utils as Utils exposing (stateToListOfStates)
 
 
 
@@ -14,29 +15,48 @@ import Utils.Utils as Utils
 afndToAfd : Automata.AFND -> Automata.AFD
 afndToAfd afnd =
     let
+        newStates =
+            Utils.subsequences afnd.states
+                |> List.sortBy List.length
+                |> List.map Utils.listOfStatesToState
+                |> List.filter (\state -> not (List.member state afnd.states))
+                |> Debug.log "New states"
+
+        newStatesTransitions : List Transition.NonDeterministicTransition
+        newStatesTransitions =
+            List.concatMap
+                (\complexState ->
+                    Utils.stateToListOfStates complexState
+                        |> Debug.log "Analyzing states"
+                        |> List.concatMap
+                            (\state ->
+                                Utils.getOutTransitionsNonDeterministic afnd state
+                            )
+                        |> Debug.log "All states transitions"
+                        |> Utils.groupByConditions
+                        |> Debug.log "Grouped"
+                        |> List.map
+                            (\x ->
+                                let
+                                    newTransition =
+                                        Utils.joinTransitionsWithSameCondition x
+                                in
+                                { newTransition | prevState = complexState }
+                            )
+                        |> Debug.log "Joined"
+                )
+                newStates
+
         -- TODO
         newTransitions =
             List.map CTransition.nonDeterministicToDeterministic
-                afnd.transitions
-
-        newStates =
-            List.map (\transition -> transition.nextState) newTransitions
-                |> List.filter (\state -> not (List.member state afnd.states))
+                (afnd.transitions ++ newStatesTransitions)
 
         newFinalStates =
             List.filter
                 (\state ->
-                    case state of
-                        State.Dead ->
-                            False
-
-                        State.Valid labels ->
-                            String.split ", " labels
-                                |> List.any
-                                    (\label ->
-                                        List.member (State.Valid label)
-                                            afnd.finalStates
-                                    )
+                    Utils.stateToListOfStates state
+                        |> List.any (\st -> List.member st afnd.finalStates)
                 )
                 newStates
 

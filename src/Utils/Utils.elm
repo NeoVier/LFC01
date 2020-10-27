@@ -1,3 +1,11 @@
+{-
+   Utils/Utils.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains various utilitary and helper functions
+-}
+
+
 module Utils.Utils exposing (..)
 
 import Html exposing (a)
@@ -6,6 +14,10 @@ import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
+
+
+
+-- Get all transitions that come out of a state from an AFD
 
 
 getOutTransitionsDeterministic :
@@ -27,6 +39,10 @@ getOutTransitionsDeterministic afd prevState =
     in
     Transition.DeterministicTransition prevState State.Dead missingSymbols
         :: existing
+
+
+
+-- Get all transitions that come out of a state from an AFND
 
 
 getOutTransitionsNonDeterministic :
@@ -56,6 +72,7 @@ getOutTransitionsNonDeterministic afnd prevState =
                 Alphabet.NDA alph epsilon ->
                     filter (\symbol -> not (member symbol existingSymbols))
                         alph
+                        |> Debug.log "Missing symbols"
 
         hasEpsilon =
             List.any
@@ -68,6 +85,7 @@ getOutTransitionsNonDeterministic afnd prevState =
                             True
                 )
                 existing
+                |> Debug.log "HasEpsilon"
     in
     Transition.NonDeterministicTransition prevState
         [ State.Dead ]
@@ -80,6 +98,11 @@ getOutTransitionsNonDeterministic afnd prevState =
         :: existing
 
 
+
+-- Given a transition with multiple conditions, return a list of transitions
+-- with one condition each
+
+
 getFlatTransitionDeterministic :
     Transition.DeterministicTransition
     -> List Transition.DeterministicTransition
@@ -87,6 +110,11 @@ getFlatTransitionDeterministic transition =
     map
         (\condition -> { transition | conditions = [ condition ] })
         transition.conditions
+
+
+
+-- Given a transition with multiple conditions, return a list of transitions
+-- with one condition each
 
 
 getFlatTransitionNonDeterministic :
@@ -110,6 +138,10 @@ getFlatTransitionNonDeterministic transition =
                 ++ [ { transition | conditions = Transition.WithEpsilon [] } ]
 
 
+
+-- Get the flat transitions (one condition each) that come out of a state
+
+
 getFlatOutTransitionsDeterministic :
     Automata.AFD
     -> State.State
@@ -117,6 +149,10 @@ getFlatOutTransitionsDeterministic :
 getFlatOutTransitionsDeterministic afd state =
     getOutTransitionsDeterministic afd state
         |> concatMap getFlatTransitionDeterministic
+
+
+
+-- Get the flat transitions (one condition each) that come out of a state
 
 
 getFlatOutTransitionsNonDeterministic :
@@ -128,12 +164,20 @@ getFlatOutTransitionsNonDeterministic afnd state =
         |> concatMap getFlatTransitionNonDeterministic
 
 
+
+-- Function to compare two transitions so we can sort them
+
+
 compareTransitionsDeterministic :
     Transition.DeterministicTransition
     -> Transition.DeterministicTransition
     -> Order
 compareTransitionsDeterministic a b =
     compare a.conditions b.conditions
+
+
+
+-- Function to compare two transitions so we can sort them
 
 
 compareTransitionsNonDeterministic :
@@ -153,6 +197,10 @@ compareTransitionsNonDeterministic a b =
     compare (getSymbols a.conditions) (getSymbols b.conditions)
 
 
+
+-- Swaps the first and last elements of a list
+
+
 swapFirstAndLast : List a -> List a
 swapFirstAndLast xs =
     case xs of
@@ -163,11 +211,19 @@ swapFirstAndLast xs =
             []
 
 
+
+-- Sorts a list of deterministic transitions
+
+
 sortTransitionsDeterministic :
     List Transition.DeterministicTransition
     -> List Transition.DeterministicTransition
 sortTransitionsDeterministic =
     sortWith compareTransitionsDeterministic
+
+
+
+-- Sorts a list of non deterministic transitions
 
 
 sortTransitionsNonDeterministic :
@@ -177,9 +233,17 @@ sortTransitionsNonDeterministic =
     sortWith compareTransitionsNonDeterministic
 
 
+
+-- Returns the element at index
+
+
 elementAt : Int -> List a -> Maybe a
 elementAt idx list =
     List.drop idx list |> List.head
+
+
+
+-- Given a predicate, return Just a or Nothing
 
 
 filterMaybe : (a -> Bool) -> a -> Maybe a
@@ -191,12 +255,22 @@ filterMaybe f x =
         Nothing
 
 
+
+-- Invert a List (Maybe a) to a Maybe (List a)
+
+
 listOfMaybesToMaybeList : List (Maybe a) -> Maybe (List a)
 listOfMaybesToMaybeList =
     List.foldr (Maybe.map2 (::)) (Just [])
 
 
-getEpsilonTransitions : Automata.Automaton -> List Transition.NonDeterministicTransition
+
+-- Get all the epsilon transitions from an automaton
+
+
+getEpsilonTransitions :
+    Automata.Automaton
+    -> List Transition.NonDeterministicTransition
 getEpsilonTransitions automaton =
     case automaton of
         Automata.FiniteDeterministic afd ->
@@ -213,6 +287,10 @@ getEpsilonTransitions automaton =
                             True
                 )
                 afnd.transitions
+
+
+
+-- Given a list of states, create a new state that contains them
 
 
 listOfStatesToState : List State.State -> State.State
@@ -232,8 +310,13 @@ listOfStatesToState states =
                             label
                 )
                 states
+                |> List.sort
                 |> String.join ", "
                 |> State.Valid
+
+
+
+-- Given a state, return the list of states that form the state
 
 
 stateToListOfStates : State.State -> List State.State
@@ -244,6 +327,10 @@ stateToListOfStates state =
 
         State.Valid label ->
             String.split ", " label |> List.map State.Valid
+
+
+
+-- Gets the epsilon star for a state
 
 
 getEpsilonStar : Automata.AFND -> State.State -> List State.State
@@ -267,3 +354,152 @@ getEpsilonStar afnd state =
                 outEpsilonTransitions
     in
     state :: outEpsilonStates
+
+
+
+-- Returns all the possible subsequences of a list
+
+
+subsequences : List a -> List (List a)
+subsequences l =
+    case l of
+        [] ->
+            []
+
+        x :: xs ->
+            let
+                f ys r =
+                    ys :: (x :: ys) :: r
+            in
+            [ x ] :: List.foldr f [] (subsequences xs)
+
+
+transitionsWithSameCondition :
+    List Transition.NonDeterministicTransition
+    -> Transition.NonDeterministicConditions
+    -> List Transition.NonDeterministicTransition
+transitionsWithSameCondition transitions c =
+    List.filter
+        (\transition ->
+            case transition.conditions of
+                Transition.WithEpsilon symbols ->
+                    case c of
+                        Transition.WithEpsilon _ ->
+                            True
+
+                        Transition.NoEpsilon _ ->
+                            False
+
+                Transition.NoEpsilon symbols ->
+                    case c of
+                        Transition.WithEpsilon _ ->
+                            False
+
+                        Transition.NoEpsilon cSymbols ->
+                            symbols == cSymbols
+        )
+        transitions
+
+
+groupByConditions :
+    List Transition.NonDeterministicTransition
+    -> List (List Transition.NonDeterministicTransition)
+groupByConditions transitions =
+    let
+        allConditions =
+            List.foldr
+                (\transition acc ->
+                    case transition.conditions of
+                        Transition.NoEpsilon _ ->
+                            if List.member transition.conditions acc then
+                                acc
+
+                            else
+                                transition.conditions :: acc
+
+                        Transition.WithEpsilon symbols ->
+                            acc
+                 -- if List.member transition.conditions acc then
+                 --     acc
+                 -- else
+                 --     transition.conditions :: acc
+                )
+                []
+                transitions
+                |> Debug.log "All Conditions"
+    in
+    List.map (transitionsWithSameCondition transitions) allConditions
+
+
+joinTransitionsWithSameCondition :
+    List Transition.NonDeterministicTransition
+    -> Transition.NonDeterministicTransition
+joinTransitionsWithSameCondition transitions =
+    case transitions of
+        [] ->
+            { prevState = State.Dead
+            , nextStates = [ State.Dead ]
+            , conditions = Transition.NoEpsilon []
+            }
+
+        first :: rest ->
+            List.foldr
+                (\transition acc ->
+                    { acc
+                        | conditions =
+                            joinConditions acc.conditions transition.conditions
+                        , nextStates =
+                            acc.nextStates
+                                ++ List.filter
+                                    (\s -> not (List.member s acc.nextStates))
+                                    transition.nextStates
+                    }
+                )
+                first
+                rest
+
+
+joinConditions :
+    Transition.NonDeterministicConditions
+    -> Transition.NonDeterministicConditions
+    -> Transition.NonDeterministicConditions
+joinConditions c1 c2 =
+    let
+        hasEpsilon =
+            case c1 of
+                Transition.NoEpsilon _ ->
+                    case c2 of
+                        Transition.NoEpsilon _ ->
+                            False
+
+                        Transition.WithEpsilon _ ->
+                            True
+
+                Transition.WithEpsilon _ ->
+                    True
+
+        c1Symbols =
+            case c1 of
+                Transition.NoEpsilon symbols ->
+                    symbols
+
+                Transition.WithEpsilon symbols ->
+                    symbols
+
+        c2Symbols =
+            case c2 of
+                Transition.NoEpsilon symbols ->
+                    symbols
+
+                Transition.WithEpsilon symbols ->
+                    symbols
+
+        newSymbols =
+            c1Symbols
+                ++ List.filter (\s -> not (List.member s c1Symbols)) c2Symbols
+    in
+    if hasEpsilon then
+        Transition.WithEpsilon newSymbols
+
+    else
+        Transition.NoEpsilon newSymbols

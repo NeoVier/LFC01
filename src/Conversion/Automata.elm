@@ -20,21 +20,27 @@ afndToAfd afnd =
                 |> List.sortBy List.length
                 |> List.map Utils.listOfStatesToState
                 |> List.filter (\state -> not (List.member state afnd.states))
-                |> Debug.log "New states"
 
-        newStatesTransitions : List Transition.NonDeterministicTransition
+        -- Add Epsilon star
         newStatesTransitions =
             List.concatMap
                 (\complexState ->
-                    Utils.stateToListOfStates complexState
-                        |> Debug.log "Analyzing states"
+                    -- Utils.stateToListOfStates complexState
+                    --     ++ List.concatMap
+                    List.concatMap
+                        (Utils.getEpsilonStar afnd)
+                        (Utils.stateToListOfStates complexState)
+                        |> Debug.log "States"
                         |> List.concatMap
                             (\state ->
-                                Utils.getOutTransitionsNonDeterministic afnd state
+                                Utils.getOutTransitionsNonDeterministic afnd
+                                    state
                             )
-                        |> Debug.log "All states transitions"
+                        |> List.filter
+                            (\transition ->
+                                transition.nextStates /= [ State.Dead ]
+                            )
                         |> Utils.groupByConditions
-                        |> Debug.log "Grouped"
                         |> List.map
                             (\x ->
                                 let
@@ -43,11 +49,9 @@ afndToAfd afnd =
                                 in
                                 { newTransition | prevState = complexState }
                             )
-                        |> Debug.log "Joined"
                 )
                 newStates
 
-        -- TODO
         newTransitions =
             List.map CTransition.nonDeterministicToDeterministic
                 (afnd.transitions ++ newStatesTransitions)

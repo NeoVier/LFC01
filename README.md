@@ -15,7 +15,8 @@ Student: Henrique da Cunha Buss
 - [x] Display AFND
 - [x] Parse AFND
 - [x] Add AFND to history
-- [ ] Convert AFND to AFD
+- [x] Convert AFND (no Epsilon) to AFD
+- [x] Convert AFND (with Epsilon) to AFD
 - [ ] Recognize sentences with AFs
 - [ ] Minimize AFD
 - [ ] Work on GR

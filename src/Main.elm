@@ -90,12 +90,18 @@ update msg model =
         Types.ConvertAFNDToAFD ->
             case model.currentAutomaton of
                 Ok (Automata.FiniteNonDeterministic afnd) ->
+                    let
+                        converted =
+                            Automata.FiniteDeterministic
+                                (CAutomata.afndToAfd
+                                    afnd
+                                )
+                    in
                     ( { model
                         | currentAutomaton =
                             Ok
-                                (Automata.FiniteDeterministic
-                                    (CAutomata.afndToAfd afnd)
-                                )
+                                converted
+                        , automataHistory = converted :: model.automataHistory
                       }
                     , Cmd.none
                     )

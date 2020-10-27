@@ -72,7 +72,6 @@ getOutTransitionsNonDeterministic afnd prevState =
                 Alphabet.NDA alph epsilon ->
                     filter (\symbol -> not (member symbol existingSymbols))
                         alph
-                        |> Debug.log "Missing symbols"
 
         hasEpsilon =
             List.any
@@ -85,7 +84,6 @@ getOutTransitionsNonDeterministic afnd prevState =
                             True
                 )
                 existing
-                |> Debug.log "HasEpsilon"
     in
     Transition.NonDeterministicTransition prevState
         [ State.Dead ]
@@ -345,15 +343,17 @@ getEpsilonStar afnd state =
                                 False
 
                             Transition.WithEpsilon ndc ->
-                                ndc /= []
+                                True
                     )
 
         outEpsilonStates =
             List.concatMap
                 (\transition -> transition.nextStates)
                 outEpsilonTransitions
+                |> List.filter (\epsilonState -> epsilonState /= State.Dead)
     in
-    state :: outEpsilonStates
+    state
+        :: outEpsilonStates
 
 
 
@@ -408,25 +408,45 @@ groupByConditions transitions =
     let
         allConditions =
             List.foldr
-                (\transition acc ->
+                (\transition conditions ->
                     case transition.conditions of
                         Transition.NoEpsilon _ ->
-                            if List.member transition.conditions acc then
-                                acc
+                            if List.member transition.conditions conditions then
+                                conditions
 
                             else
-                                transition.conditions :: acc
+                                transition.conditions :: conditions
 
                         Transition.WithEpsilon symbols ->
-                            acc
-                 -- if List.member transition.conditions acc then
-                 --     acc
-                 -- else
-                 --     transition.conditions :: acc
+                            if
+                                List.any
+                                    (\condition ->
+                                        case condition of
+                                            Transition.WithEpsilon _ ->
+                                                True
+
+                                            Transition.NoEpsilon _ ->
+                                                False
+                                    )
+                                    conditions
+                            then
+                                List.map
+                                    (\condition ->
+                                        case condition of
+                                            Transition.WithEpsilon cSymbols ->
+                                                Transition.WithEpsilon
+                                                    (cSymbols ++ symbols)
+
+                                            Transition.NoEpsilon _ ->
+                                                condition
+                                    )
+                                    conditions
+
+                            else
+                                transition.conditions :: conditions
                 )
                 []
                 transitions
-                |> Debug.log "All Conditions"
     in
     List.map (transitionsWithSameCondition transitions) allConditions
 

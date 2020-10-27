@@ -203,7 +203,8 @@ parseAFND text =
         Just (CommonItems states initialState finalStates symbols) ->
             let
                 lines =
-                    String.lines text |> List.drop 4
+                    String.lines text
+                        |> List.drop 4
 
                 transitions =
                     List.map

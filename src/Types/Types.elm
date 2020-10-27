@@ -1,7 +1,7 @@
 module Types.Types exposing (..)
 
 import File exposing (File)
-import Models.Automata as Automata
+import Models.Models as Models
 import Utils.Utils exposing (filterMaybe)
 
 
@@ -10,8 +10,8 @@ import Utils.Utils exposing (filterMaybe)
 
 
 type alias Model =
-    { automataHistory : List Automata.Automaton
-    , currentAutomaton : Result String Automata.Automaton
+    { automataHistory : List Models.General
+    , currentAutomaton : Result String Models.General
     }
 
 
@@ -36,3 +36,4 @@ type Msg
     | AFNDRequested
     | AFNDSelected File
     | AFNDLoaded String
+    | ConvertAFNDToAFD

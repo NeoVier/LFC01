@@ -1,8 +1,5 @@
 module Models.Alphabet exposing (..)
 
--- type alias Alphabet =
---     List Symbol
-
 
 type Alphabet
     = Deterministic DeterministicAlphabet

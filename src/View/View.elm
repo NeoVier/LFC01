@@ -72,4 +72,9 @@ viewRightPanel =
                 :: Styles.rightPanelButtonStyles
             )
             [ text "Carregar autômato finito não-determinístico" ]
+        , button
+            (onClick Types.ConvertAFNDToAFD
+                :: Styles.rightPanelButtonStyles
+            )
+            [ text "Converter AFND para AFD" ]
         ]

@@ -213,3 +213,57 @@ getEpsilonTransitions automaton =
                             True
                 )
                 afnd.transitions
+
+
+listOfStatesToState : List State.State -> State.State
+listOfStatesToState states =
+    case states of
+        [ State.Dead ] ->
+            State.Dead
+
+        otherwise ->
+            List.map
+                (\state ->
+                    case state of
+                        State.Dead ->
+                            ""
+
+                        State.Valid label ->
+                            label
+                )
+                states
+                |> String.join ", "
+                |> State.Valid
+
+
+stateToListOfStates : State.State -> List State.State
+stateToListOfStates state =
+    case state of
+        State.Dead ->
+            [ State.Dead ]
+
+        State.Valid label ->
+            String.split ", " label |> List.map State.Valid
+
+
+getEpsilonStar : Automata.AFND -> State.State -> List State.State
+getEpsilonStar afnd state =
+    let
+        outEpsilonTransitions =
+            getOutTransitionsNonDeterministic afnd state
+                |> filter
+                    (\transition ->
+                        case transition.conditions of
+                            Transition.NoEpsilon dc ->
+                                False
+
+                            Transition.WithEpsilon ndc ->
+                                ndc /= []
+                    )
+
+        outEpsilonStates =
+            List.concatMap
+                (\transition -> transition.nextStates)
+                outEpsilonTransitions
+    in
+    state :: outEpsilonStates

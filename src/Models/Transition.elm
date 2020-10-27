@@ -23,6 +23,10 @@ type alias NonDeterministicTransition =
     }
 
 
+type alias DeterministicConditions =
+    List Alphabet.Symbol
+
+
 type NonDeterministicConditions
-    = NoEpsilon (List Alphabet.Symbol)
-    | WithEpsilon (List Alphabet.Symbol)
+    = NoEpsilon DeterministicConditions
+    | WithEpsilon DeterministicConditions

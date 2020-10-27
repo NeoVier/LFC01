@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Browser
+import Conversion.Automata as CAutomata
 import File exposing (File)
 import File.Select as Select
 import Models.Automata as Automata
@@ -85,6 +86,22 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        Types.ConvertAFNDToAFD ->
+            case model.currentAutomaton of
+                Ok (Automata.FiniteNonDeterministic afnd) ->
+                    ( { model
+                        | currentAutomaton =
+                            Ok
+                                (Automata.FiniteDeterministic
+                                    (CAutomata.afndToAfd afnd)
+                                )
+                      }
+                    , Cmd.none
+                    )
+
+                otherwise ->
+                    ( model, Cmd.none )
 
 
 

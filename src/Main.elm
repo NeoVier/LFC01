@@ -14,6 +14,7 @@ import Conversion.Automata as CAutomata
 import File exposing (File)
 import File.Select as Select
 import Models.Automata as Automata
+import Models.Models as Models
 import Operations.Basics as BasicOperations
 import Operations.Minimization as Minimization
 import Parsing.Automata as PAutomata
@@ -63,10 +64,10 @@ update msg model =
                 Just automaton ->
                     ( { model
                         | currentAutomaton =
-                            Ok (Automata.FiniteDeterministic automaton)
+                            Ok (Models.Automaton (Automata.FiniteDeterministic automaton))
                         , automataHistory =
-                            Automata.FiniteDeterministic
-                                automaton
+                            Models.Automaton
+                                (Automata.FiniteDeterministic automaton)
                                 :: model.automataHistory
                       }
                     , Cmd.none
@@ -93,9 +94,11 @@ update msg model =
                             Ok
                                 (Automata.FiniteNonDeterministic
                                     automaton
+                                    |> Models.Automaton
                                 )
                         , automataHistory =
-                            Automata.FiniteNonDeterministic automaton
+                            Models.Automaton
+                                (Automata.FiniteNonDeterministic automaton)
                                 :: model.automataHistory
                       }
                     , Cmd.none
@@ -103,13 +106,14 @@ update msg model =
 
         Types.ConvertAFNDToAFD ->
             case model.currentAutomaton of
-                Ok (Automata.FiniteNonDeterministic afnd) ->
+                Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
                     let
                         converted =
                             Automata.FiniteDeterministic
                                 (CAutomata.afndToAfd
                                     afnd
                                 )
+                                |> Models.Automaton
                     in
                     ( { model
                         | currentAutomaton =
@@ -123,15 +127,15 @@ update msg model =
                 otherwise ->
                     ( model, Cmd.none )
 
-        Types.SetAutomaton automaton ->
-            ( { model | currentAutomaton = Ok automaton }
+        Types.SetCurrent general ->
+            ( { model | currentAutomaton = Ok general }
             , Cmd.none
             )
 
-        Types.RemoveAutomaton automaton ->
+        Types.RemoveItem general ->
             let
                 newHistory =
-                    List.filter (\a -> a /= automaton) model.automataHistory
+                    List.filter (\a -> a /= general) model.automataHistory
             in
             ( { model
                 | automataHistory = newHistory
@@ -164,6 +168,7 @@ update msg model =
                         result =
                             BasicOperations.union afd1 afd2
                                 |> Automata.FiniteNonDeterministic
+                                |> Models.Automaton
                     in
                     ( { model
                         | currentAutomaton = Ok result
@@ -186,6 +191,7 @@ update msg model =
                         result =
                             BasicOperations.intersection afd1 afd2
                                 |> Automata.FiniteDeterministic
+                                |> Models.Automaton
                     in
                     ( { model
                         | currentAutomaton = Ok result
@@ -196,11 +202,12 @@ update msg model =
 
         Types.Minimize ->
             case model.currentAutomaton of
-                Ok (Automata.FiniteDeterministic afd) ->
+                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
                     let
                         result =
                             Minimization.minimizeAFD afd
                                 |> Automata.FiniteDeterministic
+                                |> Models.Automaton
                     in
                     ( { model
                         | currentAutomaton =
@@ -210,12 +217,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                Ok (Automata.FiniteNonDeterministic afnd) ->
-                    ( { model | currentAutomaton = Err "Converta para AFND antes de minimizar" }
-                    , Cmd.none
-                    )
-
-                Err _ ->
+                otherwise ->
                     ( model, Cmd.none )
 
 

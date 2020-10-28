@@ -12,6 +12,7 @@ import Html exposing (a)
 import List exposing (concatMap, filter, foldr, map, member, sortBy, sortWith)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
+import Models.Models as Models
 import Models.State as State
 import Models.Transition as Transition
 
@@ -582,7 +583,7 @@ joinDeterministicAlphabets alph1 alph2 =
 -- Determines whether the first two automata in the list are AFDs
 
 
-firstTwoAreAFDs : List Automata.Automaton -> Bool
+firstTwoAreAFDs : List Models.General -> Bool
 firstTwoAreAFDs =
     isJust << getFirstTwoAsAFDs
 
@@ -591,12 +592,12 @@ firstTwoAreAFDs =
 -- Gets the first two automata of the list as AFDs
 
 
-getFirstTwoAsAFDs : List Automata.Automaton -> Maybe ( Automata.AFD, Automata.AFD )
-getFirstTwoAsAFDs automata =
-    case List.head automata of
-        Just (Automata.FiniteDeterministic afd1) ->
-            case List.head (List.drop 1 automata) of
-                Just (Automata.FiniteDeterministic afd2) ->
+getFirstTwoAsAFDs : List Models.General -> Maybe ( Automata.AFD, Automata.AFD )
+getFirstTwoAsAFDs generals =
+    case List.head generals of
+        Just (Models.Automaton (Automata.FiniteDeterministic afd1)) ->
+            case List.head (List.drop 1 generals) of
+                Just (Models.Automaton (Automata.FiniteDeterministic afd2)) ->
                     Just ( afd1, afd2 )
 
                 otherwise ->

@@ -64,8 +64,8 @@ type Msg
     | AFNDSelected File
     | AFNDLoaded String
     | ConvertAFNDToAFD
-    | SetAutomaton Automata.Automaton
-    | RemoveAutomaton Automata.Automaton
+    | SetCurrent Models.General
+    | RemoveItem Models.General
     | SetSentence String
     | DoUnion
     | DoIntersection

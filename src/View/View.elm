@@ -12,6 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Models.Automata as Automata
+import Models.Models as Models
 import Operations.SentenceValidation as Validation
 import Types.Types as Types
 import Utils.Utils as Utils
@@ -58,30 +59,33 @@ viewLeftPanel model =
 historyView : Types.Model -> Html Types.Msg
 historyView model =
     let
-        label automaton =
-            case automaton of
-                Automata.FiniteDeterministic _ ->
+        label general =
+            case general of
+                Models.Automaton (Automata.FiniteDeterministic _) ->
                     "AFD"
 
-                Automata.FiniteNonDeterministic _ ->
+                Models.Automaton (Automata.FiniteNonDeterministic _) ->
                     "AFND"
+
+                otherwise ->
+                    "Error"
     in
     div Styles.historyViewStyles
         (List.map
-            (\automaton ->
+            (\general ->
                 div Styles.historyViewRowStyles
                     [ button
                         (Styles.historyViewDeleteStyles
-                            ++ [ onClick (Types.RemoveAutomaton automaton) ]
+                            ++ [ onClick (Types.RemoveItem general) ]
                         )
                         [ text "Remover" ]
                     , button
                         (Styles.historyViewItemStyles
                             ++ [ onClick
-                                    (Types.SetAutomaton automaton)
+                                    (Types.SetCurrent general)
                                ]
                         )
-                        [ text (label automaton) ]
+                        [ text (label general) ]
                     ]
             )
             model.automataHistory
@@ -98,8 +102,21 @@ viewCenterPanel model =
         [ h3 Styles.currentAutomatonTitleStyles
             [ text "Autômato atual" ]
         , viewSentenceInput model
-        , VAutomata.viewCurrentAutomaton model
+        , viewCurrentModel model
         ]
+
+
+viewCurrentModel : Types.Model -> Html Types.Msg
+viewCurrentModel model =
+    case model.currentAutomaton of
+        Err msg ->
+            h1 [] [ text msg ]
+
+        Ok (Models.Automaton automaton) ->
+            VAutomata.viewCurrentAutomaton automaton
+
+        Ok (Models.Grammar grammar) ->
+            h1 [] [ text "Not yet implemented" ]
 
 
 
@@ -112,7 +129,7 @@ viewSentenceInput model =
         Err _ ->
             text ""
 
-        Ok automaton ->
+        Ok (Models.Automaton automaton) ->
             let
                 validated =
                     Validation.validateSentence automaton
@@ -135,6 +152,9 @@ viewSentenceInput model =
                     Err msg ->
                         h3 Styles.invalidSentenceStyles [ text msg ]
                 ]
+
+        otherwise ->
+            text ""
 
 
 
@@ -169,7 +189,7 @@ viewRightPanel model =
 convertButton : Types.Model -> Html Types.Msg
 convertButton model =
     case model.currentAutomaton of
-        Ok (Automata.FiniteNonDeterministic _) ->
+        Ok (Models.Automaton (Automata.FiniteNonDeterministic _)) ->
             button
                 (onClick Types.ConvertAFNDToAFD
                     :: Styles.rightPanelButtonStyles
@@ -196,7 +216,7 @@ operationsButtons model =
 minimizeButton : Types.Model -> Html Types.Msg
 minimizeButton model =
     case model.currentAutomaton of
-        Ok (Automata.FiniteDeterministic _) ->
+        Ok (Models.Automaton (Automata.FiniteDeterministic _)) ->
             button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
                 [ text "Minimizar AFD" ]
 

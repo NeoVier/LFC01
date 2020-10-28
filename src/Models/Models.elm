@@ -10,11 +10,13 @@
 module Models.Models exposing (..)
 
 import Models.Automata as Automata
+import Models.Grammars as Grammars
 
 
 
 -- General type
 
 
-type alias General =
-    Automata.Automaton
+type General
+    = Automaton Automata.Automaton
+    | Grammar Grammars.Grammar

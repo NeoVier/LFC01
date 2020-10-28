@@ -19,16 +19,11 @@ import View.Automata.NonDeterministic as VAFND
 -- General view function, that routes to the appropriate function
 
 
-viewCurrentAutomaton : Types.Model -> Html msg
-viewCurrentAutomaton model =
-    case model.currentAutomaton of
-        Err message ->
-            h1 [] [ text message ]
+viewCurrentAutomaton : Automata.Automaton -> Html msg
+viewCurrentAutomaton automaton =
+    case automaton of
+        Automata.FiniteDeterministic afd ->
+            VAFD.viewAFD afd
 
-        Ok automaton ->
-            case automaton of
-                Automata.FiniteDeterministic afd ->
-                    VAFD.viewAFD afd
-
-                Automata.FiniteNonDeterministic afnd ->
-                    VAFND.viewAFND afnd
+        Automata.FiniteNonDeterministic afnd ->
+            VAFND.viewAFND afnd

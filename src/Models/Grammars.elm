@@ -12,8 +12,13 @@ type alias Grammar =
 
 
 type alias Production =
-    { fromSymbol : Alphabet.Symbol
-    , consumed : Maybe NonTerminalSymbol
+    { fromSymbol : NonTerminalSymbol
+    , productions : List ProductionBody
+    }
+
+
+type alias ProductionBody =
+    { consumed : Maybe NonTerminalSymbol
     , toSymbol : Maybe TerminalSymbol
     }
 

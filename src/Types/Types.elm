@@ -63,6 +63,9 @@ type Msg
     | AFNDRequested
     | AFNDSelected File
     | AFNDLoaded String
+    | GRRequested
+    | GRSelected File
+    | GRLoaded String
     | ConvertAFNDToAFD
     | SetCurrent Models.General
     | RemoveItem Models.General

@@ -17,6 +17,7 @@ import Operations.SentenceValidation as Validation
 import Types.Types as Types
 import Utils.Utils as Utils
 import View.Automata as VAutomata
+import View.Grammars.Regular as VGrammars
 import View.Styles as Styles
 
 
@@ -116,7 +117,7 @@ viewCurrentModel model =
             VAutomata.viewCurrentAutomaton automaton
 
         Ok (Models.Grammar grammar) ->
-            h1 [] [ text "Not yet implemented" ]
+            VGrammars.viewGR grammar
 
 
 
@@ -178,13 +179,16 @@ viewRightPanel model =
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Carregar autômato finito não-determinístico" ]
+             , button
+                (onClick Types.GRRequested :: Styles.rightPanelButtonStyles)
+                [ text "Carregar gramática regular" ]
              ]
                 ++ List.map (\f -> f model |> maybeHtmlToHtml)
                     [ convertButton
-                    , unionButton
                     , complementButton
-                    , intersectionButton
                     , minimizeButton
+                    , unionButton
+                    , intersectionButton
                     ]
             )
         ]

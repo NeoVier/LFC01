@@ -104,6 +104,15 @@ update msg model =
                     , Cmd.none
                     )
 
+        Types.GRRequested ->
+            ( model, Select.file [ "text/txt" ] Types.GRSelected )
+
+        Types.GRSelected file ->
+            ( model, Task.perform Types.GRLoaded (File.toString file) )
+
+        Types.GRLoaded content ->
+            ( model, Cmd.none )
+
         Types.ConvertAFNDToAFD ->
             case model.currentAutomaton of
                 Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->

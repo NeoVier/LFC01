@@ -1,3 +1,11 @@
+{-
+   View/Automata/Deterministic.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to view deterministic automata
+-}
+
+
 module View.Automata.Deterministic exposing (viewAFD)
 
 import Html exposing (..)
@@ -10,12 +18,20 @@ import View.Automata.Common as VC
 import View.Styles exposing (..)
 
 
+
+-- Given an AFD, return a table that represents it
+
+
 viewAFD : Automata.AFD -> Html msg
 viewAFD afd =
     table tableStyles
         (VC.viewAutomataHeader (Alphabet.Deterministic afd.alphabet)
             :: getAutomatonRows afd
         )
+
+
+
+-- Given an AFD, return a list of rows that represent the states and transitions
 
 
 getAutomatonRows : Automata.AFD -> List (Html msg)
@@ -29,6 +45,10 @@ getAutomatonRows afd =
                         row
                     )
             )
+
+
+
+-- Given an AFD and a State, return the row that represents the State
 
 
 getStateRow : Automata.AFD -> State.State -> List String
@@ -72,15 +92,7 @@ getStateRow afd prevState =
 
 
 
--- tr tableRowStyles
---     (td []
---         [ text (prefix ++ label) ]
---         :: List.map
---             (\transition ->
---                 viewFlatDeterministicTransition transition
---             )
---             transitions
---     )
+-- Helper function to convert the nextState of a Transition to a String
 
 
 viewFlatDeterministicTransition :
@@ -89,13 +101,7 @@ viewFlatDeterministicTransition :
 viewFlatDeterministicTransition transition =
     case transition.nextState of
         State.Dead ->
-            -- td tableItemStyles [ text "-" ]
             "-"
 
         State.Valid nextLabel ->
             nextLabel
-
-
-
--- td tableItemStyles
---     [ text nextLabel ]

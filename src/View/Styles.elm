@@ -1,3 +1,11 @@
+{-
+   View/Styles.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains all the style definitions used in the application
+-}
+
+
 module View.Styles exposing (..)
 
 import Html exposing (..)

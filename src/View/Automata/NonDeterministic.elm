@@ -1,3 +1,11 @@
+{-
+   View/Automata/NonDeterministic.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to view non deterministic automata
+-}
+
+
 module View.Automata.NonDeterministic exposing (viewAFND)
 
 import Html exposing (..)
@@ -10,6 +18,10 @@ import View.Automata.Common as VC
 import View.Styles exposing (..)
 
 
+
+-- Given an AFND, return a table that represents it
+
+
 viewAFND : Automata.AFND -> Html msg
 viewAFND afnd =
     table tableStyles
@@ -18,9 +30,17 @@ viewAFND afnd =
         )
 
 
+
+-- Given an AFND, return a list of rows that represent the states and transitions
+
+
 getAutomatonRows : Automata.AFND -> List (Html msg)
 getAutomatonRows afnd =
     List.map (\state -> getStateRow afnd state) afnd.states
+
+
+
+-- Given an AFND and a State, return the row that represents the State
 
 
 getStateRow : Automata.AFND -> State.State -> Html msg
@@ -65,6 +85,10 @@ getStateRow afnd prevState =
                         )
                         transitions
                 )
+
+
+
+-- Helper function to convert the nextState of a Transition to a String
 
 
 viewFlatNonDeterministicTransition :

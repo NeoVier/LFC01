@@ -1,3 +1,11 @@
+{-
+   View/View.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains the main view function, along with a few helper functions
+-}
+
+
 module View.View exposing (view)
 
 import Html exposing (..)
@@ -8,6 +16,10 @@ import Types.Types as Types
 import Utils.SentenceValidation as Validation
 import View.Automata as VAutomata
 import View.Styles as Styles
+
+
+
+-- The main view function. Defines a title and the viewing areas
 
 
 view : Types.Model -> Html Types.Msg
@@ -24,6 +36,22 @@ view model =
             , viewRightPanel model
             ]
         ]
+
+
+
+-- Defines the look of the left panel
+
+
+viewLeftPanel : Types.Model -> Html Types.Msg
+viewLeftPanel model =
+    div Styles.leftPanelStyles
+        [ h3 Styles.currentAutomatonTitleStyles [ text "Histórico" ]
+        , historyView model
+        ]
+
+
+
+-- Defines the look of the history
 
 
 historyView : Types.Model -> Html Types.Msg
@@ -54,12 +82,8 @@ historyView model =
         )
 
 
-viewLeftPanel : Types.Model -> Html Types.Msg
-viewLeftPanel model =
-    div Styles.leftPanelStyles
-        [ h3 Styles.currentAutomatonTitleStyles [ text "Histórico" ]
-        , historyView model
-        ]
+
+-- Defines the view of the center panel
 
 
 viewCenterPanel : Types.Model -> Html Types.Msg
@@ -70,6 +94,10 @@ viewCenterPanel model =
         , viewSentenceInput model
         , VAutomata.viewCurrentAutomaton model
         ]
+
+
+
+-- Defines the view of the sentence input area
 
 
 viewSentenceInput : Types.Model -> Html Types.Msg
@@ -101,6 +129,10 @@ viewSentenceInput model =
             Err msg ->
                 h3 Styles.invalidSentenceStyles [ text msg ]
         ]
+
+
+
+-- Defines the view of the right panel
 
 
 viewRightPanel : Types.Model -> Html Types.Msg

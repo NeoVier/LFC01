@@ -1,4 +1,12 @@
-module Parsing.Automata exposing (..)
+{-
+   Parsing/Automata.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to parse Automata
+-}
+
+
+module Parsing.Automata exposing (parseAFD, parseAFND)
 
 import Array
 import Models.Alphabet as Alphabet
@@ -6,6 +14,10 @@ import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
 import Utils.Utils as Utils
+
+
+
+-- Helper function to get a state
 
 
 getStateWithMaybes :
@@ -20,6 +32,10 @@ getStateWithMaybes strIndex states =
             )
 
 
+
+-- Helper function to generate states labeled from "0" to "n"
+
+
 generateStates : Int -> List State.State
 generateStates n =
     List.map
@@ -27,8 +43,17 @@ generateStates n =
         (List.range 0 (n - 1))
 
 
+
+-- A type that defines the common items between automata, just so we can reuse
+-- some stuff
+
+
 type CommonItems
     = CommonItems (List State.State) State.State (List State.State) (List Alphabet.Symbol)
+
+
+
+-- Parse all the common items given in an input
 
 
 parseCommons : String -> Maybe CommonItems
@@ -56,6 +81,10 @@ parseCommons text =
                 (Array.get 3 lines)
     in
     Maybe.map4 CommonItems states initialState finalStates alphabet
+
+
+
+-- Parse a deterministic transition line
 
 
 parseDeterministicTransition :
@@ -96,6 +125,10 @@ parseDeterministicTransition line states alphabet =
         prevState
         nextState
         (Maybe.map (\x -> [ x ]) symbol)
+
+
+
+-- Parse a non deterministic transition line
 
 
 parseNonDeterministicTransition :
@@ -159,6 +192,10 @@ parseNonDeterministicTransition line states symbols =
         alphabet
 
 
+
+-- Parse a Finite Deterministic Automaton
+
+
 parseAFD : String -> Maybe Automata.AFD
 parseAFD text =
     let
@@ -188,6 +225,10 @@ parseAFD text =
                     Automata.AFD states initialState finalStates symbols t
                 )
                 transitions
+
+
+
+-- Parse a Finite Non Deterministic Automaton
 
 
 parseAFND : String -> Maybe Automata.AFND

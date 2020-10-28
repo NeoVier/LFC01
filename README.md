@@ -21,7 +21,7 @@ Student: Henrique da Cunha Buss
   - [x] Recognize sentences with AFDs
   - [x] Recognize sentences with AFs
   - [x] AFD Union
-  - [ ] AFD Intersection
+  - [x] AFD Intersection
   - [ ] Minimize AFD
     - [x] Filter reachable states
     - [x] Filter alive states

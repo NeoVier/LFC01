@@ -57,27 +57,32 @@ viewLeftPanel model =
 
 historyView : Types.Model -> Html Types.Msg
 historyView model =
+    let
+        label automaton =
+            case automaton of
+                Automata.FiniteDeterministic _ ->
+                    "AFD"
+
+                Automata.FiniteNonDeterministic _ ->
+                    "AFND"
+    in
     div Styles.historyViewStyles
         (List.map
             (\automaton ->
-                case automaton of
-                    Automata.FiniteDeterministic afd ->
-                        button
-                            (Styles.historyViewItemStyles
-                                ++ [ onClick
-                                        (Types.SetAutomaton automaton)
-                                   ]
-                            )
-                            [ text "AFD" ]
-
-                    Automata.FiniteNonDeterministic afnd ->
-                        button
-                            (Styles.historyViewItemStyles
-                                ++ [ onClick
-                                        (Types.SetAutomaton automaton)
-                                   ]
-                            )
-                            [ text "AFND" ]
+                div Styles.historyViewRowStyles
+                    [ button
+                        (Styles.historyViewDeleteStyles
+                            ++ [ onClick (Types.RemoveAutomaton automaton) ]
+                        )
+                        [ text "Remover" ]
+                    , button
+                        (Styles.historyViewItemStyles
+                            ++ [ onClick
+                                    (Types.SetAutomaton automaton)
+                               ]
+                        )
+                        [ text (label automaton) ]
+                    ]
             )
             model.automataHistory
         )

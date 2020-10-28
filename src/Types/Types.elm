@@ -49,6 +49,7 @@ init _ =
 -- xLoaded String -> a String was loaded from a File
 -- ConvertAFNDToAFD -> the user requested to convert the current AFND to a AFD
 -- SetAutomaton Automaton -> the user requested to set the current automaton
+-- RemoveAutomaton Automaton -> the user requested to remove the automaton
 -- SetSentence String -> the user requested to set the current sentence
 -- DoUnion -> Applies the union operation to the last two automata
 -- DoIntersection -> Applies the intersection operation to the last two automata
@@ -63,6 +64,7 @@ type Msg
     | AFNDLoaded String
     | ConvertAFNDToAFD
     | SetAutomaton Automata.Automaton
+    | RemoveAutomaton Automata.Automaton
     | SetSentence String
     | DoUnion
     | DoIntersection

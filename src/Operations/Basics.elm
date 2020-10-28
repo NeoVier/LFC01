@@ -7,7 +7,7 @@
 -}
 
 
-module Operations.Basics exposing (..)
+module Operations.Basics exposing (intersection, union)
 
 import Conversion.Automata as CAutomata
 import Models.Alphabet as Alphabet

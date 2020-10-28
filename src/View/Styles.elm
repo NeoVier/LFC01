@@ -63,7 +63,17 @@ leftPanelStyles =
 historyViewStyles : List (Attribute msg)
 historyViewStyles =
     [ style "display" "flex"
-    , style "flex-direction" "column"
+    , style "flex-direction"
+        "column"
+    , style "align-items" "center"
+    ]
+
+
+historyViewRowStyles : List (Attribute msg)
+historyViewRowStyles =
+    [ style "margin-bottom" "1em"
+    , style "display" "flex"
+    , style "width" "100%"
     ]
 
 
@@ -73,6 +83,18 @@ historyViewItemStyles =
     , style "text-align" "center"
     , style "cursor" "pointer"
     , style "margin-bottom" "1em"
+    , style "height" "100%"
+    , style "margin-left" "0.5em"
+    , style "width" "100%"
+    ]
+
+
+historyViewDeleteStyles : List (Attribute msg)
+historyViewDeleteStyles =
+    [ style "padding" "1em 1em"
+    , style "text-align" "center"
+    , style "cursor" "pointer"
+    , style "height" "100%"
     ]
 
 

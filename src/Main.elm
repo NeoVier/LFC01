@@ -127,6 +127,24 @@ update msg model =
             , Cmd.none
             )
 
+        Types.RemoveAutomaton automaton ->
+            let
+                newHistory =
+                    List.filter (\a -> a /= automaton) model.automataHistory
+            in
+            ( { model
+                | automataHistory = newHistory
+                , currentAutomaton =
+                    case List.head newHistory of
+                        Nothing ->
+                            Err "Nenhum autômato carregado"
+
+                        Just a ->
+                            Ok a
+              }
+            , Cmd.none
+            )
+
         Types.SetSentence sentence ->
             ( { model | currentSentence = sentence }, Cmd.none )
 

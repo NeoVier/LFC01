@@ -4,6 +4,7 @@
    Creation: October/2020
    This file contains the definitions of everything related to Grammars
 -}
+-- TODO accept epsilon
 
 
 module Models.Grammars exposing (..)

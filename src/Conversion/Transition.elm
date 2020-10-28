@@ -40,6 +40,6 @@ nonDeterministicToDeterministicConditions ndc =
         Transition.NoEpsilon conditions ->
             conditions
 
-        -- TODO
+        --
         Transition.WithEpsilon conditions ->
             conditions

@@ -374,6 +374,11 @@ subsequences l =
             [ x ] :: List.foldr f [] (subsequences xs)
 
 
+
+-- Given a list of transitions and a condition, get all of the transitions that
+-- have the same condition that was passed in
+
+
 transitionsWithSameCondition :
     List Transition.NonDeterministicTransition
     -> Transition.NonDeterministicConditions
@@ -399,6 +404,10 @@ transitionsWithSameCondition transitions c =
                             symbols == cSymbols
         )
         transitions
+
+
+
+-- Group a list of transitions by their conditions
 
 
 groupByConditions :
@@ -451,6 +460,11 @@ groupByConditions transitions =
     List.map (transitionsWithSameCondition transitions) allConditions
 
 
+
+-- Given a list of transitions that all have the same conditions, join them
+-- into a single transition
+
+
 joinTransitionsWithSameCondition :
     List Transition.NonDeterministicTransition
     -> Transition.NonDeterministicTransition
@@ -477,6 +491,10 @@ joinTransitionsWithSameCondition transitions =
                 )
                 first
                 rest
+
+
+
+-- Given two transitions, join them into a single one
 
 
 joinConditions :

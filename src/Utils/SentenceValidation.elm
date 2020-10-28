@@ -1,10 +1,23 @@
-module Utils.SentenceValidation exposing (..)
+{-
+   Utils/SentenceValidation.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to validate sentences
+-}
+
+
+module Utils.SentenceValidation exposing (validateSentence)
 
 import Conversion.Automata as CAutomata
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Utils.Utils as Utils
+
+
+
+-- General sentence validation function, routes to the appropriate automaton
+-- and checks if the sentence uses only symbols from the alphabet
 
 
 validateSentence : Automata.Automaton -> String -> Result String Bool
@@ -35,6 +48,10 @@ validateSentence automaton sentence =
         Err "Existem símbolos inválidos"
 
 
+
+-- Validate a sentence using an AFD
+
+
 validateSentenceAFD :
     Automata.AFD
     -> List Alphabet.Symbol
@@ -45,6 +62,10 @@ validateSentenceAFD afd sentence =
 
     else
         Err "Sentença inválida"
+
+
+
+-- Validate a sentence using an AFD starting from a state
 
 
 validateSentenceAFDFromState :
@@ -79,6 +100,10 @@ validateSentenceAFDFromState currState afd sentence =
 
                 otherwise ->
                     False
+
+
+
+-- Validate a sentence using an AFND
 
 
 validateSentenceAFND :

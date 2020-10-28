@@ -18,7 +18,7 @@ Student: Henrique da Cunha Buss
 - [x] Convert AFND (no Epsilon) to AFD
 - [x] Convert AFND (with Epsilon) to AFD
 - [x] Recognize sentences with AFDs
-- [ ] Recognize sentences with AFs
+- [x] Recognize sentences with AFs
 - [ ] Minimize AFD
 - [ ] Work on GR
 - [ ] Work on ER

@@ -25,8 +25,6 @@ afndToAfd afnd =
         newStatesTransitions =
             List.concatMap
                 (\complexState ->
-                    -- Utils.stateToListOfStates complexState
-                    --     ++ List.concatMap
                     List.concatMap
                         (Utils.getEpsilonStar afnd)
                         (Utils.stateToListOfStates complexState)

@@ -1,5 +1,6 @@
 module Utils.SentenceValidation exposing (..)
 
+import Conversion.Automata as CAutomata
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
@@ -28,15 +29,18 @@ validateSentence automaton sentence =
                 validateSentenceAFD afd sentenceAsSymbols
 
             Automata.FiniteNonDeterministic afnd ->
-                Err "Não implementado"
+                validateSentenceAFND afnd sentenceAsSymbols
 
     else
         Err "Existem símbolos inválidos"
 
 
-validateSentenceAFD : Automata.AFD -> List Alphabet.Symbol -> Result String Bool
-validateSentenceAFD afd symbols =
-    if validateSentenceAFDFromState afd.initialState afd symbols then
+validateSentenceAFD :
+    Automata.AFD
+    -> List Alphabet.Symbol
+    -> Result String Bool
+validateSentenceAFD afd sentence =
+    if validateSentenceAFDFromState afd.initialState afd sentence then
         Ok True
 
     else
@@ -75,3 +79,11 @@ validateSentenceAFDFromState currState afd sentence =
 
                 otherwise ->
                     False
+
+
+validateSentenceAFND :
+    Automata.AFND
+    -> List Alphabet.Symbol
+    -> Result String Bool
+validateSentenceAFND afnd =
+    validateSentenceAFD (CAutomata.afndToAfd afnd)

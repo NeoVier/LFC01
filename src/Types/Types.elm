@@ -50,6 +50,8 @@ init _ =
 -- ConvertAFNDToAFD -> the user requested to convert the current AFND to a AFD
 -- SetAutomaton Automaton -> the user requested to set the current automaton
 -- SetSentence String -> the user requested to set the current sentence
+-- DoUnion -> Applies the union operation to the last two automata
+-- DoIntersection -> Applies the intersection operation to the last two automata
 
 
 type Msg
@@ -62,3 +64,5 @@ type Msg
     | ConvertAFNDToAFD
     | SetAutomaton Automata.Automaton
     | SetSentence String
+    | DoUnion
+    | DoIntersection

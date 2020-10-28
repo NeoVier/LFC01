@@ -19,7 +19,7 @@ Student: Henrique da Cunha Buss
 - [x] Convert AFND (with Epsilon) to AFD
 - [x] Recognize sentences with AFDs
 - [x] Recognize sentences with AFs
-- [ ] AFD Union
+- [x] AFD Union
 - [ ] AFD Intersection
 - [ ] Minimize AFD
 - [ ] Work on GR

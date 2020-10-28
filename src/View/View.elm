@@ -14,6 +14,7 @@ import Html.Events exposing (..)
 import Models.Automata as Automata
 import Operations.SentenceValidation as Validation
 import Types.Types as Types
+import Utils.Utils as Utils
 import View.Automata as VAutomata
 import View.Styles as Styles
 
@@ -142,25 +143,45 @@ viewRightPanel model =
             [ text "Controles" ]
         , div
             Styles.rightPanelControlContainerStyles
-            [ button
+            ([ button
                 (onClick Types.AFDRequested
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Carregar autômato finito determinístico" ]
-            , button
+             , button
                 (onClick Types.AFNDRequested
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Carregar autômato finito não-determinístico" ]
-            , case model.currentAutomaton of
-                Ok (Automata.FiniteNonDeterministic _) ->
-                    button
-                        (onClick Types.ConvertAFNDToAFD
-                            :: Styles.rightPanelButtonStyles
-                        )
-                        [ text "Converter AFND para AFD" ]
-
-                otherwise ->
-                    text ""
-            ]
+             ]
+                ++ [ convertButton model ]
+                ++ operationsButtons model
+            )
         ]
+
+
+convertButton : Types.Model -> Html Types.Msg
+convertButton model =
+    case model.currentAutomaton of
+        Ok (Automata.FiniteNonDeterministic _) ->
+            button
+                (onClick Types.ConvertAFNDToAFD
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Converter AFND para AFD" ]
+
+        otherwise ->
+            text ""
+
+
+operationsButtons : Types.Model -> List (Html Types.Msg)
+operationsButtons model =
+    if Utils.firstTwoAreAFDs model.automataHistory then
+        [ button (onClick Types.DoUnion :: Styles.rightPanelButtonStyles)
+            [ text "Fazer união nos últimos dois autômatos" ]
+        , button (onClick Types.DoIntersection :: Styles.rightPanelButtonStyles)
+            [ text "Fazer interseção nos últimos dois autômatos" ]
+        ]
+
+    else
+        [ text "" ]

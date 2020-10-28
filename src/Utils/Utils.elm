@@ -550,3 +550,63 @@ joinConditions c1 c2 =
 stringToChar : String -> Maybe Char
 stringToChar =
     String.toList >> List.head
+
+
+
+-- Adds a prefix to the name of a state (if it's a valid state)
+
+
+addPrefix : String -> State.State -> State.State
+addPrefix prefix state =
+    case state of
+        State.Dead ->
+            State.Dead
+
+        State.Valid label ->
+            State.Valid (prefix ++ label)
+
+
+
+-- Joins two deterministic alphabets
+
+
+joinDeterministicAlphabets :
+    Alphabet.DeterministicAlphabet
+    -> Alphabet.DeterministicAlphabet
+    -> Alphabet.DeterministicAlphabet
+joinDeterministicAlphabets alph1 alph2 =
+    List.filter (\s -> not (List.member s alph1)) alph2 ++ alph1
+
+
+
+-- Determines whether the first two automata in the list are AFDs
+
+
+firstTwoAreAFDs : List Automata.Automaton -> Bool
+firstTwoAreAFDs =
+    isJust << getFirstTwoAsAFDs
+
+
+getFirstTwoAsAFDs : List Automata.Automaton -> Maybe ( Automata.AFD, Automata.AFD )
+getFirstTwoAsAFDs automata =
+    case List.head automata of
+        Just (Automata.FiniteDeterministic afd1) ->
+            case List.head (List.drop 1 automata) of
+                Just (Automata.FiniteDeterministic afd2) ->
+                    Just ( afd1, afd2 )
+
+                otherwise ->
+                    Nothing
+
+        otherwise ->
+            Nothing
+
+
+isJust : Maybe a -> Bool
+isJust x =
+    case x of
+        Just _ ->
+            True
+
+        Nothing ->
+            False

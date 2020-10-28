@@ -14,6 +14,7 @@ import Conversion.Automata as CAutomata
 import File exposing (File)
 import File.Select as Select
 import Models.Automata as Automata
+import Operations.Basics as BasicOperations
 import Parsing.Automata as PAutomata
 import Task
 import Types.Types as Types
@@ -128,6 +129,51 @@ update msg model =
 
         Types.SetSentence sentence ->
             ( { model | currentSentence = sentence }, Cmd.none )
+
+        Types.DoUnion ->
+            case Utils.getFirstTwoAsAFDs model.automataHistory of
+                Nothing ->
+                    ( { model
+                        | currentAutomaton =
+                            Err "Erro ao fazer união"
+                      }
+                    , Cmd.none
+                    )
+
+                Just ( afd1, afd2 ) ->
+                    let
+                        result =
+                            BasicOperations.union afd1 afd2
+                                |> Automata.FiniteNonDeterministic
+                    in
+                    ( { model
+                        | currentAutomaton = Ok result
+                        , automataHistory = result :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
+
+        Types.DoIntersection ->
+            case Utils.getFirstTwoAsAFDs model.automataHistory of
+                Nothing ->
+                    ( { model
+                        | currentAutomaton = Err "Erro ao fazer interseção"
+                      }
+                    , Cmd.none
+                    )
+
+                Just ( afd1, afd2 ) ->
+                    let
+                        result =
+                            BasicOperations.intersection afd1 afd2
+                                |> Automata.FiniteDeterministic
+                    in
+                    ( { model
+                        | currentAutomaton = Ok result
+                        , automataHistory = result :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
 
 
 

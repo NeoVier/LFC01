@@ -7,7 +7,7 @@
 -}
 
 
-module Operations.Basics exposing (intersection, union)
+module Operations.Basics exposing (complement, intersection, union)
 
 import Conversion.Automata as CAutomata
 import Models.Alphabet as Alphabet
@@ -18,6 +18,7 @@ import Utils.Utils as Utils
 
 
 
+-- UNION
 -- Performs the union operation with two AFDs
 
 
@@ -109,6 +110,24 @@ generateNewTransitionForUnion prefix transition =
 
 
 
+-- COMPLEMENT
+-- Complements an AFD
+
+
+complement : Automata.AFD -> Automata.AFD
+complement afd =
+    { afd
+        | finalStates =
+            List.filter
+                (\state ->
+                    not (List.member state afd.finalStates)
+                )
+                afd.states
+    }
+
+
+
+-- INTERSECTION
 -- Performs the intersection operation with two AFDs
 -- TODO
 

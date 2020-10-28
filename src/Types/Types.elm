@@ -68,5 +68,6 @@ type Msg
     | RemoveItem Models.General
     | SetSentence String
     | DoUnion
+    | DoComplement
     | DoIntersection
     | Minimize

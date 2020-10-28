@@ -177,6 +177,25 @@ update msg model =
                     , Cmd.none
                     )
 
+        Types.DoComplement ->
+            case model.currentAutomaton of
+                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+                    let
+                        result =
+                            BasicOperations.complement afd
+                                |> Automata.FiniteDeterministic
+                                |> Models.Automaton
+                    in
+                    ( { model
+                        | currentAutomaton = Ok result
+                        , automataHistory = result :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
         Types.DoIntersection ->
             case Utils.getFirstTwoAsAFDs model.automataHistory of
                 Nothing ->

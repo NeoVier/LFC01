@@ -179,14 +179,28 @@ viewRightPanel model =
                 )
                 [ text "Carregar autômato finito não-determinístico" ]
              ]
-                ++ [ convertButton model ]
-                ++ operationsButtons model
-                ++ [ minimizeButton model ]
+                ++ List.map (\f -> f model |> maybeHtmlToHtml)
+                    [ convertButton
+                    , unionButton
+                    , complementButton
+                    , intersectionButton
+                    , minimizeButton
+                    ]
             )
         ]
 
 
-convertButton : Types.Model -> Html Types.Msg
+maybeHtmlToHtml : Maybe (Html a) -> Html a
+maybeHtmlToHtml html =
+    case html of
+        Nothing ->
+            text ""
+
+        Just valid ->
+            valid
+
+
+convertButton : Types.Model -> Maybe (Html Types.Msg)
 convertButton model =
     case model.currentAutomaton of
         Ok (Models.Automaton (Automata.FiniteNonDeterministic _)) ->
@@ -195,30 +209,62 @@ convertButton model =
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Converter AFND para AFD" ]
+                |> Just
 
         otherwise ->
-            text ""
+            Nothing
 
 
-operationsButtons : Types.Model -> List (Html Types.Msg)
-operationsButtons model =
+unionButton : Types.Model -> Maybe (Html Types.Msg)
+unionButton model =
     if Utils.firstTwoAreAFDs model.automataHistory then
-        [ button (onClick Types.DoUnion :: Styles.rightPanelButtonStyles)
-            [ text "Fazer união nos últimos dois autômatos" ]
-        , button (onClick Types.DoIntersection :: Styles.rightPanelButtonStyles)
-            [ text "Fazer interseção nos últimos dois autômatos" ]
-        ]
+        Just
+            (button (onClick Types.DoUnion :: Styles.rightPanelButtonStyles)
+                [ text "Fazer união nos últimos dois autômatos" ]
+            )
 
     else
-        [ text "" ]
+        Nothing
 
 
-minimizeButton : Types.Model -> Html Types.Msg
+complementButton : Types.Model -> Maybe (Html Types.Msg)
+complementButton model =
+    case model.currentAutomaton of
+        Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+            Just
+                (button
+                    (onClick Types.DoComplement
+                        :: Styles.rightPanelButtonStyles
+                    )
+                    [ text "Fazer complemento" ]
+                )
+
+        otherwise ->
+            Nothing
+
+
+intersectionButton : Types.Model -> Maybe (Html Types.Msg)
+intersectionButton model =
+    if Utils.firstTwoAreAFDs model.automataHistory then
+        Just
+            (button
+                (onClick Types.DoIntersection
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Fazer interseção nos últimos dois autômatos" ]
+            )
+
+    else
+        Nothing
+
+
+minimizeButton : Types.Model -> Maybe (Html Types.Msg)
 minimizeButton model =
     case model.currentAutomaton of
         Ok (Models.Automaton (Automata.FiniteDeterministic _)) ->
             button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
                 [ text "Minimizar AFD" ]
+                |> Just
 
         otherwise ->
-            text ""
+            Nothing

@@ -129,9 +129,10 @@ complement afd =
 
 -- INTERSECTION
 -- Performs the intersection operation with two AFDs
--- TODO
 
 
 intersection : Automata.AFD -> Automata.AFD -> Automata.AFD
 intersection afd1 afd2 =
-    afd1
+    union (complement afd1) (complement afd2)
+        |> CAutomata.afndToAfd
+        |> complement

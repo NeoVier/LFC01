@@ -13,6 +13,7 @@ import Utils.Utils exposing (filterMaybe)
 type alias Model =
     { automataHistory : List Models.General
     , currentAutomaton : Result String Models.General
+    , currentSentence : String
     }
 
 
@@ -22,6 +23,7 @@ init _ =
         (Err
             "Nenhum autômato carregado"
         )
+        ""
     , Cmd.none
     )
 
@@ -39,3 +41,4 @@ type Msg
     | AFNDLoaded String
     | ConvertAFNDToAFD
     | SetAutomaton Automata.Automaton
+    | SetSentence String

@@ -20,7 +20,6 @@ viewAFD afd =
 
 getAutomatonRows : Automata.AFD -> List (Html msg)
 getAutomatonRows afd =
-    -- List (List String)
     List.map (\state -> getStateRow afd state) afd.states
         |> List.map
             (\row ->

@@ -1,9 +1,11 @@
 module View.View exposing (view)
 
 import Html exposing (..)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Models.Automata as Automata
 import Types.Types as Types
+import Utils.SentenceValidation as Validation
 import View.Automata as VAutomata
 import View.Styles as Styles
 
@@ -65,7 +67,39 @@ viewCenterPanel model =
     div Styles.currentAutomatonStyles
         [ h3 Styles.currentAutomatonTitleStyles
             [ text "Autômato atual" ]
+        , viewSentenceInput model
         , VAutomata.viewCurrentAutomaton model
+        ]
+
+
+viewSentenceInput : Types.Model -> Html Types.Msg
+viewSentenceInput model =
+    let
+        validated =
+            case model.currentAutomaton of
+                Ok automaton ->
+                    Validation.validateSentence automaton
+                        model.currentSentence
+
+                Err _ ->
+                    Err ""
+    in
+    div []
+        [ input
+            (Styles.sentenceInputStyles
+                ++ [ placeholder "Insira uma sentença para ser validada"
+                   , value model.currentSentence
+                   , onInput Types.SetSentence
+                   , style "width" "100%"
+                   ]
+            )
+            []
+        , case validated of
+            Ok _ ->
+                h3 Styles.validSentenceStyles [ text "Sentença Válida" ]
+
+            Err msg ->
+                h3 Styles.invalidSentenceStyles [ text msg ]
         ]
 
 

@@ -26,6 +26,21 @@ mainAreaStyles =
     ]
 
 
+sentenceInputStyles : List (Attribute msg)
+sentenceInputStyles =
+    [ style "width" "100%" ]
+
+
+validSentenceStyles : List (Attribute msg)
+validSentenceStyles =
+    [ style "color" "green", style "text-align" "center" ]
+
+
+invalidSentenceStyles : List (Attribute msg)
+invalidSentenceStyles =
+    [ style "color" "red", style "text-align" "center" ]
+
+
 leftPanelStyles : List (Attribute msg)
 leftPanelStyles =
     [ style "grid-column" "1"

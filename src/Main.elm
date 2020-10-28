@@ -114,6 +114,9 @@ update msg model =
             , Cmd.none
             )
 
+        Types.SetSentence sentence ->
+            ( { model | currentSentence = sentence }, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS

@@ -1,3 +1,11 @@
+{-
+   Conversion/Automata.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to convert between Automata
+-}
+
+
 module Conversion.Automata exposing (afndToAfd)
 
 import Conversion.Alphabet as CAlphabet
@@ -9,7 +17,7 @@ import Utils.Utils as Utils exposing (stateToListOfStates)
 
 
 
--- AUTOMATA
+-- Converts an AFND to AFD
 
 
 afndToAfd : Automata.AFND -> Automata.AFD

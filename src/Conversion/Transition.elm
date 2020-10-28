@@ -1,9 +1,21 @@
+{-
+   Conversion/Transition.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to convert between Transitions
+-}
+
+
 module Conversion.Transition exposing (nonDeterministicToDeterministic)
 
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
 import Utils.Utils as Utils
+
+
+
+-- Converts a non deterministic transition to a deterministic transition
 
 
 nonDeterministicToDeterministic :
@@ -14,6 +26,10 @@ nonDeterministicToDeterministic ndt =
     , nextState = Utils.listOfStatesToState ndt.nextStates
     , conditions = nonDeterministicToDeterministicConditions ndt.conditions
     }
+
+
+
+-- Converts non deterministic conditions to deterministic conditions
 
 
 nonDeterministicToDeterministicConditions :
@@ -27,25 +43,3 @@ nonDeterministicToDeterministicConditions ndc =
         -- TODO
         Transition.WithEpsilon conditions ->
             conditions
-
-
-joinParentTransitions :
-    Automata.AFND
-    -> State.State
-    -> List Transition.NonDeterministicTransition
-joinParentTransitions afnd compositeState =
-    let
-        parentStates : List State.State
-        parentStates =
-            Utils.stateToListOfStates compositeState
-
-        parentTransitions : List Transition.NonDeterministicTransition
-        parentTransitions =
-            List.concatMap
-                (Utils.getOutTransitionsNonDeterministic afnd)
-                parentStates
-
-        groups =
-            Utils.groupByConditions parentTransitions
-    in
-    []

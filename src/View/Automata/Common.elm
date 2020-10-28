@@ -32,7 +32,11 @@ alphabetHeader alphabet =
     case alphabet of
         Alphabet.Deterministic symbols ->
             List.sort symbols
-                |> List.map (\symbol -> th tableItemStyles [ text symbol ])
+                |> List.map
+                    (\symbol ->
+                        th tableItemStyles
+                            [ text (String.fromChar symbol) ]
+                    )
 
         Alphabet.NonDeterministic ndalphabet ->
             case ndalphabet of
@@ -40,7 +44,7 @@ alphabetHeader alphabet =
                     (List.sort symbols
                         |> List.map
                             (\symbol ->
-                                th tableItemStyles [ text symbol ]
+                                th tableItemStyles [ text (String.fromChar symbol) ]
                             )
                     )
                         ++ [ th tableItemStyles [ text "ε" ] ]

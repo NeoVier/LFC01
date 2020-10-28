@@ -77,7 +77,11 @@ parseCommons text =
                 |> Maybe.map (List.map State.Valid)
 
         alphabet =
-            Maybe.map (\line -> String.split "," line)
+            Maybe.map
+                (\line ->
+                    String.split "," line
+                        |> List.concatMap String.toList
+                )
                 (Array.get 3 lines)
     in
     Maybe.map4 CommonItems states initialState finalStates alphabet
@@ -113,6 +117,7 @@ parseDeterministicTransition line states alphabet =
 
         symbol =
             Array.get 1 items
+                |> Maybe.andThen Utils.stringToChar
                 |> Maybe.andThen
                     (Utils.filterMaybe
                         (\x ->
@@ -168,6 +173,7 @@ parseNonDeterministicTransition line states symbols =
 
         symbol =
             Array.get 1 items
+                |> Maybe.andThen Utils.stringToChar
                 |> Maybe.andThen
                     (Utils.filterMaybe
                         (\x ->
@@ -176,7 +182,7 @@ parseNonDeterministicTransition line states symbols =
                     )
 
         epsilon =
-            symbol == Just "&"
+            symbol == Just '&'
 
         alphabet =
             if epsilon then
@@ -259,7 +265,7 @@ parseAFND text =
                     Alphabet.NDA
                         (List.filter
                             (\x ->
-                                x /= "&"
+                                x /= '&'
                             )
                             symbols
                         )

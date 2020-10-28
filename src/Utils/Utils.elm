@@ -541,3 +541,12 @@ joinConditions c1 c2 =
 
     else
         Transition.NoEpsilon newSymbols
+
+
+
+-- Converts a String to a Char. If the length of the String != 1, return Nothing
+
+
+stringToChar : String -> Maybe Char
+stringToChar =
+    String.toList >> List.head

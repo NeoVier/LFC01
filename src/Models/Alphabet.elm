@@ -41,8 +41,8 @@ type Epsilon
 
 
 
--- A symbol is just a String (though it should probably be a Char)
+-- A symbol is just a Char
 
 
 type alias Symbol =
-    String
+    Char

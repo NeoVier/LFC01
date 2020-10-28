@@ -34,7 +34,7 @@ validateSentence automaton sentence =
                             alphabet
 
         sentenceAsSymbols =
-            String.split "" sentence
+            String.toList sentence
     in
     if List.all (\symbol -> List.member symbol symbols) sentenceAsSymbols then
         case automaton of

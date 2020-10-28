@@ -68,8 +68,8 @@ historyView model =
                 Models.Automaton (Automata.FiniteNonDeterministic _) ->
                     "AFND"
 
-                otherwise ->
-                    "Error"
+                Models.Grammar _ ->
+                    "GR"
     in
     div Styles.historyViewStyles
         (List.map

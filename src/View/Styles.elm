@@ -155,3 +155,10 @@ rightPanelButtonStyles =
     , style "cursor" "pointer"
     , style "margin-bottom" "1em"
     ]
+
+
+grammarContainerStyles : List (Attribute msg)
+grammarContainerStyles =
+    [ style "display" "flex"
+    , style "flex-direction" "column"
+    ]

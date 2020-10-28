@@ -28,10 +28,10 @@ Student: Henrique da Cunha Buss
     - [ ] Apply classes algorithm
   - [ ] Convert AFD to GR
 - [ ] GR
-  - [ ] Display GR
-  - [ ] Parse GR
-  - [ ] Add GR to history
-  - [ ] Add GR from file
+  - [x] Display GR
+  - [x] Parse GR
+  - [x] Add GR to history
+  - [x] Add GR from file
   - [ ] Convert GR to AFD
 - [ ] ER
   - [ ] Display ER
@@ -56,7 +56,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
   3. [ ] Converting AFD to GR and GR to AFND
   4. [x] Recognizing sentences in AF
   5. [ ] Minimizing AFD
-  6. [ ] AFD union and intersection
+  6. [x] AFD union and intersection
   7. [ ] Converting ER to AFD (using syntactic tree-based algorithm)
 
 - Second delivery

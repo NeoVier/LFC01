@@ -18,6 +18,7 @@ import Models.Models as Models
 import Operations.Basics as BasicOperations
 import Operations.Minimization as Minimization
 import Parsing.Automata as PAutomata
+import Parsing.Grammars as PGrammars
 import Task
 import Types.Types as Types
 import Utils.Utils as Utils
@@ -111,7 +112,23 @@ update msg model =
             ( model, Task.perform Types.GRLoaded (File.toString file) )
 
         Types.GRLoaded content ->
-            ( model, Cmd.none )
+            case PGrammars.parseGR content of
+                Nothing ->
+                    ( { model
+                        | currentAutomaton = Err "Erro ao ler a gramática"
+                      }
+                    , Cmd.none
+                    )
+
+                Just grammar ->
+                    ( { model
+                        | currentAutomaton = Ok (Models.Grammar grammar)
+                        , automataHistory =
+                            Models.Grammar grammar
+                                :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
 
         Types.ConvertAFNDToAFD ->
             case model.currentAutomaton of

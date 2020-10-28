@@ -673,3 +673,16 @@ replaceBy original new xs =
             indexOf original xs
     in
     List.take idx xs ++ (new :: List.drop (idx + 1) xs)
+
+
+maybeMaybeToMaybe : Maybe (Maybe a) -> Maybe a
+maybeMaybeToMaybe x =
+    case x of
+        Nothing ->
+            Nothing
+
+        Just Nothing ->
+            Nothing
+
+        Just y ->
+            y

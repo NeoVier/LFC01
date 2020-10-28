@@ -2,13 +2,15 @@ module View.Grammars.Regular exposing (viewGR)
 
 import Html exposing (..)
 import Models.Grammars as Grammars
+import View.Styles as Styles
 
 
 viewGR : Grammars.Grammar -> Html msg
 viewGR gr =
-    List.map viewGRProduction gr.productions
-        |> String.join "\n"
-        |> text
+    List.map
+        (\production -> h3 [] [ text (viewGRProduction production) ])
+        gr.productions
+        |> div Styles.grammarContainerStyles
 
 
 viewGRProduction : Grammars.Production -> String
@@ -23,7 +25,6 @@ viewGRProduction production =
 viewGRProductionBody : Grammars.ProductionBody -> String
 viewGRProductionBody body =
     let
-        consumed : String
         consumed =
             Maybe.map String.fromChar body.consumed
                 |> Maybe.withDefault ""

@@ -12,8 +12,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Models.Automata as Automata
+import Operations.SentenceValidation as Validation
 import Types.Types as Types
-import Utils.SentenceValidation as Validation
 import View.Automata as VAutomata
 import View.Styles as Styles
 

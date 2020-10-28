@@ -1,12 +1,12 @@
 {-
-   Utils/SentenceValidation.elm
+   Operations/SentenceValidation.elm
    Author: Henrique da Cunha Buss
    Creation: October/2020
    This file contains functions to validate sentences
 -}
 
 
-module Utils.SentenceValidation exposing (validateSentence)
+module Operations.SentenceValidation exposing (validateSentence)
 
 import Conversion.Automata as CAutomata
 import Models.Alphabet as Alphabet

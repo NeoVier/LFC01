@@ -108,33 +108,33 @@ viewCenterPanel model =
 
 viewSentenceInput : Types.Model -> Html Types.Msg
 viewSentenceInput model =
-    let
-        validated =
-            case model.currentAutomaton of
-                Ok automaton ->
+    case model.currentAutomaton of
+        Err _ ->
+            text ""
+
+        Ok automaton ->
+            let
+                validated =
                     Validation.validateSentence automaton
                         model.currentSentence
+            in
+            div Styles.sentenceInputStyles
+                [ input
+                    (Styles.sentenceInputStyles
+                        ++ [ placeholder "Insira uma sentença para ser validada"
+                           , value model.currentSentence
+                           , onInput Types.SetSentence
+                           , style "width" "100%"
+                           ]
+                    )
+                    []
+                , case validated of
+                    Ok _ ->
+                        h3 Styles.validSentenceStyles [ text "Sentença Válida" ]
 
-                Err _ ->
-                    Err ""
-    in
-    div []
-        [ input
-            (Styles.sentenceInputStyles
-                ++ [ placeholder "Insira uma sentença para ser validada"
-                   , value model.currentSentence
-                   , onInput Types.SetSentence
-                   , style "width" "100%"
-                   ]
-            )
-            []
-        , case validated of
-            Ok _ ->
-                h3 Styles.validSentenceStyles [ text "Sentença Válida" ]
-
-            Err msg ->
-                h3 Styles.invalidSentenceStyles [ text msg ]
-        ]
+                    Err msg ->
+                        h3 Styles.invalidSentenceStyles [ text msg ]
+                ]
 
 
 
@@ -161,6 +161,7 @@ viewRightPanel model =
              ]
                 ++ [ convertButton model ]
                 ++ operationsButtons model
+                ++ [ minimizeButton model ]
             )
         ]
 
@@ -190,3 +191,14 @@ operationsButtons model =
 
     else
         [ text "" ]
+
+
+minimizeButton : Types.Model -> Html Types.Msg
+minimizeButton model =
+    case model.currentAutomaton of
+        Ok (Automata.FiniteDeterministic _) ->
+            button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
+                [ text "Minimizar AFD" ]
+
+        otherwise ->
+            text ""

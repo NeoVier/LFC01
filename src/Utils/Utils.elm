@@ -587,6 +587,10 @@ firstTwoAreAFDs =
     isJust << getFirstTwoAsAFDs
 
 
+
+-- Gets the first two automata of the list as AFDs
+
+
 getFirstTwoAsAFDs : List Automata.Automaton -> Maybe ( Automata.AFD, Automata.AFD )
 getFirstTwoAsAFDs automata =
     case List.head automata of
@@ -602,6 +606,10 @@ getFirstTwoAsAFDs automata =
             Nothing
 
 
+
+-- Converts a Maybe a to Bool
+
+
 isJust : Maybe a -> Bool
 isJust x =
     case x of
@@ -610,3 +618,57 @@ isJust x =
 
         Nothing ->
             False
+
+
+
+-- Removes duplicates from list
+
+
+removeDuplicates : List a -> List a
+removeDuplicates =
+    let
+        rdHelper seen rest =
+            case List.head rest of
+                Nothing ->
+                    seen
+
+                Just h ->
+                    if List.member h seen then
+                        rdHelper seen (List.drop 1 rest)
+
+                    else
+                        rdHelper (seen ++ [ h ]) (List.drop 1 rest)
+    in
+    rdHelper []
+
+
+
+-- Returns the index of an element in a list
+
+
+indexOf : a -> List a -> Int
+indexOf elem xs =
+    case List.head xs of
+        Nothing ->
+            0
+
+        Just x ->
+            if x == elem then
+                0
+
+            else
+                1 + indexOf elem (List.drop 1 xs)
+
+
+
+-- Replaces an element by another element. If the original element isn't in the
+-- list, the new element is appended to the list
+
+
+replaceBy : a -> a -> List a -> List a
+replaceBy original new xs =
+    let
+        idx =
+            indexOf original xs
+    in
+    List.take idx xs ++ (new :: List.drop (idx + 1) xs)

@@ -15,6 +15,7 @@ import File exposing (File)
 import File.Select as Select
 import Models.Automata as Automata
 import Operations.Basics as BasicOperations
+import Operations.Minimization as Minimization
 import Parsing.Automata as PAutomata
 import Task
 import Types.Types as Types
@@ -192,6 +193,30 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        Types.Minimize ->
+            case model.currentAutomaton of
+                Ok (Automata.FiniteDeterministic afd) ->
+                    let
+                        result =
+                            Minimization.minimizeAFD afd
+                                |> Automata.FiniteDeterministic
+                    in
+                    ( { model
+                        | currentAutomaton =
+                            Ok result
+                        , automataHistory = result :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
+
+                Ok (Automata.FiniteNonDeterministic afnd) ->
+                    ( { model | currentAutomaton = Err "Converta para AFND antes de minimizar" }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 

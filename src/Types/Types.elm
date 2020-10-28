@@ -53,6 +53,7 @@ init _ =
 -- SetSentence String -> the user requested to set the current sentence
 -- DoUnion -> Applies the union operation to the last two automata
 -- DoIntersection -> Applies the intersection operation to the last two automata
+-- Minimize -> Minimize current automaton
 
 
 type Msg
@@ -68,3 +69,4 @@ type Msg
     | SetSentence String
     | DoUnion
     | DoIntersection
+    | Minimize

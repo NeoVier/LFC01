@@ -30,7 +30,7 @@ mainAreaStyles : List (Attribute msg)
 mainAreaStyles =
     [ style "display" "grid"
     , style "grid-template-columns" "1fr 1fr 1fr"
-    , style "place-items" "center"
+    , style "text-align" "center"
     ]
 
 
@@ -105,7 +105,12 @@ currentAutomatonTitleStyles =
 
 currentAutomatonStyles : List (Attribute msg)
 currentAutomatonStyles =
-    [ style "grid-column" "2" ]
+    [ style "grid-column" "2"
+    , style "display" "flex"
+    , style "flex-direction" "column"
+    , style "align-items" "center"
+    , style "width" "100%"
+    ]
 
 
 tableStyles : List (Attribute msg)

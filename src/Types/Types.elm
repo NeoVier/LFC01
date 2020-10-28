@@ -20,8 +20,8 @@ import Utils.Utils exposing (filterMaybe)
 
 
 type alias Model =
-    { automataHistory : List Models.General
-    , currentAutomaton : Result String Models.General
+    { itemHistory : List Models.General
+    , currentItem : Result String Models.General
     , currentSentence : String
     }
 
@@ -34,7 +34,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model []
         (Err
-            "Nenhum autômato carregado"
+            "Nenhum item carregado"
         )
         ""
     , Cmd.none
@@ -55,7 +55,8 @@ init _ =
 -- DoIntersection -> Applies the intersection operation to the last two automata
 -- DoComplement -> Applies the complement operation to the current AFD
 -- Minimize -> Minimize current automaton
--- ConvertGRToAFD -> Converts current GR to an AFD
+-- ConvertGRToAFND -> Converts current GR to an AFND
+-- ConvertAFDToGR -> Converts current AFD to GR
 
 
 type Msg
@@ -77,3 +78,4 @@ type Msg
     | DoComplement
     | Minimize
     | ConvertGRToAFND
+    | ConvertAFDToGR

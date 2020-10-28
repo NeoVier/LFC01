@@ -28,7 +28,6 @@ grToAfd gr =
 
         transitions =
             List.concatMap productionToTransitions gr.productions
-                |> Debug.log "transitions"
     in
     { states = states
     , initialState = initialState

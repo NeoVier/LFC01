@@ -89,7 +89,7 @@ historyView model =
                         [ text (label general) ]
                     ]
             )
-            model.automataHistory
+            model.itemHistory
         )
 
 
@@ -109,7 +109,7 @@ viewCenterPanel model =
 
 viewCurrentModel : Types.Model -> Html Types.Msg
 viewCurrentModel model =
-    case model.currentAutomaton of
+    case model.currentItem of
         Err msg ->
             h1 [] [ text msg ]
 
@@ -126,7 +126,7 @@ viewCurrentModel model =
 
 viewSentenceInput : Types.Model -> Html Types.Msg
 viewSentenceInput model =
-    case model.currentAutomaton of
+    case model.currentItem of
         Err _ ->
             text ""
 
@@ -190,6 +190,7 @@ viewRightPanel model =
                     , unionButton
                     , intersectionButton
                     , grToAfdButton
+                    , afdToGrButton
                     ]
             )
         ]
@@ -207,7 +208,7 @@ maybeHtmlToHtml html =
 
 convertButton : Types.Model -> Maybe (Html Types.Msg)
 convertButton model =
-    case model.currentAutomaton of
+    case model.currentItem of
         Ok (Models.Automaton (Automata.FiniteNonDeterministic _)) ->
             button
                 (onClick Types.ConvertAFNDToAFD
@@ -222,7 +223,7 @@ convertButton model =
 
 unionButton : Types.Model -> Maybe (Html Types.Msg)
 unionButton model =
-    if Utils.firstTwoAreAFDs model.automataHistory then
+    if Utils.firstTwoAreAFDs model.itemHistory then
         Just
             (button (onClick Types.DoUnion :: Styles.rightPanelButtonStyles)
                 [ text "Fazer união nos últimos dois autômatos" ]
@@ -234,7 +235,7 @@ unionButton model =
 
 complementButton : Types.Model -> Maybe (Html Types.Msg)
 complementButton model =
-    case model.currentAutomaton of
+    case model.currentItem of
         Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
             Just
                 (button
@@ -250,7 +251,7 @@ complementButton model =
 
 intersectionButton : Types.Model -> Maybe (Html Types.Msg)
 intersectionButton model =
-    if Utils.firstTwoAreAFDs model.automataHistory then
+    if Utils.firstTwoAreAFDs model.itemHistory then
         Just
             (button
                 (onClick Types.DoIntersection
@@ -265,7 +266,7 @@ intersectionButton model =
 
 minimizeButton : Types.Model -> Maybe (Html Types.Msg)
 minimizeButton model =
-    case model.currentAutomaton of
+    case model.currentItem of
         Ok (Models.Automaton (Automata.FiniteDeterministic _)) ->
             button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
                 [ text "Minimizar AFD" ]
@@ -277,13 +278,25 @@ minimizeButton model =
 
 grToAfdButton : Types.Model -> Maybe (Html Types.Msg)
 grToAfdButton model =
-    case model.currentAutomaton of
+    case model.currentItem of
         Ok (Models.Grammar grammar) ->
             button
                 (onClick Types.ConvertGRToAFND
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Converter para AFND" ]
+                |> Just
+
+        otherwise ->
+            Nothing
+
+
+afdToGrButton : Types.Model -> Maybe (Html Types.Msg)
+afdToGrButton model =
+    case model.currentItem of
+        Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+            button (onClick Types.ConvertAFDToGR :: Styles.rightPanelButtonStyles)
+                [ text "Converter para GR" ]
                 |> Just
 
         otherwise ->

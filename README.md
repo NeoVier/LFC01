@@ -26,7 +26,7 @@ Student: Henrique da Cunha Buss
     - [x] Filter reachable states
     - [x] Filter alive states
     - [ ] Apply classes algorithm
-  - [ ] Convert AFD to GR
+  - [x] Convert AFD to GR
 - [x] GR
   - [x] Display GR
   - [x] Parse GR
@@ -53,7 +53,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
   1. [ ] Reading, writing and editing AF, GR and ER
   2. [x] Converting AFND (with and without epsilon) to AFD
-  3. [ ] Converting AFD to GR and GR to AFND
+  3. [x] Converting AFD to GR and GR to AFND
   4. [x] Recognizing sentences in AF
   5. [ ] Minimizing AFD
   6. [x] AFD union and intersection

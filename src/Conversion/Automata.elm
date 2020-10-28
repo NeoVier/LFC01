@@ -6,17 +6,19 @@
 -}
 
 
-module Conversion.Automata exposing (afndToAfd)
+module Conversion.Automata exposing (afdToGr, afndToAfd)
 
 import Conversion.Alphabet as CAlphabet
 import Conversion.Transition as CTransition
 import Models.Automata as Automata
+import Models.Grammars as Grammars
 import Models.State as State
 import Models.Transition as Transition
 import Utils.Utils as Utils exposing (stateToListOfStates)
 
 
 
+-- AFND to AFD
 -- Converts an AFND to AFD
 
 
@@ -80,3 +82,85 @@ afndToAfd afnd =
     , alphabet = CAlphabet.nonDeterministicToDeterministic afnd.alphabet
     , transitions = newTransitions
     }
+
+
+
+-- AFD TO GR
+
+
+afdToGr : Automata.AFD -> Grammars.Grammar
+afdToGr afd =
+    let
+        nonTerminals =
+            List.map stateToSymbol afd.states
+                |> Utils.listOfMaybesToMaybeList
+                |> Maybe.withDefault []
+
+        terminals =
+            afd.alphabet
+
+        initialSymbol =
+            stateToSymbol afd.initialState
+                |> Maybe.withDefault 'S'
+    in
+    { nonTerminals = nonTerminals
+    , terminals = terminals
+    , productions =
+        List.filterMap
+            (\transition ->
+                transitionToProduction transition afd.finalStates
+            )
+            afd.transitions
+    , initialSymbol = initialSymbol
+    }
+        |> Utils.joinGrammarProductions
+
+
+stateToSymbol : State.State -> Maybe Grammars.TerminalSymbol
+stateToSymbol state =
+    case state of
+        State.Dead ->
+            Nothing
+
+        State.Valid label ->
+            String.toList label
+                |> List.head
+
+
+transitionToProduction :
+    Transition.DeterministicTransition
+    -> List State.State
+    -> Maybe Grammars.Production
+transitionToProduction transition finalStates =
+    case transition.nextState of
+        State.Dead ->
+            Nothing
+
+        State.Valid _ ->
+            let
+                toSymbol =
+                    stateToSymbol transition.nextState
+
+                isFinal =
+                    List.member transition.nextState finalStates
+
+                productions =
+                    List.concatMap
+                        (\condition ->
+                            if isFinal then
+                                [ { consumed = condition, toSymbol = toSymbol }
+                                , { consumed = condition, toSymbol = Nothing }
+                                ]
+
+                            else
+                                [ { consumed = condition, toSymbol = toSymbol } ]
+                        )
+                        transition.conditions
+            in
+            stateToSymbol transition.prevState
+                |> Maybe.map
+                    (\fromSymbol ->
+                        { fromSymbol = fromSymbol
+                        , productions = productions
+                        }
+                    )

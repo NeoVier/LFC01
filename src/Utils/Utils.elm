@@ -12,6 +12,7 @@ import Html exposing (a)
 import List exposing (concatMap, filter, foldr, map, member, sortBy, sortWith)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
+import Models.Grammars as Grammars
 import Models.Models as Models
 import Models.State as State
 import Models.Transition as Transition
@@ -686,3 +687,42 @@ maybeMaybeToMaybe x =
 
         Just y ->
             y
+
+
+
+-- Assumes all of the fromSymbols are equal
+
+
+groupGrammarProductions :
+    List Grammars.Production
+    -> Maybe Grammars.Production
+groupGrammarProductions l =
+    Maybe.map
+        (\h ->
+            { fromSymbol = h.fromSymbol
+            , productions = List.concatMap .productions l
+            }
+        )
+        (List.head l)
+
+
+productionsWithSameFromSymbol :
+    Grammars.Grammar
+    -> Grammars.NonTerminalSymbol
+    -> List Grammars.Production
+productionsWithSameFromSymbol gr symbol =
+    List.filter (\production -> production.fromSymbol == symbol) gr.productions
+
+
+joinGrammarProductions : Grammars.Grammar -> Grammars.Grammar
+joinGrammarProductions gr =
+    let
+        newProductions =
+            List.filterMap
+                (\nonTerminal ->
+                    productionsWithSameFromSymbol gr nonTerminal
+                        |> groupGrammarProductions
+                )
+                gr.nonTerminals
+    in
+    { gr | productions = newProductions }

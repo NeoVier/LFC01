@@ -59,18 +59,18 @@ update msg model =
         Types.AFDLoaded content ->
             case PAutomata.parseAFD content of
                 Nothing ->
-                    ( { model | currentAutomaton = Err "Erro ao ler o autômato" }
+                    ( { model | currentItem = Err "Erro ao ler o autômato" }
                     , Cmd.none
                     )
 
                 Just automaton ->
                     ( { model
-                        | currentAutomaton =
+                        | currentItem =
                             Ok (Models.Automaton (Automata.FiniteDeterministic automaton))
-                        , automataHistory =
+                        , itemHistory =
                             Models.Automaton
                                 (Automata.FiniteDeterministic automaton)
-                                :: model.automataHistory
+                                :: model.itemHistory
                       }
                     , Cmd.none
                     )
@@ -85,23 +85,23 @@ update msg model =
             case PAutomata.parseAFND content of
                 Nothing ->
                     ( { model
-                        | currentAutomaton = Err "Erro ao ler o autômato"
+                        | currentItem = Err "Erro ao ler o autômato"
                       }
                     , Cmd.none
                     )
 
                 Just automaton ->
                     ( { model
-                        | currentAutomaton =
+                        | currentItem =
                             Ok
                                 (Automata.FiniteNonDeterministic
                                     automaton
                                     |> Models.Automaton
                                 )
-                        , automataHistory =
+                        , itemHistory =
                             Models.Automaton
                                 (Automata.FiniteNonDeterministic automaton)
-                                :: model.automataHistory
+                                :: model.itemHistory
                       }
                     , Cmd.none
                     )
@@ -116,23 +116,23 @@ update msg model =
             case PGrammars.parseGR content of
                 Nothing ->
                     ( { model
-                        | currentAutomaton = Err "Erro ao ler a gramática"
+                        | currentItem = Err "Erro ao ler a gramática"
                       }
                     , Cmd.none
                     )
 
                 Just grammar ->
                     ( { model
-                        | currentAutomaton = Ok (Models.Grammar grammar)
-                        , automataHistory =
+                        | currentItem = Ok (Models.Grammar grammar)
+                        , itemHistory =
                             Models.Grammar grammar
-                                :: model.automataHistory
+                                :: model.itemHistory
                       }
                     , Cmd.none
                     )
 
         Types.ConvertAFNDToAFD ->
-            case model.currentAutomaton of
+            case model.currentItem of
                 Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
                     let
                         converted =
@@ -143,10 +143,10 @@ update msg model =
                                 |> Models.Automaton
                     in
                     ( { model
-                        | currentAutomaton =
+                        | currentItem =
                             Ok
                                 converted
-                        , automataHistory = converted :: model.automataHistory
+                        , itemHistory = converted :: model.itemHistory
                       }
                     , Cmd.none
                     )
@@ -155,21 +155,21 @@ update msg model =
                     ( model, Cmd.none )
 
         Types.SetCurrent general ->
-            ( { model | currentAutomaton = Ok general }
+            ( { model | currentItem = Ok general }
             , Cmd.none
             )
 
         Types.RemoveItem general ->
             let
                 newHistory =
-                    List.filter (\a -> a /= general) model.automataHistory
+                    List.filter (\a -> a /= general) model.itemHistory
             in
             ( { model
-                | automataHistory = newHistory
-                , currentAutomaton =
+                | itemHistory = newHistory
+                , currentItem =
                     case List.head newHistory of
                         Nothing ->
-                            Err "Nenhum autômato carregado"
+                            Err "Nenhum item carregado"
 
                         Just a ->
                             Ok a
@@ -181,10 +181,10 @@ update msg model =
             ( { model | currentSentence = sentence }, Cmd.none )
 
         Types.DoUnion ->
-            case Utils.getFirstTwoAsAFDs model.automataHistory of
+            case Utils.getFirstTwoAsAFDs model.itemHistory of
                 Nothing ->
                     ( { model
-                        | currentAutomaton =
+                        | currentItem =
                             Err "Erro ao fazer união"
                       }
                     , Cmd.none
@@ -198,14 +198,14 @@ update msg model =
                                 |> Models.Automaton
                     in
                     ( { model
-                        | currentAutomaton = Ok result
-                        , automataHistory = result :: model.automataHistory
+                        | currentItem = Ok result
+                        , itemHistory = result :: model.itemHistory
                       }
                     , Cmd.none
                     )
 
         Types.DoComplement ->
-            case model.currentAutomaton of
+            case model.currentItem of
                 Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
                     let
                         result =
@@ -214,8 +214,8 @@ update msg model =
                                 |> Models.Automaton
                     in
                     ( { model
-                        | currentAutomaton = Ok result
-                        , automataHistory = result :: model.automataHistory
+                        | currentItem = Ok result
+                        , itemHistory = result :: model.itemHistory
                       }
                     , Cmd.none
                     )
@@ -224,10 +224,10 @@ update msg model =
                     ( model, Cmd.none )
 
         Types.DoIntersection ->
-            case Utils.getFirstTwoAsAFDs model.automataHistory of
+            case Utils.getFirstTwoAsAFDs model.itemHistory of
                 Nothing ->
                     ( { model
-                        | currentAutomaton = Err "Erro ao fazer interseção"
+                        | currentItem = Err "Erro ao fazer interseção"
                       }
                     , Cmd.none
                     )
@@ -240,14 +240,14 @@ update msg model =
                                 |> Models.Automaton
                     in
                     ( { model
-                        | currentAutomaton = Ok result
-                        , automataHistory = result :: model.automataHistory
+                        | currentItem = Ok result
+                        , itemHistory = result :: model.itemHistory
                       }
                     , Cmd.none
                     )
 
         Types.Minimize ->
-            case model.currentAutomaton of
+            case model.currentItem of
                 Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
                     let
                         result =
@@ -256,9 +256,9 @@ update msg model =
                                 |> Models.Automaton
                     in
                     ( { model
-                        | currentAutomaton =
+                        | currentItem =
                             Ok result
-                        , automataHistory = result :: model.automataHistory
+                        , itemHistory = result :: model.itemHistory
                       }
                     , Cmd.none
                     )
@@ -267,7 +267,7 @@ update msg model =
                     ( model, Cmd.none )
 
         Types.ConvertGRToAFND ->
-            case model.currentAutomaton of
+            case model.currentItem of
                 Ok (Models.Grammar grammar) ->
                     let
                         result =
@@ -276,8 +276,26 @@ update msg model =
                                 |> Models.Automaton
                     in
                     ( { model
-                        | currentAutomaton = Ok result
-                        , automataHistory = result :: model.automataHistory
+                        | currentItem = Ok result
+                        , itemHistory = result :: model.itemHistory
+                      }
+                    , Cmd.none
+                    )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
+        Types.ConvertAFDToGR ->
+            case model.currentItem of
+                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+                    let
+                        result =
+                            CAutomata.afdToGr afd
+                                |> Models.Grammar
+                    in
+                    ( { model
+                        | currentItem = Ok result
+                        , itemHistory = result :: model.itemHistory
                       }
                     , Cmd.none
                     )

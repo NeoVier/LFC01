@@ -10,6 +10,7 @@ module Operations.Minimization exposing (minimizeAFD)
 
 import Models.Automata as Automata
 import Models.State as State
+import Models.Transition as Transition
 import Utils.Utils as Utils
 
 
@@ -46,6 +47,7 @@ minimizeAFD afd =
 
 
 
+-- REACHABLE STATES
 -- Gets directly reachable states from a state
 
 
@@ -115,6 +117,7 @@ allReachableStatesHelper afd reachable untested tested =
 
 
 
+-- ALIVE STATES
 -- Gets all the states that can reach a final state
 
 
@@ -130,6 +133,5 @@ allAliveStates afd =
 
 
 
--- [x] Filter reachable states (can be reached from starting state)
--- [x] Filter alive states (can reach a final state)
--- [ ] Do classes
+-- CLASSES
+-- TODO

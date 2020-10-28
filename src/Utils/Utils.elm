@@ -640,3 +640,35 @@ removeDuplicates =
                         rdHelper (seen ++ [ h ]) (List.drop 1 rest)
     in
     rdHelper []
+
+
+
+-- Returns the index of an element in a list
+
+
+indexOf : a -> List a -> Int
+indexOf elem xs =
+    case List.head xs of
+        Nothing ->
+            0
+
+        Just x ->
+            if x == elem then
+                0
+
+            else
+                1 + indexOf elem (List.drop 1 xs)
+
+
+
+-- Replaces an element by another element. If the original element isn't in the
+-- list, the new element is appended to the list
+
+
+replaceBy : a -> a -> List a -> List a
+replaceBy original new xs =
+    let
+        idx =
+            indexOf original xs
+    in
+    List.take idx xs ++ (new :: List.drop (idx + 1) xs)

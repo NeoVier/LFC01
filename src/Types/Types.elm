@@ -48,12 +48,14 @@ init _ =
 -- xSelected File -> a File was selected to be parsed
 -- xLoaded String -> a String was loaded from a File
 -- ConvertAFNDToAFD -> the user requested to convert the current AFND to a AFD
--- SetAutomaton Automaton -> the user requested to set the current automaton
--- RemoveAutomaton Automaton -> the user requested to remove the automaton
+-- SetCurrent Models.General -> the user requested to set the current automaton
+-- RemoveItem Models.General -> the user requested to remove the automaton
 -- SetSentence String -> the user requested to set the current sentence
 -- DoUnion -> Applies the union operation to the last two automata
 -- DoIntersection -> Applies the intersection operation to the last two automata
+-- DoComplement -> Applies the complement operation to the current AFD
 -- Minimize -> Minimize current automaton
+-- ConvertGRToAFD -> Converts current GR to an AFD
 
 
 type Msg
@@ -71,6 +73,7 @@ type Msg
     | RemoveItem Models.General
     | SetSentence String
     | DoUnion
-    | DoComplement
     | DoIntersection
+    | DoComplement
     | Minimize
+    | ConvertGRToAFND

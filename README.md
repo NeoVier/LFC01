@@ -27,12 +27,12 @@ Student: Henrique da Cunha Buss
     - [x] Filter alive states
     - [ ] Apply classes algorithm
   - [ ] Convert AFD to GR
-- [ ] GR
+- [x] GR
   - [x] Display GR
   - [x] Parse GR
   - [x] Add GR to history
   - [x] Add GR from file
-  - [ ] Convert GR to AFD
+  - [x] Convert GR to AFD
 - [ ] ER
   - [ ] Display ER
   - [ ] Parse ER

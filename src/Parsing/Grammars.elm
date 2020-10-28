@@ -86,12 +86,7 @@ parseProductionBody sentence =
     in
     case consumed of
         Nothing ->
-            case toSymbol of
-                Nothing ->
-                    Nothing
+            Nothing
 
-                otherwise ->
-                    Just { consumed = consumed, toSymbol = toSymbol }
-
-        otherwise ->
-            Just { consumed = consumed, toSymbol = toSymbol }
+        Just consumedSymbol ->
+            Just { consumed = consumedSymbol, toSymbol = toSymbol }

@@ -11,6 +11,7 @@ module Main exposing (..)
 
 import Browser
 import Conversion.Automata as CAutomata
+import Conversion.Grammars as CGrammars
 import File exposing (File)
 import File.Select as Select
 import Models.Automata as Automata
@@ -257,6 +258,25 @@ update msg model =
                     ( { model
                         | currentAutomaton =
                             Ok result
+                        , automataHistory = result :: model.automataHistory
+                      }
+                    , Cmd.none
+                    )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
+        Types.ConvertGRToAFND ->
+            case model.currentAutomaton of
+                Ok (Models.Grammar grammar) ->
+                    let
+                        result =
+                            CGrammars.grToAfd grammar
+                                |> Automata.FiniteNonDeterministic
+                                |> Models.Automaton
+                    in
+                    ( { model
+                        | currentAutomaton = Ok result
                         , automataHistory = result :: model.automataHistory
                       }
                     , Cmd.none

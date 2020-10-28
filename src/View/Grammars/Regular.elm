@@ -26,8 +26,7 @@ viewGRProductionBody : Grammars.ProductionBody -> String
 viewGRProductionBody body =
     let
         consumed =
-            Maybe.map String.fromChar body.consumed
-                |> Maybe.withDefault ""
+            String.fromChar body.consumed
 
         toSymbol =
             Maybe.map String.fromChar body.toSymbol

@@ -189,6 +189,7 @@ viewRightPanel model =
                     , minimizeButton
                     , unionButton
                     , intersectionButton
+                    , grToAfdButton
                     ]
             )
         ]
@@ -268,6 +269,21 @@ minimizeButton model =
         Ok (Models.Automaton (Automata.FiniteDeterministic _)) ->
             button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
                 [ text "Minimizar AFD" ]
+                |> Just
+
+        otherwise ->
+            Nothing
+
+
+grToAfdButton : Types.Model -> Maybe (Html Types.Msg)
+grToAfdButton model =
+    case model.currentAutomaton of
+        Ok (Models.Grammar grammar) ->
+            button
+                (onClick Types.ConvertGRToAFND
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Converter para AFND" ]
                 |> Just
 
         otherwise ->

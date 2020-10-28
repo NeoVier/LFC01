@@ -29,7 +29,7 @@ type Transition
 type alias DeterministicTransition =
     { prevState : State.State
     , nextState : State.State
-    , conditions : List Alphabet.Symbol
+    , conditions : DeterministicConditions
     }
 
 

@@ -18,7 +18,7 @@ type alias Production =
 
 
 type alias ProductionBody =
-    { consumed : Maybe TerminalSymbol
+    { consumed : TerminalSymbol
     , toSymbol : Maybe NonTerminalSymbol
     }
 

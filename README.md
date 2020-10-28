@@ -8,22 +8,37 @@ Student: Henrique da Cunha Buss
 
 ### First Submission (items 1-7, 05/11)
 
-- [x] Display AF - 22/10
-- [x] Parse AF - 22/10
-- [x] Add AF to history - 22/10
-- [x] Read AF from file - 22/10
-- [x] Display AFND
-- [x] Parse AFND
-- [x] Add AFND to history
-- [x] Convert AFND (no Epsilon) to AFD
-- [x] Convert AFND (with Epsilon) to AFD
-- [x] Recognize sentences with AFDs
-- [x] Recognize sentences with AFs
-- [x] AFD Union
-- [ ] AFD Intersection
-- [ ] Minimize AFD
-- [ ] Work on GR
-- [ ] Work on ER
+- [ ] AFs
+  - [x] Display AF
+  - [x] Parse AF
+  - [x] Add AF to history
+  - [x] Read AF from file
+  - [x] Display AFND
+  - [x] Parse AFND
+  - [x] Add AFND to history
+  - [x] Convert AFND (no Epsilon) to AFD
+  - [x] Convert AFND (with Epsilon) to AFD
+  - [x] Recognize sentences with AFDs
+  - [x] Recognize sentences with AFs
+  - [x] AFD Union
+  - [ ] AFD Intersection
+  - [ ] Minimize AFD
+    - [x] Filter reachable states
+    - [x] Filter alive states
+    - [ ] Apply classes algorithm
+  - [ ] Convert AFD to GR
+- [ ] GR
+  - [ ] Display GR
+  - [ ] Parse GR
+  - [ ] Add GR to history
+  - [ ] Add GR from file
+  - [ ] Convert GR to AFD
+- [ ] ER
+  - [ ] Display ER
+  - [ ] Parse ER
+  - [ ] Add ER to history
+  - [ ] Add ER from file
+  - [ ] Convert ER to AFD
 
 ### Second Submission (items 8-12, 02/12)
 
@@ -34,18 +49,23 @@ Student: Henrique da Cunha Buss
 Create an application, with a GUI, to manipulate Finite Automata, Regular
 Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
-1. Reading, writing and editing AF, GR and ER
-2. Converting AFND (with and without epsilon) to AFD
-3. Converting AFD to GR and GR to AFND
-4. Recognizing sentences in AF
-5. Minimizing AFD
-6. AFD union and intersection
-7. Converting ER to AFD (using syntactic tree-based algorithm)
-8. Reading, writing and editing GLC
-9. Transforming GLC to a GLC in normal Chomsky form
-10. Left-recursion elimination
-11. Factoration
-12. Recognizing sentences in AP (implementing one of the analysis tables)
+- First delivery
+
+  1. [ ] Reading, writing and editing AF, GR and ER
+  2. [x] Converting AFND (with and without epsilon) to AFD
+  3. [ ] Converting AFD to GR and GR to AFND
+  4. [x] Recognizing sentences in AF
+  5. [ ] Minimizing AFD
+  6. [ ] AFD union and intersection
+  7. [ ] Converting ER to AFD (using syntactic tree-based algorithm)
+
+- Second delivery
+
+  1. [ ] Reading, writing and editing GLC
+  2. [ ] Transforming GLC to a GLC in normal Chomsky form
+  3. [ ] Left-recursion elimination
+  4. [ ] Factoration
+  5. [ ] Recognizing sentences in AP (implementing one of the analysis tables)
 
 ### Notes
 

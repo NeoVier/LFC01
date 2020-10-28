@@ -1,3 +1,12 @@
+{-
+   Main.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains the main and update functions, and is the entrypoint
+   of the application
+-}
+
+
 module Main exposing (..)
 
 import Browser
@@ -14,6 +23,8 @@ import View.View as View
 
 
 -- MAIN
+-- The program entrypoint, which defines the browser element according to The
+-- Elm Architecture
 
 
 main : Program () Types.Model Types.Msg
@@ -28,6 +39,7 @@ main =
 
 
 -- UPDATE
+-- The main update function, which gets called whenever a Types.Msg is fired
 
 
 update : Types.Msg -> Types.Model -> ( Types.Model, Cmd Types.Msg )
@@ -120,6 +132,7 @@ update msg model =
 
 
 -- SUBSCRIPTIONS
+-- We don't need any subscriptions for this application
 
 
 subscriptions : Types.Model -> Sub Types.Msg

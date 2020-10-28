@@ -1,3 +1,11 @@
+{-
+   Conversion/Grammars.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to convert Grammars
+-}
+
+
 module Conversion.Grammars exposing (grToAfd)
 
 import Models.Alphabet as Alphabet

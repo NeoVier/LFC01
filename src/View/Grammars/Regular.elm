@@ -1,3 +1,11 @@
+{-
+   View/Grammars/Regular.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to view Regular Grammars
+-}
+
+
 module View.Grammars.Regular exposing (viewGR)
 
 import Html exposing (..)

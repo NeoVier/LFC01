@@ -1,3 +1,11 @@
+{-
+   Parsing/Grammars.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to parse Grammars
+-}
+
+
 module Parsing.Grammars exposing (parseGR)
 
 import Models.Grammars as Grammars

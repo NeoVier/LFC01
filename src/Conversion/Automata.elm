@@ -86,6 +86,7 @@ afndToAfd afnd =
 
 
 -- AFD TO GR
+-- Converts and AFD to a GR
 
 
 afdToGr : Automata.AFD -> Grammars.Grammar
@@ -116,6 +117,10 @@ afdToGr afd =
         |> Utils.joinGrammarProductions
 
 
+
+-- Convert a State to a Maybe Symbol
+
+
 stateToSymbol : State.State -> Maybe Grammars.TerminalSymbol
 stateToSymbol state =
     case state of
@@ -125,6 +130,10 @@ stateToSymbol state =
         State.Valid label ->
             String.toList label
                 |> List.head
+
+
+
+-- Converts a Transition into a Maybe Grammars.Production
 
 
 transitionToProduction :

@@ -587,6 +587,10 @@ firstTwoAreAFDs =
     isJust << getFirstTwoAsAFDs
 
 
+
+-- Gets the first two automata of the list as AFDs
+
+
 getFirstTwoAsAFDs : List Automata.Automaton -> Maybe ( Automata.AFD, Automata.AFD )
 getFirstTwoAsAFDs automata =
     case List.head automata of
@@ -602,6 +606,10 @@ getFirstTwoAsAFDs automata =
             Nothing
 
 
+
+-- Converts a Maybe a to Bool
+
+
 isJust : Maybe a -> Bool
 isJust x =
     case x of
@@ -610,3 +618,25 @@ isJust x =
 
         Nothing ->
             False
+
+
+
+-- Removes duplicates from list
+
+
+removeDuplicates : List a -> List a
+removeDuplicates =
+    let
+        rdHelper seen rest =
+            case List.head rest of
+                Nothing ->
+                    seen
+
+                Just h ->
+                    if List.member h seen then
+                        rdHelper seen (List.drop 1 rest)
+
+                    else
+                        rdHelper (seen ++ [ h ]) (List.drop 1 rest)
+    in
+    rdHelper []

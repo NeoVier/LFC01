@@ -161,6 +161,7 @@ viewRightPanel model =
              ]
                 ++ [ convertButton model ]
                 ++ operationsButtons model
+                ++ [ minimizeButton model ]
             )
         ]
 
@@ -190,3 +191,14 @@ operationsButtons model =
 
     else
         [ text "" ]
+
+
+minimizeButton : Types.Model -> Html Types.Msg
+minimizeButton model =
+    case model.currentAutomaton of
+        Ok (Automata.FiniteDeterministic _) ->
+            button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
+                [ text "Minimizar AFD" ]
+
+        otherwise ->
+            text ""

@@ -69,6 +69,9 @@ type Msg
     | GRRequested
     | GRSelected File
     | GRLoaded String
+    | RegexRequested
+    | RegexSelected File
+    | RegexLoaded String
     | ConvertAFNDToAFD
     | SetCurrent Models.General
     | RemoveItem Models.General

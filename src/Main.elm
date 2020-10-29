@@ -20,6 +20,7 @@ import Operations.Basics as BasicOperations
 import Operations.Minimization as Minimization
 import Parsing.Automata as PAutomata
 import Parsing.Grammars as PGrammars
+import Parsing.Regex as PRegex
 import Task
 import Types.Types as Types
 import Utils.Utils as Utils
@@ -127,6 +128,29 @@ update msg model =
                         , itemHistory =
                             Models.Grammar grammar
                                 :: model.itemHistory
+                      }
+                    , Cmd.none
+                    )
+
+        Types.RegexRequested ->
+            ( model, Select.file [ "text/txt" ] Types.RegexSelected )
+
+        Types.RegexSelected file ->
+            ( model, Task.perform Types.RegexLoaded (File.toString file) )
+
+        Types.RegexLoaded content ->
+            case PRegex.regexFile content of
+                Err _ ->
+                    ( { model
+                        | currentItem = Err "Erro ao ler a expressão regular"
+                      }
+                    , Cmd.none
+                    )
+
+                Ok idRegexes ->
+                    ( { model
+                        | currentItem = Ok (Models.Regex idRegexes)
+                        , itemHistory = Models.Regex idRegexes :: model.itemHistory
                       }
                     , Cmd.none
                     )

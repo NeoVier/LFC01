@@ -10,7 +10,6 @@ module View.Automata exposing (..)
 
 import Html exposing (..)
 import Models.Automata as Automata
-import Types.Types as Types
 import View.Automata.Deterministic as VAFD
 import View.Automata.NonDeterministic as VAFND
 

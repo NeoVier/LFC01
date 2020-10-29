@@ -32,10 +32,10 @@ Student: Henrique da Cunha Buss
   - [x] Parse GR
   - [x] Add GR to history
   - [x] Add GR from file
-  - [x] Convert GR to AFD
+  - [x] Convert GR to AFND
 - [ ] ER
   - [ ] Display ER
-  - [ ] Parse ER
+  - [x] Parse ER
   - [ ] Add ER to history
   - [ ] Add ER from file
   - [ ] Convert ER to AFD

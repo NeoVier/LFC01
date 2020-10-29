@@ -51,7 +51,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
 - First delivery
 
-  1. [ ] Reading, writing and editing AF, GR and ER
+  1. [x] Reading, writing and editing AF, GR and ER
   2. [x] Converting AFND (with and without epsilon) to AFD
   3. [x] Converting AFD to GR and GR to AFND
   4. [x] Recognizing sentences in AF

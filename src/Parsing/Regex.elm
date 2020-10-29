@@ -1,6 +1,3 @@
--- module Parsing.Regex exposing (empty, parseRegex)
-
-
 module Parsing.Regex exposing (regexFile)
 
 import Models.Alphabet as Alphabet

@@ -7,16 +7,6 @@ import Result.Extra as ResultE
 import Utils.Utils as Utils
 
 
-resultToString : Result err Regex -> String
-resultToString result =
-    case result of
-        Err _ ->
-            ""
-
-        Ok r ->
-            Regex.toString r
-
-
 
 -- GENERAL
 

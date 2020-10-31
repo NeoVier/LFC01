@@ -1,8 +1,12 @@
-module Conversion.Regex exposing (..)
+module Conversion.Regex exposing (erToAfd)
 
 import Dict exposing (Dict)
 import Models.Alphabet as Alphabet
+import Models.Automata as Automata
 import Models.Regex as Regex exposing (Regex(..))
+import Models.State as State
+import Models.Transition as Transition
+import Utils.Utils as Utils
 
 
 
@@ -104,7 +108,11 @@ treeInfoDict r =
     nullableDict r Dict.empty
         |> firstPosDict r
         |> lastPosDict r
-        |> getFollowPos r
+        |> followPosDict r
+
+
+
+-- |> cleanTreeInfoDict
 
 
 emptyTreeInfo : TreeInfo
@@ -115,6 +123,195 @@ emptyTreeInfo =
     , followPos = Nothing
     , nodeSymbol = Nothing
     }
+
+
+cleanTreeInfoDict : TreeInfoDict -> TreeInfoDict
+cleanTreeInfoDict infoTree =
+    Dict.filter (\_ v -> v.nodeSymbol /= Nothing) infoTree
+        |> Dict.toList
+        |> List.map (\( k, v ) -> v)
+        |> (\x ->
+                List.map2 (\idx v -> ( idx, v ))
+                    (List.range 1 (List.length x))
+                    x
+           )
+        |> Dict.fromList
+
+
+
+-------
+-- Get root node
+--
+-- Get its firstPos
+--
+-- For each item in the firstPos:
+--      Get what each component's nodeSymbol is
+--
+--
+-- If first pos = [1, 2, 3]
+--    and treeInfoDict[1].nodeSymbol = treeInfoDict[3].nodeSymbol = a
+--
+-- To transition from [1,2,3] through a,
+--    go to state treeInfoDict[1].followPos ++ treeInfoDict[3].followPos
+--    (e.g. [1,2,3,4])
+-- To transition from [1,2,3] through b,
+--    go to state treeInfoDict[3].followPos (e.g. [1,2,3])
+--
+-- Now do the same with the new states added ([1,2,3,4])
+--
+--
+-- Every state that contains the root node's finalPos is an accepting state
+-------
+
+
+erToAfd : Regex -> Automata.AFD
+erToAfd r =
+    let
+        startingAfd =
+            { states = []
+            , initialState = State.Dead
+            , finalStates = []
+            , alphabet = []
+            , transitions = []
+            }
+
+        dirtyInfoDict =
+            treeInfoDict r
+
+        rootNodeInfo =
+            Dict.values dirtyInfoDict
+                |> Utils.last
+    in
+    case rootNodeInfo of
+        -- Impossible
+        Nothing ->
+            startingAfd
+
+        Just info ->
+            let
+                startingState =
+                    List.map String.fromInt info.firstPos
+                        |> String.join ""
+                        |> State.Valid
+            in
+            erToAfdHelp (cleanTreeInfoDict dirtyInfoDict)
+                [ info.firstPos ]
+                []
+                { startingAfd | initialState = startingState }
+
+
+erToAfdHelp :
+    TreeInfoDict
+    -> List (List Int)
+    -> List (List Int)
+    -> Automata.AFD
+    -> Automata.AFD
+erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
+    case List.head statesToCreate of
+        Nothing ->
+            partialAfd
+
+        Just newStateComponents ->
+            let
+                symbolGroups =
+                    getSymbolGroups treeInfo newStateComponents
+
+                createState components =
+                    List.map String.fromInt components
+                        |> String.join ""
+                        |> State.Valid
+
+                newState =
+                    createState newStateComponents
+
+                isFinal =
+                    Dict.keys symbolGroups
+                        |> List.member '#'
+
+                newStatesComponents =
+                    Dict.values symbolGroups
+
+                newTransitions =
+                    Dict.toList symbolGroups
+                        |> List.filterMap
+                            (\( s, v ) ->
+                                if s == '#' then
+                                    Nothing
+
+                                else
+                                    Just
+                                        { prevState = newState
+                                        , nextState = createState v
+                                        , conditions = [ s ]
+                                        }
+                            )
+            in
+            if
+                List.member newStateComponents seenStates
+                    || List.isEmpty newStateComponents
+            then
+                erToAfdHelp treeInfo
+                    (List.drop 1 statesToCreate)
+                    seenStates
+                    partialAfd
+
+            else
+                erToAfdHelp treeInfo
+                    (List.drop 1 statesToCreate ++ newStatesComponents)
+                    (newStateComponents :: seenStates)
+                    { partialAfd
+                        | states = partialAfd.states ++ [ newState ]
+                        , finalStates =
+                            if isFinal then
+                                partialAfd.finalStates ++ [ newState ]
+
+                            else
+                                partialAfd.finalStates
+                        , alphabet =
+                            partialAfd.alphabet
+                                ++ List.filter
+                                    (\s ->
+                                        not (List.member s partialAfd.alphabet)
+                                            && s
+                                            /= '#'
+                                    )
+                                    (Dict.keys symbolGroups)
+                        , transitions = partialAfd.transitions ++ newTransitions
+                    }
+
+
+getSymbolGroups : TreeInfoDict -> List Int -> Dict Alphabet.Symbol (List Int)
+getSymbolGroups treeInfo indexes =
+    List.foldl
+        (\index acc ->
+            case Dict.get index treeInfo of
+                Nothing ->
+                    acc
+
+                Just info ->
+                    case info.nodeSymbol of
+                        Nothing ->
+                            acc
+
+                        Just symbol ->
+                            case info.followPos of
+                                Nothing ->
+                                    acc
+
+                                Just fp ->
+                                    Dict.update symbol
+                                        (\dictValue ->
+                                            case dictValue of
+                                                Nothing ->
+                                                    Just fp
+
+                                                Just v ->
+                                                    Just <| v ++ fp
+                                        )
+                                        acc
+        )
+        Dict.empty
+        indexes
 
 
 nullableDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -282,8 +479,8 @@ lastPosDict r d =
                     update v d
 
 
-getFollowPos : Regex -> TreeInfoDict -> TreeInfoDict
-getFollowPos r d =
+followPosDict : Regex -> TreeInfoDict -> TreeInfoDict
+followPosDict r d =
     let
         idx dict =
             Dict.filter (\_ v -> v.followPos == Nothing) dict
@@ -295,12 +492,19 @@ getFollowPos r d =
             Dict.update (idx dict)
                 (Maybe.map (\info -> { info | followPos = v }))
                 dict
+
+        findSymbolIndex s dict =
+            Dict.filter (\_ v -> v.firstPos == [ s ] && v.nodeSymbol /= Nothing)
+                dict
+                |> Dict.keys
+                |> List.head
+                |> Maybe.withDefault 0
     in
     case r of
         Star c1 ->
             let
                 c1Result =
-                    getFollowPos c1 d
+                    followPosDict c1 d
 
                 updateFollowPos info newFollowPos =
                     { info
@@ -321,7 +525,7 @@ getFollowPos r d =
                 Just treeInfo ->
                     List.foldl
                         (\lp acc ->
-                            Dict.update lp
+                            Dict.update (findSymbolIndex lp acc)
                                 (Maybe.map
                                     (\info ->
                                         updateFollowPos info treeInfo.firstPos
@@ -336,13 +540,13 @@ getFollowPos r d =
         Concat c1 c2 ->
             let
                 c1Result =
-                    getFollowPos c1 d
+                    followPosDict c1 d
 
                 c1Index =
                     idx c1Result - 1
 
                 c2Result =
-                    getFollowPos c2 c1Result
+                    followPosDict c2 c1Result
 
                 c2Index =
                     idx c2Result - 1
@@ -372,7 +576,7 @@ getFollowPos r d =
                         Just c2Value ->
                             List.foldl
                                 (\lp acc ->
-                                    Dict.update lp
+                                    Dict.update (findSymbolIndex lp acc)
                                         (Maybe.map
                                             (\info ->
                                                 updateFollowPos info
@@ -388,18 +592,18 @@ getFollowPos r d =
         Union c1 c2 ->
             let
                 c1Result =
-                    getFollowPos c1 d
+                    followPosDict c1 d
 
                 c2Result =
-                    getFollowPos c2 c1Result
+                    followPosDict c2 c1Result
             in
             update (Just []) c2Result
 
         Plus c1 ->
-            update (Just []) (getFollowPos c1 d)
+            update (Just []) (followPosDict c1 d)
 
         Question c1 ->
-            update (Just []) (getFollowPos c1 d)
+            update (Just []) (followPosDict c1 d)
 
         _ ->
             update (Just []) d
@@ -614,3 +818,13 @@ testUnion =
 testStar : Regex
 testStar =
     Star testUnion
+
+
+testConcat : Regex
+testConcat =
+    Concat testStar (Symbol 'a')
+
+
+testConcat2 : Regex
+testConcat2 =
+    Concat testConcat (Symbol 'b')

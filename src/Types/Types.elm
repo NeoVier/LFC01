@@ -82,3 +82,4 @@ type Msg
     | Minimize
     | ConvertGRToAFND
     | ConvertAFDToGR
+    | ConvertERToAFD

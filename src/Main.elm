@@ -12,6 +12,7 @@ module Main exposing (..)
 import Browser
 import Conversion.Automata as CAutomata
 import Conversion.Grammars as CGrammars
+import Conversion.Regex as CRegex
 import File exposing (File)
 import File.Select as Select
 import Models.Automata as Automata
@@ -175,7 +176,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         Types.SetCurrent general ->
@@ -244,7 +245,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         Types.DoIntersection ->
@@ -287,7 +288,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         Types.ConvertGRToAFND ->
@@ -306,7 +307,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         Types.ConvertAFDToGR ->
@@ -324,7 +325,35 @@ update msg model =
                     , Cmd.none
                     )
 
-                otherwise ->
+                _ ->
+                    ( model, Cmd.none )
+
+        Types.ConvertERToAFD ->
+            case model.currentItem of
+                Ok (Models.Regex regexes) ->
+                    let
+                        results =
+                            List.map
+                                (\( id, regex ) ->
+                                    CRegex.erToAfd regex
+                                        |> Automata.FiniteDeterministic
+                                        |> Models.Automaton
+                                )
+                                regexes
+                    in
+                    case List.head results of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just afd ->
+                            ( { model
+                                | currentItem = Ok afd
+                                , itemHistory = results ++ model.itemHistory
+                              }
+                            , Cmd.none
+                            )
+
+                _ ->
                     ( model, Cmd.none )
 
 

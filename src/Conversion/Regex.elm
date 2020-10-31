@@ -167,6 +167,9 @@ cleanTreeInfoDict infoTree =
 erToAfd : Regex -> Automata.AFD
 erToAfd r =
     let
+        newR =
+            Concat r (Symbol '#')
+
         startingAfd =
             { states = []
             , initialState = State.Dead
@@ -176,7 +179,7 @@ erToAfd r =
             }
 
         dirtyInfoDict =
-            treeInfoDict r
+            treeInfoDict newR
 
         rootNodeInfo =
             Dict.values dirtyInfoDict
@@ -599,6 +602,7 @@ followPosDict r d =
             in
             update (Just []) c2Result
 
+        -- TODO - How??
         Plus c1 ->
             update (Just []) (followPosDict c1 d)
 
@@ -777,54 +781,3 @@ getLeafCount r =
 
         Group c1 ->
             1
-
-
-testTree : Regex
-testTree =
-    Concat
-        (Concat
-            (Concat
-                (Concat
-                    (Star
-                        (Union
-                            (Symbol 'a')
-                            (Symbol 'b')
-                        )
-                    )
-                    (Symbol 'a')
-                )
-                (Symbol 'b')
-            )
-            (Symbol 'b')
-        )
-        (Symbol '#')
-
-
-testA : Regex
-testA =
-    Symbol 'a'
-
-
-testB : Regex
-testB =
-    Symbol 'b'
-
-
-testUnion : Regex
-testUnion =
-    Union testA testB
-
-
-testStar : Regex
-testStar =
-    Star testUnion
-
-
-testConcat : Regex
-testConcat =
-    Concat testStar (Symbol 'a')
-
-
-testConcat2 : Regex
-testConcat2 =
-    Concat testConcat (Symbol 'b')

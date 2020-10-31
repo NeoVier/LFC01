@@ -176,7 +176,7 @@ viewSentenceInput model =
                         h3 Styles.invalidSentenceStyles [ text msg ]
                 ]
 
-        otherwise ->
+        _ ->
             text ""
 
 
@@ -204,6 +204,7 @@ viewRightPanel model =
                     , intersectionButton
                     , grToAfdButton
                     , afdToGrButton
+                    , erToAfdButton
                     ]
             )
         ]
@@ -236,7 +237,7 @@ convertButton model =
                 [ text "Converter AFND para AFD" ]
                 |> Just
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -264,7 +265,7 @@ complementButton model =
                     [ text "Fazer complemento" ]
                 )
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -291,7 +292,7 @@ minimizeButton model =
                 [ text "Minimizar AFD" ]
                 |> Just
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -306,7 +307,7 @@ grToAfdButton model =
                 [ text "Converter para AFND" ]
                 |> Just
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -318,5 +319,17 @@ afdToGrButton model =
                 [ text "Converter para GR" ]
                 |> Just
 
-        otherwise ->
+        _ ->
+            Nothing
+
+
+erToAfdButton : Types.Model -> Maybe (Html Types.Msg)
+erToAfdButton model =
+    case model.currentItem of
+        Ok (Models.Regex _) ->
+            button (onClick Types.ConvertERToAFD :: Styles.rightPanelButtonStyles)
+                [ text "Converter para AFD" ]
+                |> Just
+
+        _ ->
             Nothing

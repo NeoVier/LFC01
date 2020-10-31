@@ -52,106 +52,23 @@ main =
 update : Types.Msg -> Types.Model -> ( Types.Model, Cmd Types.Msg )
 update msg model =
     case msg of
-        Types.AFDRequested ->
-            ( model, Select.file [ "text/txt" ] Types.AFDSelected )
+        Types.FileRequested f ->
+            ( model, Select.file [ "text/txt" ] (Types.FileSelected f) )
 
-        Types.AFDSelected file ->
-            ( model, Task.perform Types.AFDLoaded (File.toString file) )
+        Types.FileSelected f file ->
+            ( model, Task.perform (Types.FileLoaded f) (File.toString file) )
 
-        Types.AFDLoaded content ->
-            case PAutomata.parseAFD content of
+        Types.FileLoaded f content ->
+            case f content of
                 Nothing ->
-                    ( { model | currentItem = Err "Erro ao ler o autômato" }
+                    ( { model | currentItem = Err "Erro ao ler arquivo" }
                     , Cmd.none
                     )
 
-                Just automaton ->
+                Just item ->
                     ( { model
-                        | currentItem =
-                            Ok (Models.Automaton (Automata.FiniteDeterministic automaton))
-                        , itemHistory =
-                            Models.Automaton
-                                (Automata.FiniteDeterministic automaton)
-                                :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-        Types.AFNDRequested ->
-            ( model, Select.file [ "text/txt" ] Types.AFNDSelected )
-
-        Types.AFNDSelected file ->
-            ( model, Task.perform Types.AFNDLoaded (File.toString file) )
-
-        Types.AFNDLoaded content ->
-            case PAutomata.parseAFND content of
-                Nothing ->
-                    ( { model
-                        | currentItem = Err "Erro ao ler o autômato"
-                      }
-                    , Cmd.none
-                    )
-
-                Just automaton ->
-                    ( { model
-                        | currentItem =
-                            Ok
-                                (Automata.FiniteNonDeterministic
-                                    automaton
-                                    |> Models.Automaton
-                                )
-                        , itemHistory =
-                            Models.Automaton
-                                (Automata.FiniteNonDeterministic automaton)
-                                :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-        Types.GRRequested ->
-            ( model, Select.file [ "text/txt" ] Types.GRSelected )
-
-        Types.GRSelected file ->
-            ( model, Task.perform Types.GRLoaded (File.toString file) )
-
-        Types.GRLoaded content ->
-            case PGrammars.parseGR content of
-                Nothing ->
-                    ( { model
-                        | currentItem = Err "Erro ao ler a gramática"
-                      }
-                    , Cmd.none
-                    )
-
-                Just grammar ->
-                    ( { model
-                        | currentItem = Ok (Models.Grammar grammar)
-                        , itemHistory =
-                            Models.Grammar grammar
-                                :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-        Types.RegexRequested ->
-            ( model, Select.file [ "text/txt" ] Types.RegexSelected )
-
-        Types.RegexSelected file ->
-            ( model, Task.perform Types.RegexLoaded (File.toString file) )
-
-        Types.RegexLoaded content ->
-            case PRegex.parseRegex content of
-                Nothing ->
-                    ( { model
-                        | currentItem = Err "Erro ao ler a expressão regular"
-                      }
-                    , Cmd.none
-                    )
-
-                Just idRegexes ->
-                    ( { model
-                        | currentItem = Ok (Models.Regex idRegexes)
-                        , itemHistory = Models.Regex idRegexes :: model.itemHistory
+                        | currentItem = Ok item
+                        , itemHistory = item :: model.itemHistory
                       }
                     , Cmd.none
                     )

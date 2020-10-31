@@ -48,18 +48,9 @@ init _ =
 
 
 type Msg
-    = AFDRequested
-    | AFDSelected File
-    | AFDLoaded String
-    | AFNDRequested
-    | AFNDSelected File
-    | AFNDLoaded String
-    | GRRequested
-    | GRSelected File
-    | GRLoaded String
-    | RegexRequested
-    | RegexSelected File
-    | RegexLoaded String
+    = FileRequested (String -> Maybe Models.General)
+    | FileSelected (String -> Maybe Models.General) File
+    | FileLoaded (String -> Maybe Models.General) String
     | ConvertAFNDToAFD
     | SetCurrent Models.General
     | RemoveItem Models.General

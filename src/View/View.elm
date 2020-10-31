@@ -14,6 +14,9 @@ import Html.Events exposing (..)
 import Models.Automata as Automata
 import Models.Models as Models
 import Operations.SentenceValidation as Validation
+import Parsing.Automata as PAutomata
+import Parsing.Grammars as PGrammars
+import Parsing.Regex as PRegex
 import Types.Types as Types
 import Utils.Utils as Utils
 import View.Automata as VAutomata
@@ -191,11 +194,32 @@ viewRightPanel model =
             [ text "Controles" ]
         , div
             Styles.rightPanelControlContainerStyles
-            (loadButton "autômato finito determinístico" Types.AFDRequested
+            (loadButton "autômato finito determinístico"
+                (Types.FileRequested
+                    (PAutomata.parseAFD
+                        >> Maybe.map Automata.FiniteDeterministic
+                        >> Maybe.map Models.Automaton
+                    )
+                )
                 :: loadButton "autômato finito não-determinístico"
-                    Types.AFNDRequested
-                :: loadButton "gramática regular" Types.GRRequested
-                :: loadButton "expressão regular" Types.RegexRequested
+                    (Types.FileRequested
+                        (PAutomata.parseAFND
+                            >> Maybe.map Automata.FiniteNonDeterministic
+                            >> Maybe.map Models.Automaton
+                        )
+                    )
+                :: loadButton "gramática regular"
+                    (Types.FileRequested
+                        (PGrammars.parseGR
+                            >> Maybe.map Models.Grammar
+                        )
+                    )
+                :: loadButton "expressão regular"
+                    (Types.FileRequested
+                        (PRegex.parseRegex
+                            >> Maybe.map Models.Regex
+                        )
+                    )
                 :: List.map (\f -> f model |> maybeHtmlToHtml)
                     [ convertButton
                     , complementButton

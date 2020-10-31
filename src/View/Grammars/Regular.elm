@@ -15,9 +15,16 @@ import View.Styles as Styles
 
 viewGR : Grammars.Grammar -> Html msg
 viewGR gr =
+    let
+        initialProductions =
+            List.filter (\p -> p.fromSymbol == gr.initialSymbol) gr.productions
+
+        finalProductions =
+            List.filter (\p -> p.fromSymbol /= gr.initialSymbol) gr.productions
+    in
     List.map
         (\production -> h3 [] [ text (viewGRProduction production) ])
-        gr.productions
+        (initialProductions ++ finalProductions)
         |> div Styles.grammarContainerStyles
 
 
@@ -37,7 +44,7 @@ viewGRProductionBody body =
             String.fromChar body.consumed
 
         toSymbol =
-            body.toSymbol
+            Maybe.map (\s -> " [ " ++ s ++ " ] ") body.toSymbol
                 |> Maybe.withDefault ""
     in
     consumed ++ toSymbol

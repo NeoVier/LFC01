@@ -9,270 +9,277 @@
 module Parsing.Automata exposing (parseAFD, parseAFND)
 
 import Array
+import Html exposing (a)
 import Models.Alphabet as Alphabet
-import Models.Automata as Automata
+import Models.Automata as Automata exposing (AFD, AFND, Automaton)
 import Models.State as State
 import Models.Transition as Transition
+import Parser as P exposing ((|.), (|=), Parser)
+import Parsing.Common as PC
+import Result.Extra as ResultE
 import Utils.Utils as Utils
 
 
+parseAFD : String -> Maybe AFD
+parseAFD content =
+    let
+        lines =
+            String.lines content
 
--- Helper function to get a state
+        stateAmountLine =
+            Utils.elementAt 0 lines
+                |> Maybe.withDefault ""
+
+        rStates =
+            P.run stateAmount stateAmountLine
+
+        initialStateLine =
+            Utils.elementAt 1 lines
+                |> Maybe.withDefault ""
+
+        rInitialState =
+            P.run state initialStateLine
+
+        finalStatesLine =
+            Utils.elementAt 2 lines
+                |> Maybe.withDefault ""
+
+        rFinalStates =
+            P.run stateList finalStatesLine
+
+        alphabetLine =
+            Utils.elementAt 3 lines
+                |> Maybe.withDefault ""
+
+        rAlphabet =
+            P.run alphabetDeterministic alphabetLine
+
+        transitionsLines =
+            List.drop 4 lines
+
+        rTransitions =
+            List.map (P.run transitionDeterministic) transitionsLines
+                |> ResultE.combine
+    in
+    Result.map5
+        (\s iS fS a t ->
+            { states = s
+            , initialState = iS
+            , finalStates = fS
+            , alphabet = a
+            , transitions = t
+            }
+        )
+        rStates
+        rInitialState
+        rFinalStates
+        rAlphabet
+        rTransitions
+        |> Result.toMaybe
 
 
-getStateWithMaybes :
-    Maybe String
-    -> Maybe (List State.State)
-    -> Maybe State.State
-getStateWithMaybes strIndex states =
-    Maybe.andThen String.toInt strIndex
-        |> Maybe.andThen
-            (\x ->
-                Maybe.andThen (Utils.elementAt x) states
+parseAFND : String -> Maybe AFND
+parseAFND content =
+    let
+        lines =
+            String.lines content
+
+        stateAmountLine =
+            Utils.elementAt 0 lines
+                |> Maybe.withDefault ""
+
+        rStates =
+            P.run stateAmount stateAmountLine
+
+        initialStateLine =
+            Utils.elementAt 1 lines
+                |> Maybe.withDefault ""
+
+        rInitialState =
+            P.run state initialStateLine
+
+        finalStatesLine =
+            Utils.elementAt 2 lines
+                |> Maybe.withDefault ""
+
+        rFinalStates =
+            P.run stateList finalStatesLine
+
+        alphabetLine =
+            Utils.elementAt 3 lines
+                |> Maybe.withDefault ""
+
+        rAlphabet =
+            P.run alphabetNonDeterministic alphabetLine
+
+        transitionsLines =
+            List.drop 4 lines
+
+        rTransitions =
+            List.map (P.run transitionNonDeterministic) transitionsLines
+                |> ResultE.combine
+    in
+    Result.map5
+        (\s iS fS a t ->
+            { states = s
+            , initialState = iS
+            , finalStates = fS
+            , alphabet = a
+            , transitions = t
+            }
+        )
+        rStates
+        rInitialState
+        rFinalStates
+        rAlphabet
+        rTransitions
+        |> Result.toMaybe
+
+
+stateAmount : Parser (List State.State)
+stateAmount =
+    P.int |> P.map generateStates
+
+
+state : Parser State.State
+state =
+    P.int |> P.map intToState
+
+
+stateList : Parser (List State.State)
+stateList =
+    P.sequence
+        { start = ""
+        , separator = ","
+        , end = ""
+        , spaces = P.spaces
+        , item = state
+        , trailing = P.Forbidden
+        }
+
+
+alphabetDeterministic : Parser Alphabet.DeterministicAlphabet
+alphabetDeterministic =
+    P.sequence
+        { start = ""
+        , separator = ","
+        , end = ""
+        , spaces = P.spaces
+        , item = PC.alphabetSymbol
+        , trailing = P.Forbidden
+        }
+
+
+alphabetNonDeterministic : Parser Alphabet.NonDeterministicAlphabet
+alphabetNonDeterministic =
+    P.oneOf
+        [ P.sequence
+            { start = ""
+            , separator = ","
+            , end = ""
+            , spaces = P.spaces
+            , item =
+                P.oneOf
+                    [ PC.alphabetSymbol
+                    , epsilon
+                    ]
+            , trailing = P.Forbidden
+            }
+            |> P.map
+                (\x ->
+                    Alphabet.NDA x Alphabet.Epsilon
+                )
+        ]
+
+
+epsilon : Parser Char
+epsilon =
+    P.getChompedString (P.chompIf (\c -> c == '&'))
+        |> P.andThen PC.createChar
+
+
+transitionDeterministic : Parser Transition.DeterministicTransition
+transitionDeterministic =
+    P.succeed
+        (\p cs n ->
+            { prevState = p
+            , nextState = n
+            , conditions = [ cs ]
+            }
+        )
+        |= state
+        |. P.spaces
+        |. P.symbol ","
+        |. P.spaces
+        |= PC.alphabetSymbol
+        |. P.spaces
+        |. P.symbol ","
+        |. P.spaces
+        |= state
+
+
+transitionNonDeterministic : Parser Transition.NonDeterministicTransition
+transitionNonDeterministic =
+    P.oneOf
+        [ P.backtrackable <|
+            P.succeed
+                (\p cs n ->
+                    { prevState = p
+                    , nextStates = n
+                    , conditions = Transition.NoEpsilon [ cs ]
+                    }
+                )
+                |= state
+                |. P.spaces
+                |. P.symbol ","
+                |. P.spaces
+                |= PC.alphabetSymbol
+                |. P.spaces
+                |. P.symbol ","
+                |. P.spaces
+                |= P.sequence
+                    { start = ""
+                    , separator = "-"
+                    , end = ""
+                    , spaces = P.spaces
+                    , item = state
+                    , trailing = P.Forbidden
+                    }
+        , P.succeed
+            (\p n ->
+                { prevState = p
+                , nextStates = n
+                , conditions = Transition.WithEpsilon []
+                }
             )
+            |= state
+            |. P.spaces
+            |. P.symbol ","
+            |. P.spaces
+            |. epsilon
+            |. P.spaces
+            |. P.symbol ","
+            |. P.spaces
+            |= P.sequence
+                { start = ""
+                , separator = "-"
+                , end = ""
+                , spaces = P.spaces
+                , item = state
+                , trailing = P.Forbidden
+                }
+        ]
 
 
 
--- Helper function to generate states labeled from "0" to "n"
+-- -- Helper function to generate states labeled from "0" to "n"
 
 
 generateStates : Int -> List State.State
 generateStates n =
-    List.map
-        (\x -> State.Valid (String.fromInt x))
-        (List.range 0 (n - 1))
+    List.map intToState (List.range 0 (n - 1))
 
 
-
--- A type that defines the common items between automata, just so we can reuse
--- some stuff
-
-
-type CommonItems
-    = CommonItems (List State.State) State.State (List State.State) (List Alphabet.Symbol)
-
-
-
--- Parse all the common items given in an input
-
-
-parseCommons : String -> Maybe CommonItems
-parseCommons text =
-    let
-        lines =
-            String.split "\n" text |> Array.fromList
-
-        numberOfStates =
-            Array.get 0 lines |> Maybe.andThen String.toInt
-
-        states =
-            Maybe.map generateStates numberOfStates
-
-        initialState =
-            Array.get 1 lines
-                |> (\x -> getStateWithMaybes x states)
-
-        finalStates =
-            Maybe.map (String.split ",") (Array.get 2 lines)
-                |> Maybe.map (List.map State.Valid)
-
-        alphabet =
-            Maybe.map
-                (\line ->
-                    String.split "," line
-                        |> List.concatMap String.toList
-                )
-                (Array.get 3 lines)
-    in
-    Maybe.map4 CommonItems states initialState finalStates alphabet
-
-
-
--- Parse a deterministic transition line
-
-
-parseDeterministicTransition :
-    String
-    -> List State.State
-    -> Alphabet.DeterministicAlphabet
-    -> Maybe Transition.DeterministicTransition
-parseDeterministicTransition line states alphabet =
-    let
-        items =
-            String.split "," line |> Array.fromList
-
-        prevStateIndex =
-            Array.get 0 items
-
-        prevState =
-            Maybe.andThen String.toInt prevStateIndex
-                |> Maybe.andThen (\x -> Utils.elementAt x states)
-
-        nextStateIndex =
-            Array.get 2 items
-
-        nextState =
-            Maybe.andThen String.toInt nextStateIndex
-                |> Maybe.andThen (\x -> Utils.elementAt x states)
-
-        symbol =
-            Array.get 1 items
-                |> Maybe.andThen Utils.stringToChar
-                |> Maybe.andThen
-                    (Utils.filterMaybe
-                        (\x ->
-                            List.member x alphabet
-                        )
-                    )
-    in
-    Maybe.map3
-        Transition.DeterministicTransition
-        prevState
-        nextState
-        (Maybe.map (\x -> [ x ]) symbol)
-
-
-
--- Parse a non deterministic transition line
-
-
-parseNonDeterministicTransition :
-    String
-    -> List State.State
-    -> List Alphabet.Symbol
-    -> Maybe Transition.NonDeterministicTransition
-parseNonDeterministicTransition line states symbols =
-    let
-        items =
-            String.split "," line
-                |> Array.fromList
-
-        prevStateIndex =
-            Array.get 0 items
-
-        prevState =
-            Maybe.andThen String.toInt prevStateIndex
-                |> Maybe.andThen (\x -> Utils.elementAt x states)
-
-        nextStateIndexes =
-            Array.get 2 items |> Maybe.map (String.split "-")
-
-        nextStates : Maybe (List State.State)
-        nextStates =
-            Maybe.andThen
-                (\strIndexes ->
-                    List.map
-                        (\strIndex ->
-                            String.toInt strIndex
-                                |> Maybe.andThen (\x -> Utils.elementAt x states)
-                        )
-                        strIndexes
-                        |> Utils.listOfMaybesToMaybeList
-                )
-                nextStateIndexes
-
-        symbol =
-            Array.get 1 items
-                |> Maybe.andThen Utils.stringToChar
-                |> Maybe.andThen
-                    (Utils.filterMaybe
-                        (\x ->
-                            List.member x symbols
-                        )
-                    )
-
-        epsilon =
-            symbol == Just '&'
-
-        alphabet =
-            if epsilon then
-                Just (Transition.WithEpsilon [])
-
-            else
-                Maybe.map (\s -> Transition.NoEpsilon [ s ]) symbol
-    in
-    Maybe.map3
-        Transition.NonDeterministicTransition
-        prevState
-        nextStates
-        alphabet
-
-
-
--- Parse a Finite Deterministic Automaton
-
-
-parseAFD : String -> Maybe Automata.AFD
-parseAFD text =
-    let
-        commons =
-            parseCommons text
-    in
-    case commons of
-        Nothing ->
-            Nothing
-
-        Just (CommonItems states initialState finalStates symbols) ->
-            let
-                lines =
-                    String.lines text
-                        |> List.drop 4
-
-                transitions =
-                    List.map
-                        (\line ->
-                            parseDeterministicTransition line states symbols
-                        )
-                        lines
-                        |> Utils.listOfMaybesToMaybeList
-            in
-            Maybe.map
-                (\t ->
-                    Automata.AFD states initialState finalStates symbols t
-                )
-                transitions
-
-
-
--- Parse a Finite Non Deterministic Automaton
-
-
-parseAFND : String -> Maybe Automata.AFND
-parseAFND text =
-    let
-        commons =
-            parseCommons text
-    in
-    case commons of
-        Nothing ->
-            Nothing
-
-        Just (CommonItems states initialState finalStates symbols) ->
-            let
-                lines =
-                    String.lines text
-                        |> List.drop 4
-
-                transitions =
-                    List.map
-                        (\line ->
-                            parseNonDeterministicTransition line states symbols
-                        )
-                        lines
-                        |> Utils.listOfMaybesToMaybeList
-
-                alphabet =
-                    Alphabet.NDA
-                        (List.filter
-                            (\x ->
-                                x /= '&'
-                            )
-                            symbols
-                        )
-                        Alphabet.Epsilon
-            in
-            Maybe.map
-                (\t ->
-                    Automata.AFND states initialState finalStates alphabet t
-                )
-                transitions
+intToState : Int -> State.State
+intToState =
+    String.fromInt >> State.Valid

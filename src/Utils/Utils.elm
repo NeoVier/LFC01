@@ -242,6 +242,12 @@ elementAt idx list =
     List.drop idx list |> List.head
 
 
+last : List a -> Maybe a
+last list =
+    List.drop (List.length list - 1) list
+        |> List.head
+
+
 
 -- Given a predicate, return Just a or Nothing
 

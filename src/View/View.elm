@@ -18,6 +18,7 @@ import Types.Types as Types
 import Utils.Utils as Utils
 import View.Automata as VAutomata
 import View.Grammars.Regular as VGrammars
+import View.Regex as VRegex
 import View.Styles as Styles
 
 
@@ -70,6 +71,9 @@ historyView model =
 
                 Models.Grammar _ ->
                     "GR"
+
+                Models.Regex _ ->
+                    "ER"
     in
     div Styles.historyViewStyles
         (List.map
@@ -99,9 +103,24 @@ historyView model =
 
 viewCenterPanel : Types.Model -> Html Types.Msg
 viewCenterPanel model =
+    let
+        title =
+            case model.currentItem of
+                Err _ ->
+                    ""
+
+                Ok (Models.Automaton _) ->
+                    "Autômato atual"
+
+                Ok (Models.Grammar _) ->
+                    "Gramática atual"
+
+                Ok (Models.Regex _) ->
+                    "Expressão regular atual"
+    in
     div Styles.currentAutomatonStyles
         [ h3 Styles.currentAutomatonTitleStyles
-            [ text "Autômato atual" ]
+            [ text title ]
         , viewSentenceInput model
         , viewCurrentModel model
         ]
@@ -118,6 +137,9 @@ viewCurrentModel model =
 
         Ok (Models.Grammar grammar) ->
             VGrammars.viewGR grammar
+
+        Ok (Models.Regex idRegexes) ->
+            VRegex.viewIdRegexes idRegexes
 
 
 
@@ -154,7 +176,7 @@ viewSentenceInput model =
                         h3 Styles.invalidSentenceStyles [ text msg ]
                 ]
 
-        otherwise ->
+        _ ->
             text ""
 
 
@@ -169,21 +191,12 @@ viewRightPanel model =
             [ text "Controles" ]
         , div
             Styles.rightPanelControlContainerStyles
-            ([ button
-                (onClick Types.AFDRequested
-                    :: Styles.rightPanelButtonStyles
-                )
-                [ text "Carregar autômato finito determinístico" ]
-             , button
-                (onClick Types.AFNDRequested
-                    :: Styles.rightPanelButtonStyles
-                )
-                [ text "Carregar autômato finito não-determinístico" ]
-             , button
-                (onClick Types.GRRequested :: Styles.rightPanelButtonStyles)
-                [ text "Carregar gramática regular" ]
-             ]
-                ++ List.map (\f -> f model |> maybeHtmlToHtml)
+            (loadButton "autômato finito determinístico" Types.AFDRequested
+                :: loadButton "autômato finito não-determinístico"
+                    Types.AFNDRequested
+                :: loadButton "gramática regular" Types.GRRequested
+                :: loadButton "expressão regular" Types.RegexRequested
+                :: List.map (\f -> f model |> maybeHtmlToHtml)
                     [ convertButton
                     , complementButton
                     , minimizeButton
@@ -191,9 +204,16 @@ viewRightPanel model =
                     , intersectionButton
                     , grToAfdButton
                     , afdToGrButton
+                    , erToAfdButton
                     ]
             )
         ]
+
+
+loadButton : String -> Types.Msg -> Html Types.Msg
+loadButton caption msg =
+    button (onClick msg :: Styles.rightPanelButtonStyles)
+        [ text ("Carregar " ++ caption) ]
 
 
 maybeHtmlToHtml : Maybe (Html a) -> Html a
@@ -217,7 +237,7 @@ convertButton model =
                 [ text "Converter AFND para AFD" ]
                 |> Just
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -245,7 +265,7 @@ complementButton model =
                     [ text "Fazer complemento" ]
                 )
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -272,7 +292,7 @@ minimizeButton model =
                 [ text "Minimizar AFD" ]
                 |> Just
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -287,7 +307,7 @@ grToAfdButton model =
                 [ text "Converter para AFND" ]
                 |> Just
 
-        otherwise ->
+        _ ->
             Nothing
 
 
@@ -299,5 +319,17 @@ afdToGrButton model =
                 [ text "Converter para GR" ]
                 |> Just
 
-        otherwise ->
+        _ ->
+            Nothing
+
+
+erToAfdButton : Types.Model -> Maybe (Html Types.Msg)
+erToAfdButton model =
+    case model.currentItem of
+        Ok (Models.Regex _) ->
+            button (onClick Types.ConvertERToAFD :: Styles.rightPanelButtonStyles)
+                [ text "Converter para AFD" ]
+                |> Just
+
+        _ ->
             Nothing

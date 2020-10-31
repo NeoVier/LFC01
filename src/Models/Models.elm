@@ -11,6 +11,7 @@ module Models.Models exposing (..)
 
 import Models.Automata as Automata
 import Models.Grammars as Grammars
+import Models.Regex as Regex
 
 
 
@@ -20,3 +21,4 @@ import Models.Grammars as Grammars
 type General
     = Automaton Automata.Automaton
     | Grammar Grammars.Grammar
+    | Regex (List Regex.IdRegex)

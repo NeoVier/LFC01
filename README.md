@@ -32,13 +32,13 @@ Student: Henrique da Cunha Buss
   - [x] Parse GR
   - [x] Add GR to history
   - [x] Add GR from file
-  - [x] Convert GR to AFD
-- [ ] ER
-  - [ ] Display ER
-  - [ ] Parse ER
-  - [ ] Add ER to history
-  - [ ] Add ER from file
-  - [ ] Convert ER to AFD
+  - [x] Convert GR to AFND
+- [x] ER
+  - [x] Display ER
+  - [x] Parse ER
+  - [x] Add ER to history
+  - [x] Add ER from file
+  - [x] Convert ER to AFD
 
 ### Second Submission (items 8-12, 02/12)
 
@@ -51,7 +51,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
 - First delivery
 
-  1. [ ] Reading, writing and editing AF, GR and ER
+  1. [x] Reading, writing and editing AF, GR and ER
   2. [x] Converting AFND (with and without epsilon) to AFD
   3. [x] Converting AFD to GR and GR to AFND
   4. [x] Recognizing sentences in AF

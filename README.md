@@ -57,7 +57,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
   4. [x] Recognizing sentences in AF
   5. [ ] Minimizing AFD
   6. [x] AFD union and intersection
-  7. [ ] Converting ER to AFD (using syntactic tree-based algorithm)
+  7. [x] Converting ER to AFD (using syntactic tree-based algorithm)
 
 - Second delivery
 

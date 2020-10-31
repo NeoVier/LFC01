@@ -602,9 +602,41 @@ followPosDict r d =
             in
             update (Just []) c2Result
 
-        -- TODO - How??
         Plus c1 ->
-            update (Just []) (followPosDict c1 d)
+            let
+                c1Result =
+                    followPosDict c1 d
+
+                updateFollowPos info newFollowPos =
+                    { info
+                        | followPos =
+                            case info.followPos of
+                                Nothing ->
+                                    Just newFollowPos
+
+                                Just v ->
+                                    Just <| v ++ newFollowPos
+                    }
+            in
+            case Dict.get (idx c1Result) c1Result of
+                -- Impossible
+                Nothing ->
+                    d
+
+                Just treeInfo ->
+                    List.foldl
+                        (\lp acc ->
+                            Dict.update (findSymbolIndex lp acc)
+                                (Maybe.map
+                                    (\info ->
+                                        updateFollowPos info treeInfo.firstPos
+                                    )
+                                )
+                                acc
+                        )
+                        c1Result
+                        treeInfo.lastPos
+                        |> update (Just [])
 
         Question c1 ->
             update (Just []) (followPosDict c1 d)
@@ -643,11 +675,8 @@ nullable r =
 
 firstPos : Regex -> List Int
 firstPos r =
-    let
-        ( v, _ ) =
-            firstPosHelp 0 r
-    in
-    v
+    firstPosHelp 0 r
+        |> Tuple.first
 
 
 firstPosHelp : Int -> Regex -> ( List Int, Int )
@@ -700,8 +729,8 @@ firstPosHelp count r =
 lastPos : Regex -> List Int
 lastPos r =
     let
-        ( v, _ ) =
-            lastPosHelp 0 r
+        v =
+            lastPosHelp 0 r |> Tuple.first
 
         leafCount =
             getLeafCount r

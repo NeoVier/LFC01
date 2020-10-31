@@ -9,92 +9,79 @@
 module Parsing.Grammars exposing (parseGR)
 
 import Models.Grammars as Grammars
+    exposing
+        ( Grammar
+        , NonTerminalSymbol
+        , Production
+        , ProductionBody
+        , TerminalSymbol
+        )
+import Parser as P exposing ((|.), (|=), Parser)
+import Parsing.Common as PC
+import Result.Extra as ResultE
 import Utils.Utils as Utils
 
 
 parseGR : String -> Maybe Grammars.Grammar
-parseGR content =
+parseGR s =
     let
-        nonTerminals =
-            String.filter Char.isUpper content
-                |> String.toList
-                |> Utils.removeDuplicates
-
-        terminals =
-            String.filter Char.isLower content
-                |> String.toList
-                |> Utils.removeDuplicates
-
-        productions =
-            String.lines content
-                |> List.map parseProduction
-                |> Utils.listOfMaybesToMaybeList
-
-        initialSymbol =
-            String.toList content
-                |> List.head
+        results : Result (List P.DeadEnd) (List Production)
+        results =
+            List.map (P.run parseProduction) (String.lines s)
+                |> ResultE.combine
     in
-    Maybe.map2
-        (\p i ->
-            { nonTerminals = nonTerminals
-            , terminals = terminals
-            , productions = p
-            , initialSymbol = i
-            }
-        )
-        productions
-        initialSymbol
-
-
-parseProduction : String -> Maybe Grammars.Production
-parseProduction line =
-    let
-        splitLine =
-            String.split " -> " line
-
-        productionHead =
-            List.head splitLine
-                |> Maybe.map String.toList
-                |> Maybe.andThen List.head
-
-        productionBody =
-            List.drop 1 splitLine
-                |> List.head
-                |> Maybe.map (String.split " | ")
-                |> Maybe.map (List.map parseProductionBody)
-                |> Maybe.map Utils.listOfMaybesToMaybeList
-                |> Utils.maybeMaybeToMaybe
-    in
-    Maybe.map2 (\h b -> { fromSymbol = h, productions = b })
-        productionHead
-        productionBody
-
-
-parseProductionBody : String -> Maybe Grammars.ProductionBody
-parseProductionBody sentence =
-    let
-        asChars =
-            String.toList sentence
-
-        consumed =
-            case Maybe.map Char.isLower (List.head asChars) of
-                Just True ->
-                    List.head asChars
-
-                otherwise ->
-                    Nothing
-
-        toSymbol =
-            case Maybe.map Char.isUpper (List.head (List.drop 1 asChars)) of
-                Just True ->
-                    List.head (List.drop 1 asChars)
-
-                otherwise ->
-                    Nothing
-    in
-    case consumed of
-        Nothing ->
+    case results of
+        Err _ ->
             Nothing
 
-        Just consumedSymbol ->
-            Just { consumed = consumedSymbol, toSymbol = toSymbol }
+        Ok productions ->
+            let
+                nonTerminals : List NonTerminalSymbol
+                nonTerminals =
+                    List.map .fromSymbol productions
+                        |> Utils.removeDuplicates
+
+                terminals : List TerminalSymbol
+                terminals =
+                    List.concatMap .productions productions
+                        |> List.map .consumed
+                        |> Utils.removeDuplicates
+            in
+            Maybe.map
+                (\h ->
+                    { nonTerminals = nonTerminals
+                    , terminals = terminals
+                    , productions = productions
+                    , initialSymbol = h.fromSymbol
+                    }
+                )
+                (List.head productions)
+
+
+parseProduction : Parser Production
+parseProduction =
+    P.succeed (\f ps -> Production (String.fromChar f) ps)
+        |= PC.alphabetSymbol
+        |. P.spaces
+        |. P.symbol "->"
+        |. P.spaces
+        |= P.sequence
+            { start = ""
+            , separator = "|"
+            , end = ""
+            , spaces = P.spaces
+            , item = parseProductionBody
+            , trailing = P.Forbidden
+            }
+
+
+parseProductionBody : Parser ProductionBody
+parseProductionBody =
+    P.oneOf
+        [ P.backtrackable <|
+            P.succeed (\c t -> ProductionBody c (Just (String.fromChar t)))
+                |= PC.alphabetSymbol
+                |= PC.alphabetSymbol
+        , P.succeed (\c -> ProductionBody c Nothing)
+            |= PC.alphabetSymbol
+        ]

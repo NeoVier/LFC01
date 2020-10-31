@@ -23,7 +23,7 @@ viewGR gr =
 
 viewGRProduction : Grammars.Production -> String
 viewGRProduction production =
-    String.fromChar production.fromSymbol
+    production.fromSymbol
         ++ " -> "
         ++ (List.map viewGRProductionBody production.productions
                 |> String.join " | "
@@ -37,7 +37,7 @@ viewGRProductionBody body =
             String.fromChar body.consumed
 
         toSymbol =
-            Maybe.map String.fromChar body.toSymbol
+            body.toSymbol
                 |> Maybe.withDefault ""
     in
     consumed ++ toSymbol

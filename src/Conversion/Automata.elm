@@ -102,7 +102,7 @@ afdToGr afd =
 
         initialSymbol =
             stateToSymbol afd.initialState
-                |> Maybe.withDefault 'S'
+                |> Maybe.withDefault "S"
     in
     { nonTerminals = nonTerminals
     , terminals = terminals
@@ -121,18 +121,19 @@ afdToGr afd =
 -- Convert a State to a Maybe Symbol
 
 
-stateToSymbol : State.State -> Maybe Grammars.TerminalSymbol
+stateToSymbol : State.State -> Maybe Grammars.NonTerminalSymbol
 stateToSymbol state =
     case state of
         State.Dead ->
             Nothing
 
         State.Valid label ->
-            String.toList label
-                |> List.head
+            Just label
 
 
 
+-- String.toList label
+--     |> List.head
 -- Converts a Transition into a Maybe Grammars.Production
 
 

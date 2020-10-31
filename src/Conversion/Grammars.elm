@@ -52,7 +52,7 @@ newFinalState =
 
 symbolToState : Grammars.NonTerminalSymbol -> State.State
 symbolToState =
-    String.fromChar >> State.Valid
+    State.Valid
 
 
 productionToTransitions :

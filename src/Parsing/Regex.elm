@@ -2,7 +2,8 @@ module Parsing.Regex exposing (regexFile)
 
 import Models.Alphabet as Alphabet
 import Models.Regex as Regex exposing (Regex)
-import Parser as P exposing ((|.), (|=), Parser, getChompedString)
+import Parser as P exposing ((|.), (|=), Parser)
+import Parsing.Common as PC
 import Result.Extra as ResultE
 import Utils.Utils as Utils
 
@@ -114,9 +115,9 @@ baseUnion =
 groupInner : Parser Regex.GroupInner
 groupInner =
     P.succeed (\s1 s2 -> ( s1, s2 ))
-        |= alphabetSymbol
+        |= PC.alphabetSymbol
         |. P.symbol "-"
-        |= alphabetSymbol
+        |= PC.alphabetSymbol
 
 
 group : Parser Regex
@@ -177,22 +178,6 @@ unary =
     P.oneOf [ epsilon, star, plus, question, regexSymbol, group ]
 
 
-createChar : String -> Parser Char
-createChar xs =
-    case String.toList xs |> List.head of
-        Just x ->
-            P.succeed x
-
-        Nothing ->
-            P.problem "invalid symbol"
-
-
-alphabetSymbol : Parser Alphabet.Symbol
-alphabetSymbol =
-    P.getChompedString (P.chompIf Char.isAlphaNum)
-        |> P.andThen createChar
-
-
 regexSymbol : Parser Regex
 regexSymbol =
-    P.map Regex.Symbol alphabetSymbol
+    P.map Regex.Symbol PC.alphabetSymbol

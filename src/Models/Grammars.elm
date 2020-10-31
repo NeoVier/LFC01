@@ -52,7 +52,7 @@ type alias ProductionBody =
 
 
 type alias NonTerminalSymbol =
-    Alphabet.Symbol
+    String
 
 
 

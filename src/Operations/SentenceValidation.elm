@@ -26,12 +26,12 @@ validateSentence automaton sentence =
         symbols =
             case automaton of
                 Automata.FiniteDeterministic afd ->
-                    afd.alphabet
+                    List.concatMap symbolItems afd.alphabet
 
                 Automata.FiniteNonDeterministic afnd ->
                     case afnd.alphabet of
                         Alphabet.NDA alphabet _ ->
-                            alphabet
+                            List.concatMap symbolItems alphabet
 
         sentenceAsSymbols =
             String.toList sentence
@@ -48,13 +48,31 @@ validateSentence automaton sentence =
         Err "Existem símbolos inválidos"
 
 
+symbolItems : Alphabet.Symbol -> List Char
+symbolItems symbol =
+    case symbol of
+        Alphabet.Single s ->
+            [ s ]
+
+        Alphabet.Group g ->
+            List.concatMap innerGroupRange g
+
+
+innerGroupRange : ( Char, Char ) -> List Char
+innerGroupRange group =
+    case group of
+        ( a, b ) ->
+            List.range (Char.toCode a) (Char.toCode b)
+                |> List.map Char.fromCode
+
+
 
 -- Validate a sentence using an AFD
 
 
 validateSentenceAFD :
     Automata.AFD
-    -> List Alphabet.Symbol
+    -> List Char
     -> Result String Bool
 validateSentenceAFD afd sentence =
     if validateSentenceAFDFromState afd.initialState afd sentence then
@@ -71,7 +89,7 @@ validateSentenceAFD afd sentence =
 validateSentenceAFDFromState :
     State.State
     -> Automata.AFD
-    -> List Alphabet.Symbol
+    -> List Char
     -> Bool
 validateSentenceAFDFromState currState afd sentence =
     case sentence of
@@ -84,7 +102,11 @@ validateSentenceAFDFromState currState afd sentence =
                     Utils.getOutTransitionsDeterministic afd currState
                         |> List.filter
                             (\transition ->
-                                List.member currSymbol transition.conditions
+                                List.member currSymbol
+                                    (List.concatMap
+                                        symbolItems
+                                        transition.conditions
+                                    )
                             )
             in
             case outTransitionsWithSymbol of
@@ -108,7 +130,7 @@ validateSentenceAFDFromState currState afd sentence =
 
 validateSentenceAFND :
     Automata.AFND
-    -> List Alphabet.Symbol
+    -> List Char
     -> Result String Bool
 validateSentenceAFND afnd =
     validateSentenceAFD (CAutomata.afndToAfd afnd)

@@ -60,8 +60,8 @@ parseGR s =
 
 parseProduction : Parser Production
 parseProduction =
-    P.succeed (\f ps -> Production (String.fromChar f) ps)
-        |= PC.alphabetSymbol
+    P.succeed Production
+        |= PC.parseWord
         |. P.spaces
         |. P.symbol "->"
         |. P.spaces
@@ -79,9 +79,16 @@ parseProductionBody : Parser ProductionBody
 parseProductionBody =
     P.oneOf
         [ P.backtrackable <|
-            P.succeed (\c t -> ProductionBody c (Just (String.fromChar t)))
+            P.succeed
+                (\c t ->
+                    if t == "" then
+                        ProductionBody c Nothing
+
+                    else
+                        ProductionBody c (Just t)
+                )
                 |= PC.alphabetSymbol
-                |= PC.alphabetSymbol
+                |= PC.parseWord
         , P.succeed (\c -> ProductionBody c Nothing)
             |= PC.alphabetSymbol
         ]

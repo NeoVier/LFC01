@@ -190,12 +190,23 @@ alphabetNonDeterministic =
                     Alphabet.NDA x Alphabet.Epsilon
                 )
         ]
+        |> P.map removeEpsilon
 
 
-epsilon : Parser Char
+removeEpsilon : Alphabet.NonDeterministicAlphabet -> Alphabet.NonDeterministicAlphabet
+removeEpsilon alph =
+    case alph of
+        Alphabet.NDA symbols Alphabet.Epsilon ->
+            Alphabet.NDA
+                (List.filter (\s -> s /= Alphabet.Single '&') symbols)
+                Alphabet.Epsilon
+
+
+epsilon : Parser Alphabet.Symbol
 epsilon =
     P.getChompedString (P.chompIf (\c -> c == '&'))
         |> P.andThen PC.createChar
+        |> P.map Alphabet.Single
 
 
 transitionDeterministic : Parser Transition.DeterministicTransition

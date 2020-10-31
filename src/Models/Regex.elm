@@ -11,11 +11,6 @@ type Regex
     | Star Regex
     | Plus Regex
     | Question Regex
-    | Group (List GroupInner)
-
-
-type alias GroupInner =
-    ( Alphabet.Symbol, Alphabet.Symbol )
 
 
 type alias IdRegex =

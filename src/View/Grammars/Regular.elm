@@ -9,7 +9,9 @@
 module View.Grammars.Regular exposing (viewGR)
 
 import Html exposing (..)
+import Models.Alphabet as Alphabet
 import Models.Grammars as Grammars
+import Utils.Utils as Utils
 import View.Styles as Styles
 
 
@@ -41,10 +43,15 @@ viewGRProductionBody : Grammars.ProductionBody -> String
 viewGRProductionBody body =
     let
         consumed =
-            String.fromChar body.consumed
+            case body.consumed of
+                Alphabet.Single s ->
+                    Utils.symbolToString body.consumed
+
+                Alphabet.Group g ->
+                    "[" ++ Utils.symbolToString body.consumed ++ "]"
 
         toSymbol =
-            Maybe.map (\s -> " [ " ++ s ++ " ] ") body.toSymbol
+            Maybe.map (\s -> " { " ++ s ++ " } ") body.toSymbol
                 |> Maybe.withDefault ""
     in
     consumed ++ toSymbol

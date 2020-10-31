@@ -44,5 +44,6 @@ type Epsilon
 -- A symbol is just a Char
 
 
-type alias Symbol =
-    Char
+type Symbol
+    = Single Char
+    | Group (List ( Char, Char ))

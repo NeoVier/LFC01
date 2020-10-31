@@ -10,6 +10,7 @@ module View.Automata.Common exposing (viewAutomataHeader)
 
 import Html exposing (..)
 import Models.Alphabet as Alphabet
+import Utils.Utils as Utils
 import View.Styles exposing (..)
 
 
@@ -31,20 +32,25 @@ alphabetHeader : Alphabet.Alphabet -> List (Html msg)
 alphabetHeader alphabet =
     case alphabet of
         Alphabet.Deterministic symbols ->
-            List.sort symbols
+            List.sortWith Utils.compareAlphabetSymbols symbols
                 |> List.map
                     (\symbol ->
                         th tableItemStyles
-                            [ text (String.fromChar symbol) ]
+                            [ text (Utils.symbolToString symbol) ]
                     )
 
         Alphabet.NonDeterministic ndalphabet ->
             case ndalphabet of
                 Alphabet.NDA symbols epsilon ->
-                    (List.sort symbols
+                    (List.sortWith Utils.compareAlphabetSymbols symbols
                         |> List.map
                             (\symbol ->
-                                th tableItemStyles [ text (String.fromChar symbol) ]
+                                th tableItemStyles
+                                    [ text
+                                        (Utils.symbolToString
+                                            symbol
+                                        )
+                                    ]
                             )
                     )
                         ++ [ th tableItemStyles [ text "ε" ] ]

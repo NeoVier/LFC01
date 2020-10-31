@@ -2,6 +2,7 @@ module View.Regex exposing (..)
 
 import Html exposing (..)
 import Models.Regex as Regex
+import Utils.Utils as Utils
 import View.Styles as Styles
 
 
@@ -26,7 +27,7 @@ viewRegex r =
             "ε"
 
         Regex.Symbol s ->
-            String.fromChar s
+            Utils.symbolToString s
 
         Regex.Union r1 r2 ->
             "(" ++ viewRegex r1 ++ " | " ++ viewRegex r2 ++ ")"
@@ -42,13 +43,3 @@ viewRegex r =
 
         Regex.Question r1 ->
             "(" ++ viewRegex r1 ++ "?" ++ ")"
-
-        Regex.Group groups ->
-            "[" ++ (List.map viewGroupInner groups |> String.join "") ++ "]"
-
-
-viewGroupInner : Regex.GroupInner -> String
-viewGroupInner g =
-    case g of
-        ( s1, s2 ) ->
-            String.fromList [ s1, '-', s2 ]

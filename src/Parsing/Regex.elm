@@ -112,27 +112,6 @@ baseUnion =
 -- UNARY
 
 
-groupInner : Parser Regex.GroupInner
-groupInner =
-    P.succeed (\s1 s2 -> ( s1, s2 ))
-        |= PC.alphabetSymbol
-        |. P.symbol "-"
-        |= PC.alphabetSymbol
-
-
-group : Parser Regex
-group =
-    P.sequence
-        { start = "["
-        , separator = ""
-        , end = "]"
-        , spaces = P.spaces
-        , item = groupInner
-        , trailing = P.Forbidden
-        }
-        |> P.map Regex.Group
-
-
 createUnary : String -> (Regex -> Regex) -> Parser Regex
 createUnary id f =
     let
@@ -175,7 +154,7 @@ epsilon =
 
 unary : Parser Regex
 unary =
-    P.oneOf [ epsilon, star, plus, question, regexSymbol, group ]
+    P.oneOf [ epsilon, star, plus, question, regexSymbol ]
 
 
 regexSymbol : Parser Regex

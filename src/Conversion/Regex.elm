@@ -168,7 +168,7 @@ erToAfd : Regex -> Automata.AFD
 erToAfd r =
     let
         newR =
-            Concat r (Symbol '#')
+            Concat r (Symbol (Alphabet.Single '#'))
 
         startingAfd =
             { states = []
@@ -229,7 +229,7 @@ erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
 
                 isFinal =
                     Dict.keys symbolGroups
-                        |> List.member '#'
+                        |> List.member "#"
 
                 newStatesComponents =
                     Dict.values symbolGroups
@@ -238,16 +238,44 @@ erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
                     Dict.toList symbolGroups
                         |> List.filterMap
                             (\( s, v ) ->
-                                if s == '#' then
+                                if s == "#" then
                                     Nothing
 
                                 else
                                     Just
                                         { prevState = newState
                                         , nextState = createState v
-                                        , conditions = [ s ]
+                                        , conditions =
+                                            case Utils.stringToSymbol s of
+                                                Nothing ->
+                                                    []
+
+                                                Just c ->
+                                                    [ c ]
                                         }
                             )
+
+                newSymbolsStr =
+                    List.filter
+                        (\s ->
+                            case Utils.stringToSymbol s of
+                                Nothing ->
+                                    False
+
+                                Just symb ->
+                                    not
+                                        (List.member symb
+                                            partialAfd.alphabet
+                                        )
+                                        && s
+                                        /= "#"
+                        )
+                        (Dict.keys symbolGroups)
+
+                newSymbols =
+                    List.map Utils.stringToSymbol newSymbolsStr
+                        |> Utils.listOfMaybesToMaybeList
+                        |> Maybe.withDefault []
             in
             if
                 List.member newStateComponents seenStates
@@ -272,18 +300,12 @@ erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
                                 partialAfd.finalStates
                         , alphabet =
                             partialAfd.alphabet
-                                ++ List.filter
-                                    (\s ->
-                                        not (List.member s partialAfd.alphabet)
-                                            && s
-                                            /= '#'
-                                    )
-                                    (Dict.keys symbolGroups)
+                                ++ newSymbols
                         , transitions = partialAfd.transitions ++ newTransitions
                     }
 
 
-getSymbolGroups : TreeInfoDict -> List Int -> Dict Alphabet.Symbol (List Int)
+getSymbolGroups : TreeInfoDict -> List Int -> Dict String (List Int)
 getSymbolGroups treeInfo indexes =
     List.foldl
         (\index acc ->
@@ -301,8 +323,9 @@ getSymbolGroups treeInfo indexes =
                                 Nothing ->
                                     acc
 
+                                -- TODO
                                 Just fp ->
-                                    Dict.update symbol
+                                    Dict.update (Utils.symbolToString symbol)
                                         (\dictValue ->
                                             case dictValue of
                                                 Nothing ->
@@ -669,9 +692,6 @@ nullable r =
         Question _ ->
             True
 
-        Group _ ->
-            False
-
 
 firstPos : Regex -> List Int
 firstPos r =
@@ -721,9 +741,6 @@ firstPosHelp count r =
 
         Question c1 ->
             firstPosHelp count c1
-
-        Group _ ->
-            ( [ count + 1 ], count + 1 )
 
 
 lastPos : Regex -> List Int
@@ -780,9 +797,6 @@ lastPosHelp count r =
         Question c1 ->
             lastPosHelp count c1
 
-        Group _ ->
-            ( [ count + 1 ], count + 1 )
-
 
 getLeafCount : Regex -> Int
 getLeafCount r =
@@ -807,6 +821,3 @@ getLeafCount r =
 
         Question c1 ->
             getLeafCount c1
-
-        Group c1 ->
-            1

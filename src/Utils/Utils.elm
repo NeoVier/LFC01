@@ -164,6 +164,62 @@ getFlatOutTransitionsNonDeterministic afnd state =
         |> concatMap getFlatTransitionNonDeterministic
 
 
+compareAlphabetSymbols : Alphabet.Symbol -> Alphabet.Symbol -> Order
+compareAlphabetSymbols a b =
+    case a of
+        Alphabet.Single s1 ->
+            case b of
+                Alphabet.Single s2 ->
+                    compare s1 s2
+
+                Alphabet.Group g2 ->
+                    LT
+
+        Alphabet.Group g1 ->
+            case b of
+                Alphabet.Single s2 ->
+                    GT
+
+                Alphabet.Group g2 ->
+                    compare g1 g2
+
+
+compareWith : (a -> b -> Order) -> List a -> List b -> Order
+compareWith f a b =
+    case List.head a of
+        Just h1 ->
+            case List.head b of
+                Just h2 ->
+                    case f h1 h2 of
+                        LT ->
+                            LT
+
+                        EQ ->
+                            compareWith f (List.drop 1 a) (List.drop 1 b)
+
+                        GT ->
+                            GT
+
+                Nothing ->
+                    GT
+
+        Nothing ->
+            case List.head b of
+                Nothing ->
+                    EQ
+
+                Just h2 ->
+                    LT
+
+
+compareDeterministicConditions :
+    Transition.DeterministicConditions
+    -> Transition.DeterministicConditions
+    -> Order
+compareDeterministicConditions =
+    compareWith compareAlphabetSymbols
+
+
 
 -- Function to compare two transitions so we can sort them
 
@@ -173,7 +229,7 @@ compareTransitionsDeterministic :
     -> Transition.DeterministicTransition
     -> Order
 compareTransitionsDeterministic a b =
-    compare a.conditions b.conditions
+    compareDeterministicConditions a.conditions b.conditions
 
 
 
@@ -194,7 +250,8 @@ compareTransitionsNonDeterministic a b =
                 Transition.WithEpsilon symbols ->
                     symbols
     in
-    compare (getSymbols a.conditions) (getSymbols b.conditions)
+    compareDeterministicConditions (getSymbols a.conditions)
+        (getSymbols b.conditions)
 
 
 
@@ -732,3 +789,45 @@ joinGrammarProductions gr =
                 gr.nonTerminals
     in
     { gr | productions = newProductions }
+
+
+symbolToString : Alphabet.Symbol -> String
+symbolToString s =
+    case s of
+        Alphabet.Single c ->
+            String.fromChar c
+
+        Alphabet.Group g ->
+            List.map
+                (\( a, b ) ->
+                    String.fromChar a ++ "-" ++ String.fromChar b
+                )
+                g
+                |> String.join ","
+
+
+stringToSymbol : String -> Maybe Alphabet.Symbol
+stringToSymbol s =
+    if String.length s == 1 then
+        String.toList s
+            |> List.head
+            |> Maybe.map Alphabet.Single
+
+    else
+        String.split "," s
+            |> List.map
+                (\subs ->
+                    let
+                        chars =
+                            String.toList subs
+
+                        firstSymbol =
+                            List.head chars
+
+                        secondSymbol =
+                            elementAt 2 chars
+                    in
+                    Maybe.map2 Tuple.pair firstSymbol secondSymbol
+                )
+            |> listOfMaybesToMaybeList
+            |> Maybe.map Alphabet.Group

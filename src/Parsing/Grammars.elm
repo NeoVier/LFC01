@@ -22,6 +22,10 @@ import Result.Extra as ResultE
 import Utils.Utils as Utils
 
 
+
+-- Parse a GR
+
+
 parseGR : String -> Maybe Grammars.Grammar
 parseGR s =
     let
@@ -58,6 +62,10 @@ parseGR s =
                 (List.head productions)
 
 
+
+-- Parse a production
+
+
 parseProduction : Parser Production
 parseProduction =
     P.succeed Production
@@ -73,6 +81,10 @@ parseProduction =
             , item = parseProductionBody
             , trailing = P.Forbidden
             }
+
+
+
+-- Parse a production body
 
 
 parseProductionBody : Parser ProductionBody

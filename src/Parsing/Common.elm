@@ -1,7 +1,19 @@
+{-
+   Parsing/Common.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to help parse common items like symbols
+-}
+
+
 module Parsing.Common exposing (..)
 
 import Models.Alphabet as Alphabet
 import Parser as P exposing ((|.), (|=), Parser)
+
+
+
+-- Parse a single character string
 
 
 createChar : String -> Parser Char
@@ -14,6 +26,10 @@ createChar xs =
             P.problem "invalid symbol"
 
 
+
+-- Parse a Symbol
+
+
 alphabetSymbol : Parser Alphabet.Symbol
 alphabetSymbol =
     P.oneOf
@@ -22,10 +38,18 @@ alphabetSymbol =
         ]
 
 
+
+-- Parse a Symbol.Single
+
+
 alphabetSingle : Parser Alphabet.Symbol
 alphabetSingle =
     singleChar
         |> P.map Alphabet.Single
+
+
+
+-- Parse a Symbol.Group
 
 
 alphabetGroup : Parser Alphabet.Symbol
@@ -41,10 +65,18 @@ alphabetGroup =
         |> P.map Alphabet.Group
 
 
+
+-- Parse a single alpha-numeric Char
+
+
 singleChar : Parser Char
 singleChar =
     P.getChompedString (P.chompIf Char.isAlphaNum)
         |> P.andThen createChar
+
+
+
+-- Parse a (Char, Char) tuple to use in groups
 
 
 alphabetGroupInner : Parser ( Char, Char )
@@ -53,6 +85,10 @@ alphabetGroupInner =
         |= singleChar
         |. P.symbol "-"
         |= singleChar
+
+
+
+-- Parse a single word (that only contains alpha-numeric Chars)
 
 
 parseWord : Parser String

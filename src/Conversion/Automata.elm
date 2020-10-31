@@ -132,8 +132,6 @@ stateToSymbol state =
 
 
 
--- String.toList label
---     |> List.head
 -- Converts a Transition into a Maybe Grammars.Production
 
 

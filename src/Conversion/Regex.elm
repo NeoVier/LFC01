@@ -1,3 +1,11 @@
+{-
+   Conversion/Regex.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to convert Regular Expressions
+-}
+
+
 module Conversion.Regex exposing (erToAfd)
 
 import Dict exposing (Dict)
@@ -88,57 +96,6 @@ import Utils.Utils as Utils
     - If n is a (Star c1) node, and i is a position in lastpos(n), then all
         positions in firstpos(n) are in followpos(i)
 -}
-
-
-type alias TreeInfo =
-    { nullable : Bool
-    , firstPos : List Int
-    , lastPos : List Int
-    , followPos : Maybe (List Int)
-    , nodeSymbol : Maybe Alphabet.Symbol
-    }
-
-
-type alias TreeInfoDict =
-    Dict Int TreeInfo
-
-
-treeInfoDict : Regex -> TreeInfoDict
-treeInfoDict r =
-    nullableDict r Dict.empty
-        |> firstPosDict r
-        |> lastPosDict r
-        |> followPosDict r
-
-
-
--- |> cleanTreeInfoDict
-
-
-emptyTreeInfo : TreeInfo
-emptyTreeInfo =
-    { nullable = False
-    , firstPos = []
-    , lastPos = []
-    , followPos = Nothing
-    , nodeSymbol = Nothing
-    }
-
-
-cleanTreeInfoDict : TreeInfoDict -> TreeInfoDict
-cleanTreeInfoDict infoTree =
-    Dict.filter (\_ v -> v.nodeSymbol /= Nothing) infoTree
-        |> Dict.toList
-        |> List.map (\( k, v ) -> v)
-        |> (\x ->
-                List.map2 (\idx v -> ( idx, v ))
-                    (List.range 1 (List.length x))
-                    x
-           )
-        |> Dict.fromList
-
-
-
 -------
 -- Get root node
 --
@@ -162,6 +119,72 @@ cleanTreeInfoDict infoTree =
 --
 -- Every state that contains the root node's finalPos is an accepting state
 -------
+-- Contains all of the needed info to apply the algorithm
+
+
+type alias TreeInfo =
+    { nullable : Bool
+    , firstPos : List Int
+    , lastPos : List Int
+    , followPos : Maybe (List Int)
+    , nodeSymbol : Maybe Alphabet.Symbol
+    }
+
+
+
+-- Shorthand for the kind of Dict used
+
+
+type alias TreeInfoDict =
+    Dict Int TreeInfo
+
+
+
+-- Default empty TreeInfo
+
+
+emptyTreeInfo : TreeInfo
+emptyTreeInfo =
+    { nullable = False
+    , firstPos = []
+    , lastPos = []
+    , followPos = Nothing
+    , nodeSymbol = Nothing
+    }
+
+
+
+-- Extract a TreeInfoDict from a Regex
+
+
+treeInfoDict : Regex -> TreeInfoDict
+treeInfoDict r =
+    nullableDict r Dict.empty
+        |> firstPosDict r
+        |> lastPosDict r
+        |> followPosDict r
+
+
+
+-- Cleans a TreeInfoDict by removing everything that doesn't represent a leaf
+-- node in the original Regex
+
+
+cleanTreeInfoDict : TreeInfoDict -> TreeInfoDict
+cleanTreeInfoDict infoTree =
+    Dict.filter (\_ v -> v.nodeSymbol /= Nothing) infoTree
+        |> Dict.toList
+        |> List.map (\( k, v ) -> v)
+        |> (\x ->
+                List.map2 (\idx v -> ( idx, v ))
+                    (List.range 1 (List.length x))
+                    x
+           )
+        |> Dict.fromList
+
+
+
+-- Convert a Regular Expression to an AFD
 
 
 erToAfd : Regex -> Automata.AFD
@@ -203,6 +226,10 @@ erToAfd r =
                 { startingAfd | initialState = startingState }
 
 
+
+-- Helper function for erToAfd
+
+
 erToAfdHelp :
     TreeInfoDict
     -> List (List Int)
@@ -211,6 +238,7 @@ erToAfdHelp :
     -> Automata.AFD
 erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
     case List.head statesToCreate of
+        -- We've visited every state
         Nothing ->
             partialAfd
 
@@ -305,6 +333,11 @@ erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
                     }
 
 
+
+-- Given a TreeInfoDict and a list of indexes (a state in the result AFD),
+-- get a Dict saying which symbols reach which state
+
+
 getSymbolGroups : TreeInfoDict -> List Int -> Dict String (List Int)
 getSymbolGroups treeInfo indexes =
     List.foldl
@@ -338,6 +371,10 @@ getSymbolGroups treeInfo indexes =
         )
         Dict.empty
         indexes
+
+
+
+-- Given a regex and a TreeInfoDict, assign nullable to each node in the regex
 
 
 nullableDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -391,6 +428,10 @@ nullableDict r d =
 
         _ ->
             insert (nullable r) d
+
+
+
+-- Given a regex and a TreeInfoDict, assign firstPos to each node in the regex
 
 
 firstPosDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -449,6 +490,10 @@ firstPosDict r d =
                     update v d
 
 
+
+-- Given a regex and a TreeInfoDict, assign lastPos to each node in the regex
+
+
 lastPosDict : Regex -> TreeInfoDict -> TreeInfoDict
 lastPosDict r d =
     let
@@ -503,6 +548,10 @@ lastPosDict r d =
             case lastPosHelp (prevMaxValue d) r of
                 ( v, _ ) ->
                     update v d
+
+
+
+-- Given a regex and a TreeInfoDict, assign followPos to each node in the regex
 
 
 followPosDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -668,6 +717,11 @@ followPosDict r d =
             update (Just []) d
 
 
+
+-- Get the nullable value of a regex node according to the table at the top of
+-- this file
+
+
 nullable : Regex -> Bool
 nullable r =
     case r of
@@ -693,10 +747,19 @@ nullable r =
             True
 
 
+
+-- Get the firstPos value of a regex node according to the table at the top of
+-- this file
+
+
 firstPos : Regex -> List Int
 firstPos r =
     firstPosHelp 0 r
         |> Tuple.first
+
+
+
+-- Helper function for firstPos
 
 
 firstPosHelp : Int -> Regex -> ( List Int, Int )
@@ -743,6 +806,11 @@ firstPosHelp count r =
             firstPosHelp count c1
 
 
+
+-- Get the lastPos value of a regex node according to the table at the top of
+-- this file
+
+
 lastPos : Regex -> List Int
 lastPos r =
     let
@@ -753,6 +821,10 @@ lastPos r =
             getLeafCount r
     in
     List.map (\x -> leafCount - x + 1) v |> List.sort
+
+
+
+-- Helper function for lastPos
 
 
 lastPosHelp : Int -> Regex -> ( List Int, Int )
@@ -796,6 +868,10 @@ lastPosHelp count r =
 
         Question c1 ->
             lastPosHelp count c1
+
+
+
+-- Given a Regex, counts how many leaf nodes it has
 
 
 getLeafCount : Regex -> Int

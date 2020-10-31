@@ -1,4 +1,12 @@
-module Parsing.Regex exposing (regexFile)
+{-
+   Parsing/Regex.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to parse Regexes
+-}
+
+
+module Parsing.Regex exposing (parseRegex)
 
 import Models.Alphabet as Alphabet
 import Models.Regex as Regex exposing (Regex)
@@ -10,11 +18,17 @@ import Utils.Utils as Utils
 
 
 -- GENERAL
+-- Parse a Regex file
 
 
-regexFile : String -> Result (List P.DeadEnd) (List Regex.IdRegex)
-regexFile content =
+parseRegex : String -> Maybe (List Regex.IdRegex)
+parseRegex content =
     ResultE.combineMap (P.run regexLine) (String.lines content)
+        |> Result.toMaybe
+
+
+
+-- Parse a regex line
 
 
 regexLine : Parser Regex.IdRegex
@@ -27,9 +41,17 @@ regexLine =
         |= regex
 
 
+
+-- Parse the Id part of a line
+
+
 regexId : Parser String
 regexId =
     P.getChompedString (P.chompWhile (\s -> s /= ':'))
+
+
+
+-- Parse a regex
 
 
 regex : Parser Regex
@@ -44,11 +66,16 @@ regex =
 
 
 -- CONCAT
+-- Parse a concat node
 
 
 concat : Parser Regex
 concat =
     P.loop Nothing concatHelp
+
+
+
+-- Helper function for concat
 
 
 concatHelp : Maybe Regex -> Parser (P.Step (Maybe Regex) Regex)
@@ -81,6 +108,7 @@ concatHelp current =
 
 
 -- UNION
+-- Parse a union node
 
 
 union : Parser Regex
@@ -97,6 +125,10 @@ union =
         ]
 
 
+
+-- Parse a single union node
+
+
 baseUnion : Parser Regex
 baseUnion =
     P.backtrackable <|
@@ -110,6 +142,7 @@ baseUnion =
 
 
 -- UNARY
+-- Create a unary operator parser
 
 
 createUnary : String -> (Regex -> Regex) -> Parser Regex
@@ -131,9 +164,17 @@ createUnary id f =
             ]
 
 
+
+-- Parse a star node
+
+
 star : Parser Regex
 star =
     createUnary "*" Regex.Star
+
+
+
+-- Parse a plus node
 
 
 plus : Parser Regex
@@ -141,9 +182,17 @@ plus =
     createUnary "+" Regex.Plus
 
 
+
+-- Parse a question node
+
+
 question : Parser Regex
 question =
     createUnary "?" Regex.Question
+
+
+
+-- Parse an epsilon node
 
 
 epsilon : Parser Regex
@@ -152,9 +201,17 @@ epsilon =
         |. P.symbol "&"
 
 
+
+-- Combine all of the unary operators
+
+
 unary : Parser Regex
 unary =
     P.oneOf [ epsilon, star, plus, question, regexSymbol ]
+
+
+
+-- Parse a symbol and convert it to a Regex Symbol
 
 
 regexSymbol : Parser Regex

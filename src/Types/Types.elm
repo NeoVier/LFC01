@@ -43,20 +43,8 @@ init _ =
 
 
 -- MESSAGE
--- Messages can be:
--- xRequested -> the user requested to select a File
--- xSelected File -> a File was selected to be parsed
--- xLoaded String -> a String was loaded from a File
--- ConvertAFNDToAFD -> the user requested to convert the current AFND to a AFD
--- SetCurrent Models.General -> the user requested to set the current automaton
--- RemoveItem Models.General -> the user requested to remove the automaton
--- SetSentence String -> the user requested to set the current sentence
--- DoUnion -> Applies the union operation to the last two automata
--- DoIntersection -> Applies the intersection operation to the last two automata
--- DoComplement -> Applies the complement operation to the current AFD
--- Minimize -> Minimize current automaton
--- ConvertGRToAFND -> Converts current GR to an AFND
--- ConvertAFDToGR -> Converts current AFD to GR
+-- Each message is a communication between the user and the program, according
+-- to the Elm Architecture
 
 
 type Msg

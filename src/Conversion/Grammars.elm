@@ -16,6 +16,10 @@ import Models.Transition as Transition
 import Utils.Utils as Utils
 
 
+
+-- Convert a GR to an AFD
+
+
 grToAfd : Grammars.Grammar -> Automata.AFND
 grToAfd gr =
     let
@@ -45,14 +49,26 @@ grToAfd gr =
     }
 
 
+
+-- Default final state used
+
+
 newFinalState : State.State
 newFinalState =
     State.Valid "Final"
 
 
+
+-- Creates a State from a NonTerminalSymbol
+
+
 symbolToState : Grammars.NonTerminalSymbol -> State.State
 symbolToState =
     State.Valid
+
+
+
+-- Converts a Production to a list of NonDeterministicTransition
 
 
 productionToTransitions :

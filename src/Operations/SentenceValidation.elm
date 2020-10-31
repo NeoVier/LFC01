@@ -48,6 +48,11 @@ validateSentence automaton sentence =
         Err "Existem símbolos inválidos"
 
 
+
+-- Given a Symbol, get the List of Chars it represents (specially useful for
+-- Groups)
+
+
 symbolItems : Alphabet.Symbol -> List Char
 symbolItems symbol =
     case symbol of
@@ -56,6 +61,10 @@ symbolItems symbol =
 
         Alphabet.Group g ->
             List.concatMap innerGroupRange g
+
+
+
+-- Given a group element, inform the List of Chars it contains
 
 
 innerGroupRange : ( Char, Char ) -> List Char

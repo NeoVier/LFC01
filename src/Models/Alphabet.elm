@@ -41,7 +41,7 @@ type Epsilon
 
 
 
--- A symbol is just a Char
+-- A symbol is either a single char or a group (e.g. [0-9], [a-zA-Z])
 
 
 type Symbol

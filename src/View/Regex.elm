@@ -1,3 +1,11 @@
+{-
+   View/Regex.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to view Regular Expressions
+-}
+
+
 module View.Regex exposing (..)
 
 import Html exposing (..)

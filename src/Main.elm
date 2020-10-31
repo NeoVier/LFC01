@@ -140,15 +140,15 @@ update msg model =
             ( model, Task.perform Types.RegexLoaded (File.toString file) )
 
         Types.RegexLoaded content ->
-            case PRegex.regexFile content of
-                Err _ ->
+            case PRegex.parseRegex content of
+                Nothing ->
                     ( { model
                         | currentItem = Err "Erro ao ler a expressão regular"
                       }
                     , Cmd.none
                     )
 
-                Ok idRegexes ->
+                Just idRegexes ->
                     ( { model
                         | currentItem = Ok (Models.Regex idRegexes)
                         , itemHistory = Models.Regex idRegexes :: model.itemHistory

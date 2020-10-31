@@ -8,8 +8,6 @@
 
 module Parsing.Automata exposing (parseAFD, parseAFND)
 
-import Array
-import Html exposing (a)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata exposing (AFD, AFND, Automaton)
 import Models.State as State
@@ -18,6 +16,10 @@ import Parser as P exposing ((|.), (|=), Parser)
 import Parsing.Common as PC
 import Result.Extra as ResultE
 import Utils.Utils as Utils
+
+
+
+-- Parse an AFD file
 
 
 parseAFD : String -> Maybe AFD
@@ -78,6 +80,10 @@ parseAFD content =
         |> Result.toMaybe
 
 
+
+-- Parse an AFND file
+
+
 parseAFND : String -> Maybe AFND
 parseAFND content =
     let
@@ -136,14 +142,26 @@ parseAFND content =
         |> Result.toMaybe
 
 
+
+-- Get a list of states based on an int
+
+
 stateAmount : Parser (List State.State)
 stateAmount =
     P.int |> P.map generateStates
 
 
+
+-- Get a state based on an int
+
+
 state : Parser State.State
 state =
     P.int |> P.map intToState
+
+
+
+-- Get a list of comma-separated states
 
 
 stateList : Parser (List State.State)
@@ -158,6 +176,10 @@ stateList =
         }
 
 
+
+-- Parse a deterministic alphabet
+
+
 alphabetDeterministic : Parser Alphabet.DeterministicAlphabet
 alphabetDeterministic =
     P.sequence
@@ -168,6 +190,10 @@ alphabetDeterministic =
         , item = PC.alphabetSymbol
         , trailing = P.Forbidden
         }
+
+
+
+-- Parse a non deterministic alphabet
 
 
 alphabetNonDeterministic : Parser Alphabet.NonDeterministicAlphabet
@@ -193,7 +219,14 @@ alphabetNonDeterministic =
         |> P.map removeEpsilon
 
 
-removeEpsilon : Alphabet.NonDeterministicAlphabet -> Alphabet.NonDeterministicAlphabet
+
+-- Removes the '&' symbol from a NonDeterministicAlphabet, because the epsilon
+-- parser needs to return a value, but we don't need it
+
+
+removeEpsilon :
+    Alphabet.NonDeterministicAlphabet
+    -> Alphabet.NonDeterministicAlphabet
 removeEpsilon alph =
     case alph of
         Alphabet.NDA symbols Alphabet.Epsilon ->
@@ -202,11 +235,19 @@ removeEpsilon alph =
                 Alphabet.Epsilon
 
 
+
+-- Parse epsilon as '&'
+
+
 epsilon : Parser Alphabet.Symbol
 epsilon =
     P.getChompedString (P.chompIf (\c -> c == '&'))
         |> P.andThen PC.createChar
         |> P.map Alphabet.Single
+
+
+
+-- Parse a deterministic transition
 
 
 transitionDeterministic : Parser Transition.DeterministicTransition
@@ -227,6 +268,10 @@ transitionDeterministic =
         |. P.symbol ","
         |. P.spaces
         |= state
+
+
+
+-- Parse a non deterministic transition
 
 
 transitionNonDeterministic : Parser Transition.NonDeterministicTransition
@@ -283,7 +328,7 @@ transitionNonDeterministic =
 
 
 
--- -- Helper function to generate states labeled from "0" to "n"
+-- Helper function to generate states labeled from "0" to "n"
 
 
 generateStates : Int -> List State.State

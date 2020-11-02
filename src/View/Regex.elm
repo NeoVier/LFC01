@@ -9,6 +9,7 @@
 module View.Regex exposing (..)
 
 import Html exposing (..)
+import Models.Alphabet as Alphabet
 import Models.Regex as Regex
 import Utils.Utils as Utils
 import View.Styles as Styles
@@ -35,7 +36,12 @@ viewRegex r =
             "ε"
 
         Regex.Symbol s ->
-            Utils.symbolToString s
+            case s of
+                Alphabet.Single _ ->
+                    Utils.symbolToString s
+
+                Alphabet.Group _ ->
+                    "[" ++ Utils.symbolToString s ++ "]"
 
         Regex.Union r1 r2 ->
             "(" ++ viewRegex r1 ++ " | " ++ viewRegex r2 ++ ")"

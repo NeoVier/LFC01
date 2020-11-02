@@ -4,13 +4,12 @@
    Creation: October/2020
    This file contains functions to parse Regexes
 -}
--- module Parsing.Regex exposing (parseRegex, regex)
 
 
-module Parsing.Regex exposing (..)
+module Parsing.Regex exposing (parseRegex)
 
 import Models.Alphabet as Alphabet
-import Models.Regex as Regex exposing (Regex)
+import Models.Regex as Regex exposing (Regex(..))
 import Parser as P exposing ((|.), (|=), Parser)
 import Parsing.Common as PC
 import Result.Extra as ResultE
@@ -28,6 +27,111 @@ parseRegex content =
         |> List.filter (not << String.isEmpty)
         |> ResultE.combineMap (P.run regexLine)
         |> Result.toMaybe
+        |> Maybe.map joinAllIds
+
+
+joinAllIds : List Regex.IdRegex -> List Regex.IdRegex
+joinAllIds regexes =
+    List.map (\( id, r ) -> ( id, joinIdsSingle regexes r )) regexes
+
+
+joinIdsSingle : List Regex.IdRegex -> Regex.Regex -> Regex.Regex
+joinIdsSingle regexes base =
+    List.foldl (\( id, r ) acc -> replaceWord id acc r) base regexes
+
+
+replaceWord : String -> Regex -> Regex -> Regex
+replaceWord word r new =
+    case r of
+        Union c1 c2 ->
+            Union (replaceWord word c1 new) (replaceWord word c2 new)
+
+        Concat c1 c2 ->
+            case getWord r of
+                Nothing ->
+                    Concat (replaceWord word c1 new) (replaceWord word c2 new)
+
+                Just w ->
+                    if w == word then
+                        new
+
+                    else
+                        Concat (replaceWord word c1 new)
+                            (replaceWord word c2 new)
+
+        Star c1 ->
+            Star (replaceWord word c1 new)
+
+        Plus c1 ->
+            Plus (replaceWord word c1 new)
+
+        Question c1 ->
+            Question (replaceWord word c1 new)
+
+        _ ->
+            r
+
+
+
+-- Get a possible word from a regex node
+
+
+getWord : Regex.Regex -> Maybe String
+getWord node =
+    case node of
+        Regex.Concat (Regex.Symbol (Alphabet.Single s1)) c2 ->
+            case getWord c2 of
+                Just w ->
+                    Just <| String.fromChar s1 ++ w
+
+                Nothing ->
+                    Just <| String.fromChar s1
+
+        Concat c1 (Symbol (Alphabet.Single s2)) ->
+            case getWord c1 of
+                Just w ->
+                    Just <| w ++ String.fromChar s2
+
+                Nothing ->
+                    Just <| String.fromChar s2
+
+        Regex.Symbol (Alphabet.Single s1) ->
+            Just <| String.fromChar s1
+
+        _ ->
+            Nothing
+
+
+
+-- Gets all possible words from a regex
+
+
+getAllWords : Regex.Regex -> List String
+getAllWords r =
+    case r of
+        Regex.Union c1 c2 ->
+            getAllWords c1 ++ getAllWords c2
+
+        Regex.Concat c1 c2 ->
+            let
+                thisWord =
+                    getWord r
+                        |> Maybe.map (\x -> [ x ])
+                        |> Maybe.withDefault []
+            in
+            thisWord ++ getAllWords c1 ++ getAllWords c2
+
+        Regex.Star c1 ->
+            getAllWords c1
+
+        Regex.Plus c1 ->
+            getAllWords c1
+
+        Regex.Question c1 ->
+            getAllWords c1
+
+        _ ->
+            []
 
 
 

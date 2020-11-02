@@ -4,10 +4,9 @@
    Creation: October/2020
    This file contains functions to convert Regular Expressions
 -}
--- module Conversion.Regex exposing (erToAfd)
 
 
-module Conversion.Regex exposing (..)
+module Conversion.Regex exposing (erToAfd)
 
 import Dict exposing (Dict)
 import Models.Alphabet as Alphabet

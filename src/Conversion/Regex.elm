@@ -4,9 +4,10 @@
    Creation: October/2020
    This file contains functions to convert Regular Expressions
 -}
+-- module Conversion.Regex exposing (erToAfd)
 
 
-module Conversion.Regex exposing (erToAfd)
+module Conversion.Regex exposing (..)
 
 import Dict exposing (Dict)
 import Models.Alphabet as Alphabet
@@ -185,6 +186,7 @@ cleanTreeInfoDict infoTree =
 
 
 -- Convert a Regular Expression to an AFD
+-- TODO error when converting teste0 or teste1
 
 
 erToAfd : Regex -> Automata.AFD
@@ -365,7 +367,10 @@ getSymbolGroups treeInfo indexes =
                                                     Just fp
 
                                                 Just v ->
-                                                    Just <| v ++ fp
+                                                    Just <|
+                                                        Utils.removeDuplicates <|
+                                                            v
+                                                                ++ fp
                                         )
                                         acc
         )
@@ -445,7 +450,7 @@ firstPosDict r d =
 
         update v dict =
             Dict.update (idx dict)
-                (Maybe.map (\info -> { info | firstPos = v }))
+                (Maybe.map (\info -> { info | firstPos = Utils.removeDuplicates v }))
                 dict
 
         prevMaxValue dict =
@@ -456,7 +461,14 @@ firstPosDict r d =
                 |> Maybe.withDefault 0
 
         compose1 c1 =
-            update (firstPos r) (firstPosDict c1 d)
+            let
+                c1Result =
+                    firstPosDict c1 d
+
+                thisFirstPos =
+                    firstPosFrom (prevMaxValue d) r
+            in
+            update thisFirstPos c1Result
 
         compose2 c1 c2 =
             let
@@ -466,7 +478,7 @@ firstPosDict r d =
                 c2Result =
                     firstPosDict c2 c1Result
             in
-            update (firstPos r) c2Result
+            update (firstPosFrom (prevMaxValue d) r) c2Result
     in
     case r of
         Union c1 c2 ->
@@ -485,9 +497,7 @@ firstPosDict r d =
             compose1 c1
 
         _ ->
-            case firstPosHelp (prevMaxValue d) r of
-                ( v, _ ) ->
-                    update v d
+            update (firstPosFrom (prevMaxValue d) r) d
 
 
 
@@ -515,18 +525,46 @@ lastPosDict r d =
                 |> List.maximum
                 |> Maybe.withDefault 0
 
+        prevLastPos dict =
+            Dict.get (idx dict - 1) dict
+                |> Maybe.map .lastPos
+                |> Maybe.withDefault []
+
         compose1 c1 =
-            update (lastPos r) (lastPosDict c1 d)
+            let
+                c1Result =
+                    lastPosDict c1 d
+
+                thisLastPos =
+                    lastPosFrom (prevMaxValue d) r
+
+                -- TODO - always correct?
+                c1LastPos =
+                    prevLastPos c1Result
+            in
+            update thisLastPos c1Result
 
         compose2 c1 c2 =
             let
                 c1Result =
                     lastPosDict c1 d
 
+                c1LastPos =
+                    prevLastPos c1Result
+                        |> List.map String.fromInt
+                        |> String.join ","
+
                 c2Result =
                     lastPosDict c2 c1Result
+
+                c2LastPos =
+                    prevLastPos c2Result
+                        |> List.map String.fromInt
+                        |> String.join ","
             in
-            update (lastPos r) c2Result
+            update
+                (lastPosFrom (prevMaxValue d) r)
+                c2Result
     in
     case r of
         Union c1 c2 ->
@@ -544,10 +582,20 @@ lastPosDict r d =
         Question c1 ->
             compose1 c1
 
+        Symbol s ->
+            let
+                symbol =
+                    case s of
+                        Alphabet.Single x ->
+                            String.fromChar x
+
+                        Alphabet.Group _ ->
+                            "g"
+            in
+            update (lastPosFrom (prevMaxValue d) r) d
+
         _ ->
-            case lastPosHelp (prevMaxValue d) r of
-                ( v, _ ) ->
-                    update v d
+            update (lastPosFrom (prevMaxValue d) r) d
 
 
 
@@ -589,7 +637,10 @@ followPosDict r d =
                                     Just newFollowPos
 
                                 Just v ->
-                                    Just <| v ++ newFollowPos
+                                    Just <|
+                                        Utils.removeDuplicates <|
+                                            v
+                                                ++ newFollowPos
                     }
             in
             case Dict.get (idx c1Result) c1Result of
@@ -634,7 +685,7 @@ followPosDict r d =
                                     Just newFollowPos
 
                                 Just v ->
-                                    Just <| v ++ newFollowPos
+                                    Just <| Utils.removeDuplicates <| v ++ newFollowPos
                     }
             in
             case Dict.get c1Index c2Result of
@@ -687,7 +738,7 @@ followPosDict r d =
                                     Just newFollowPos
 
                                 Just v ->
-                                    Just <| v ++ newFollowPos
+                                    Just <| Utils.removeDuplicates <| v ++ newFollowPos
                     }
             in
             case Dict.get (idx c1Result) c1Result of
@@ -753,9 +804,17 @@ nullable r =
 
 
 firstPos : Regex -> List Int
-firstPos r =
-    firstPosHelp 0 r
-        |> Tuple.first
+firstPos =
+    firstPosFrom 0
+
+
+
+-- Get the firstPos giving the first node value
+
+
+firstPosFrom : Int -> Regex -> List Int
+firstPosFrom i r =
+    firstPosHelp i r |> Tuple.first
 
 
 
@@ -779,7 +838,7 @@ firstPosHelp count r =
                 ( c2FirstPos, c2Count ) =
                     firstPosHelp c1Count c2
             in
-            ( c1FirstPos ++ c2FirstPos, c2Count )
+            ( Utils.removeDuplicates <| c1FirstPos ++ c2FirstPos, c2Count )
 
         Concat c1 c2 ->
             let
@@ -791,7 +850,7 @@ firstPosHelp count r =
                     ( c2firstPos, c2Count ) =
                         firstPosHelp c1Count c2
                 in
-                ( c1firstPos ++ c2firstPos, c2Count )
+                ( Utils.removeDuplicates <| c1firstPos ++ c2firstPos, c2Count )
 
             else
                 firstPosHelp count c1
@@ -812,18 +871,27 @@ firstPosHelp count r =
 
 
 lastPos : Regex -> List Int
-lastPos r =
-    let
-        v =
-            lastPosHelp 0 r |> Tuple.first
-
-        leafCount =
-            getLeafCount r
-    in
-    List.map (\x -> leafCount - x + 1) v |> List.sort
+lastPos =
+    lastPosFrom 0
 
 
 
+-- Get the firstPos giving the first node value
+
+
+lastPosFrom : Int -> Regex -> List Int
+lastPosFrom i r =
+    lastPosHelp i r |> Tuple.first
+
+
+
+-- let
+--     v =
+--         lastPosHelp i r |> Tuple.first
+--     leafCount =
+--         getLeafCount r
+-- in
+-- List.map (\x -> leafCount - x + 1) v |> List.sort
 -- Helper function for lastPos
 
 
@@ -844,7 +912,7 @@ lastPosHelp count r =
                 ( c2LastPos, c2Count ) =
                     lastPosHelp c1Count c2
             in
-            ( c1LastPos ++ c2LastPos, c2Count )
+            ( Utils.removeDuplicates <| c1LastPos ++ c2LastPos, c2Count )
 
         Concat c1 c2 ->
             if nullable c2 then
@@ -855,10 +923,14 @@ lastPosHelp count r =
                     ( c2LastPos, c2Count ) =
                         lastPosHelp c1Count c2
                 in
-                ( c1LastPos ++ c2LastPos, c2Count )
+                ( Utils.removeDuplicates <| c1LastPos ++ c2LastPos, c2Count )
 
             else
-                lastPosHelp count c2
+                let
+                    c1Count =
+                        lastPosHelp count c1 |> Tuple.second
+                in
+                lastPosHelp c1Count c2
 
         Star c1 ->
             lastPosHelp count c1

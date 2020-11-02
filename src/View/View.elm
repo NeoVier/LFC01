@@ -216,9 +216,7 @@ viewRightPanel model =
                     )
                 :: loadButton "expressão regular"
                     (Types.FileRequested
-                        (PRegex.parseRegex
-                            >> Maybe.map Models.Regex
-                        )
+                        (PRegex.parseRegex >> Maybe.map Models.Regex)
                     )
                 :: List.map (\f -> f model |> maybeHtmlToHtml)
                     [ convertButton

@@ -4,9 +4,10 @@
    Creation: October/2020
    This file contains functions to parse Regexes
 -}
+-- module Parsing.Regex exposing (parseRegex, regex)
 
 
-module Parsing.Regex exposing (parseRegex)
+module Parsing.Regex exposing (..)
 
 import Models.Alphabet as Alphabet
 import Models.Regex as Regex exposing (Regex)
@@ -23,7 +24,9 @@ import Utils.Utils as Utils
 
 parseRegex : String -> Maybe (List Regex.IdRegex)
 parseRegex content =
-    ResultE.combineMap (P.run regexLine) (String.lines content)
+    String.lines content
+        |> List.filter (not << String.isEmpty)
+        |> ResultE.combineMap (P.run regexLine)
         |> Result.toMaybe
 
 
@@ -39,6 +42,7 @@ regexLine =
         |. P.symbol ":"
         |. P.spaces
         |= regex
+        |. P.spaces
 
 
 
@@ -57,9 +61,9 @@ regexId =
 regex : Parser Regex
 regex =
     P.oneOf
-        [ P.backtrackable <| union
-        , P.backtrackable <| concat
+        [ P.backtrackable <| concat
         , P.backtrackable <| unary
+        , P.backtrackable <| union
         ]
         |. P.oneOf [ P.end, P.symbol "\n" ]
 
@@ -132,12 +136,22 @@ union =
 baseUnion : Parser Regex
 baseUnion =
     P.backtrackable <|
-        P.succeed Regex.Union
-            |= concat
-            |. P.spaces
-            |. P.symbol "|"
-            |. P.spaces
-            |= concat
+        P.oneOf
+            [ P.succeed Regex.Union
+                |. P.symbol "("
+                |= concat
+                |. P.spaces
+                |. P.symbol "|"
+                |. P.spaces
+                |= concat
+                |. P.symbol ")"
+            , P.succeed Regex.Union
+                |= concat
+                |. P.spaces
+                |. P.symbol "|"
+                |. P.spaces
+                |= concat
+            ]
 
 
 
@@ -149,7 +163,7 @@ createUnary : String -> (Regex -> Regex) -> Parser Regex
 createUnary id f =
     let
         defSucc =
-            P.succeed f
+            P.backtrackable <| P.succeed f
     in
     P.backtrackable <|
         P.oneOf

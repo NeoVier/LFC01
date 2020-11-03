@@ -9,7 +9,10 @@
 module View.Automata.Common exposing (viewAutomataHeader)
 
 import Html exposing (..)
+import Html.Events exposing (..)
 import Models.Alphabet as Alphabet
+import Models.Models as Models
+import Types.Types as Types
 import Utils.Utils as Utils
 import View.Styles exposing (..)
 
@@ -18,10 +21,15 @@ import View.Styles exposing (..)
 -- Given an alphabet, returns a table entry
 
 
-viewAutomataHeader : Alphabet.Alphabet -> Html msg
+viewAutomataHeader :
+    Alphabet.Alphabet
+    -> Html Types.Msg
 viewAutomataHeader alphabet =
     tr tableRowStyles
-        ([ th tableItemStyles [ text "ẟ" ] ] ++ alphabetHeader alphabet)
+        (th tableItemStyles []
+            :: th tableItemStyles [ text "ẟ" ]
+            :: alphabetHeader alphabet
+        )
 
 
 

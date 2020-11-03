@@ -97,7 +97,19 @@ update msg model =
                     ( model, Cmd.none )
 
         Types.SetCurrent general ->
-            ( { model | currentItem = Ok general }
+            ( { model | currentItem = Ok general }, Cmd.none )
+
+        Types.UpdateCurrent general ->
+            ( { model
+                | currentItem = Ok general
+                , itemHistory =
+                    case model.currentItem of
+                        Ok curr ->
+                            Utils.replaceBy curr general model.itemHistory
+
+                        _ ->
+                            model.itemHistory
+              }
             , Cmd.none
             )
 

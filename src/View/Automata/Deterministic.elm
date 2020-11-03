@@ -9,10 +9,14 @@
 module View.Automata.Deterministic exposing (viewAFD)
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
+import Models.Models as Models
 import Models.State as State
 import Models.Transition as Transition
+import Types.Types as Types
 import Utils.Utils as Utils
 import View.Automata.Common as VC
 import View.Styles exposing (..)
@@ -22,7 +26,7 @@ import View.Styles exposing (..)
 -- Given an AFD, return a table that represents it
 
 
-viewAFD : Automata.AFD -> Html msg
+viewAFD : Automata.AFD -> Html Types.Msg
 viewAFD afd =
     table tableStyles
         (VC.viewAutomataHeader (Alphabet.Deterministic afd.alphabet)
@@ -34,74 +38,199 @@ viewAFD afd =
 -- Given an AFD, return a list of rows that represent the states and transitions
 
 
-getAutomatonRows : Automata.AFD -> List (Html msg)
+getAutomatonRows : Automata.AFD -> List (Html Types.Msg)
 getAutomatonRows afd =
     List.map (\state -> getStateRow afd state) afd.states
-        |> List.map
-            (\row ->
-                tr tableRowStyles
-                    (List.map
-                        (\entry -> td tableItemStyles [ text entry ])
-                        row
-                    )
-            )
 
 
 
 -- Given an AFD and a State, return the row that represents the State
 
 
-getStateRow : Automata.AFD -> State.State -> List String
+getStateRow : Automata.AFD -> State.State -> Html Types.Msg
 getStateRow afd prevState =
-    case prevState of
-        State.Dead ->
-            [ "" ]
+    let
+        isInitial =
+            prevState == afd.initialState
 
-        State.Valid label ->
-            let
-                isInitial =
-                    prevState == afd.initialState
+        isFinal =
+            List.member prevState afd.finalStates
 
-                isFinal =
-                    List.member prevState afd.finalStates
+        prefix =
+            if isInitial && isFinal then
+                "->*"
 
-                prefix =
-                    if isInitial && isFinal then
-                        "->* "
+            else if isInitial then
+                "->"
 
-                    else if isInitial then
-                        "-> "
+            else if isFinal then
+                "*"
 
-                    else if isFinal then
-                        "* "
+            else
+                ""
 
-                    else
-                        ""
+        prefixSelect =
+            select
+                [ onInput
+                    (\new ->
+                        case new of
+                            "->*" ->
+                                { afd
+                                    | initialState = prevState
+                                    , finalStates =
+                                        afd.finalStates
+                                            ++ [ prevState ]
+                                            |> Utils.removeDuplicates
+                                }
+                                    |> afdToGeneral
+                                    |> Types.UpdateCurrent
 
-                transitions =
-                    Utils.getFlatOutTransitionsDeterministic
-                        afd
-                        prevState
-                        |> Utils.sortTransitionsDeterministic
-            in
-            [ prefix
-                ++ label
+                            "->" ->
+                                { afd
+                                    | initialState = prevState
+                                    , finalStates =
+                                        List.filter (\s -> s /= prevState)
+                                            afd.finalStates
+                                }
+                                    |> afdToGeneral
+                                    |> Types.UpdateCurrent
+
+                            "*" ->
+                                { afd
+                                    | finalStates =
+                                        afd.finalStates
+                                            ++ [ prevState ]
+                                            |> Utils.removeDuplicates
+                                }
+                                    |> afdToGeneral
+                                    |> Types.UpdateCurrent
+
+                            _ ->
+                                { afd
+                                    | finalStates =
+                                        List.filter (\s -> s /= prevState)
+                                            afd.finalStates
+                                }
+                                    |> afdToGeneral
+                                    |> Types.UpdateCurrent
+                    )
+                , value prefix
+                ]
+                (option [ value prefix ] [ text prefix ]
+                    :: List.map (\t -> option [ value t ] [ text t ])
+                        (if prevState == afd.initialState then
+                            [ "->*", "->" ]
+
+                         else
+                            [ "->*", "->", "*", "" ]
+                        )
+                )
+
+        transitions =
+            Utils.getFlatOutTransitionsDeterministic
+                afd
+                prevState
+                |> Utils.sortTransitionsDeterministic
+    in
+    tr tableRowStyles <|
+        td tableItemStyles
+            [ button
+                [ disabled isInitial
+                , onClick
+                    ({ afd
+                        | states =
+                            List.filter
+                                (\state -> state /= prevState)
+                                afd.states
+                        , finalStates =
+                            List.filter (\state -> state /= prevState)
+                                afd.finalStates
+                        , transitions =
+                            List.filterMap
+                                (\transition ->
+                                    if transition.nextState == prevState then
+                                        Just
+                                            { transition
+                                                | nextState = State.Dead
+                                            }
+
+                                    else if
+                                        transition.prevState
+                                            == prevState
+                                    then
+                                        Nothing
+
+                                    else
+                                        Just transition
+                                )
+                                afd.transitions
+                     }
+                        |> afdToGeneral
+                        |> Types.UpdateCurrent
+                    )
+                ]
+                [ text "Remover estado" ]
             ]
-                ++ List.map (\transition -> viewFlatDeterministicTransition transition)
-                    transitions
-
-
-
--- Helper function to convert the nextState of a Transition to a String
+            :: td tableItemStyles [ prefixSelect, text <| stateToString prevState ]
+            :: List.map
+                (\transition ->
+                    td tableItemStyles
+                        [ viewFlatDeterministicTransition transition afd ]
+                )
+                transitions
 
 
 viewFlatDeterministicTransition :
     Transition.DeterministicTransition
-    -> String
-viewFlatDeterministicTransition transition =
-    case transition.nextState of
+    -> Automata.AFD
+    -> Html Types.Msg
+viewFlatDeterministicTransition transition afd =
+    select
+        [ onInput
+            (\new ->
+                { afd
+                    | transitions =
+                        Utils.replaceBy transition
+                            { transition | nextState = stringToState new }
+                            afd.transitions
+                }
+                    |> Automata.FiniteDeterministic
+                    |> Models.Automaton
+                    |> Types.UpdateCurrent
+            )
+        , value (stateToString transition.nextState)
+        ]
+        (option [ value (stateToString transition.nextState) ]
+            [ text (stateToString transition.nextState) ]
+            :: List.map
+                (\state ->
+                    option
+                        [ value (stateToString state) ]
+                        [ text (stateToString state) ]
+                )
+                (afd.states ++ [ State.Dead ])
+        )
+
+
+afdToGeneral : Automata.AFD -> Models.General
+afdToGeneral =
+    Automata.FiniteDeterministic >> Models.Automaton
+
+
+stateToString : State.State -> String
+stateToString state =
+    case state of
         State.Dead ->
             "-"
 
-        State.Valid nextLabel ->
-            nextLabel
+        State.Valid label ->
+            label
+
+
+stringToState : String -> State.State
+stringToState label =
+    if label == "-" then
+        State.Dead
+
+    else
+        State.Valid label

@@ -10,6 +10,7 @@ module View.Automata exposing (..)
 
 import Html exposing (..)
 import Models.Automata as Automata
+import Types.Types as Types
 import View.Automata.Deterministic as VAFD
 import View.Automata.NonDeterministic as VAFND
 
@@ -18,7 +19,7 @@ import View.Automata.NonDeterministic as VAFND
 -- General view function, that routes to the appropriate function
 
 
-viewCurrentAutomaton : Automata.Automaton -> Html msg
+viewCurrentAutomaton : Automata.Automaton -> Html Types.Msg
 viewCurrentAutomaton automaton =
     case automaton of
         Automata.FiniteDeterministic afd ->

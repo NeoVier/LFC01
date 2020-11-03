@@ -52,6 +52,7 @@ type Msg
     | FileSelected (String -> Maybe Models.General) File
     | FileLoaded (String -> Maybe Models.General) String
     | SetCurrent Models.General
+    | UpdateCurrent Models.General
     | RemoveItem Models.General
     | SetSentence String
     | DoUnion

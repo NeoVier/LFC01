@@ -4,7 +4,6 @@
    Creation: October/2020
    This file contains the definitions of everything related to Grammars
 -}
--- TODO accept epsilon
 
 
 module Models.Grammars exposing (..)
@@ -14,7 +13,8 @@ import Models.Alphabet as Alphabet
 
 
 -- A Regular Grammar is a 4-tuple with a list of non terminal symbols,
--- a list of terminal symbols, a list of productions and an initial symbol
+-- a list of terminal symbols, a list of productions and an initial symbol.
+-- Plus a flag that determines if it accepts the empty word
 
 
 type alias Grammar =
@@ -22,6 +22,7 @@ type alias Grammar =
     , terminals : List TerminalSymbol
     , productions : List Production
     , initialSymbol : NonTerminalSymbol
+    , acceptsEmpty : Bool
     }
 
 

@@ -213,7 +213,7 @@ update msg model =
                 Ok (Models.Grammar grammar) ->
                     let
                         result =
-                            CGrammars.grToAfd grammar
+                            CGrammars.grToAfnd grammar
                                 |> Automata.FiniteNonDeterministic
                                 |> Models.Automaton
                     in

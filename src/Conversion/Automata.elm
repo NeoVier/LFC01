@@ -113,6 +113,7 @@ afdToGr afd =
             )
             afd.transitions
     , initialSymbol = initialSymbol
+    , acceptsEmpty = List.member afd.initialState afd.finalStates
     }
         |> Utils.joinGrammarProductions
 

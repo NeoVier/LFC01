@@ -6,7 +6,7 @@
 -}
 
 
-module Conversion.Grammars exposing (grToAfd)
+module Conversion.Grammars exposing (grToAfnd)
 
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
@@ -17,14 +17,18 @@ import Utils.Utils as Utils
 
 
 
--- Convert a GR to an AFD
+-- Convert a GR to an AFND
 
 
-grToAfd : Grammars.Grammar -> Automata.AFND
-grToAfd gr =
+grToAfnd : Grammars.Grammar -> Automata.AFND
+grToAfnd gr =
     let
         finalStates =
-            [ newFinalState ]
+            if gr.acceptsEmpty then
+                [ newFinalState, initialState ]
+
+            else
+                [ newFinalState ]
 
         alphabet : Alphabet.NonDeterministicAlphabet
         alphabet =
@@ -34,6 +38,7 @@ grToAfd gr =
         states =
             List.map symbolToState gr.nonTerminals
                 ++ finalStates
+                |> Utils.removeDuplicates
 
         initialState =
             symbolToState gr.initialSymbol

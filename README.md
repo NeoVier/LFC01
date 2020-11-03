@@ -8,7 +8,7 @@ Student: Henrique da Cunha Buss
 
 ### First Submission (items 1-7, 05/11)
 
-- [ ] AFs
+- [x] AFs
   - [x] Display AF
   - [x] Parse AF
   - [x] Add AF to history
@@ -22,10 +22,10 @@ Student: Henrique da Cunha Buss
   - [x] Recognize sentences with AFs
   - [x] AFD Union
   - [x] AFD Intersection
-  - [ ] Minimize AFD
+  - [x] Minimize AFD
     - [x] Filter reachable states
     - [x] Filter alive states
-    - [ ] Apply classes algorithm
+    - [x] Apply classes algorithm
   - [x] Convert AFD to GR
 - [x] GR
   - [x] Display GR
@@ -55,7 +55,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
   2. [x] Converting AFND (with and without epsilon) to AFD
   3. [x] Converting AFD to GR and GR to AFND
   4. [x] Recognizing sentences in AF
-  5. [ ] Minimizing AFD
+  5. [x] Minimizing AFD
   6. [x] AFD union and intersection
   7. [x] Converting ER to AFD (using syntactic tree-based algorithm)
 

@@ -185,7 +185,6 @@ cleanTreeInfoDict infoTree =
 
 
 -- Convert a Regular Expression to an AFD
--- TODO error when converting teste0 or teste1
 
 
 erToAfd : Regex -> Automata.AFD
@@ -357,7 +356,7 @@ getSymbolGroups treeInfo indexes =
                                 Nothing ->
                                     acc
 
-                                -- TODO
+                                -- TOD
                                 Just fp ->
                                     Dict.update (Utils.symbolToString symbol)
                                         (\dictValue ->
@@ -537,7 +536,6 @@ lastPosDict r d =
                 thisLastPos =
                     lastPosFrom (prevMaxValue d) r
 
-                -- TODO - always correct?
                 c1LastPos =
                     prevLastPos c1Result
             in

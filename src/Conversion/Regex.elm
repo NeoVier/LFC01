@@ -18,22 +18,6 @@ import Utils.Utils as Utils
 
 
 
--- Concat the whole thing with a #
--- Assign nullable to each node
--- Assign firstPos to each node
--- Assign lastPos to each node
--- Assign followPos to each node
--- Construct Dstates and Dtransitions
--- Initialize Dstates with only the first unmarked state of firstpos(root)
---
--- while there is an unmarked state S in Dstates:
---   mark S
---   for each input symbol a:
---      let U be the union of followpos(p) for all p in S that correspond to a
---      if U is not in Dstates:
---          add U as an unmarked state to Dstates
---      Dtran[S, a] = U
---
 {-
     The following tables show the relationship between RegEx nodes and their
     nullable, firstPos and lastPos values
@@ -96,30 +80,7 @@ import Utils.Utils as Utils
     - If n is a (Star c1) node, and i is a position in lastpos(n), then all
         positions in firstpos(n) are in followpos(i)
 -}
--------
--- Get root node
---
--- Get its firstPos
---
--- For each item in the firstPos:
---      Get what each component's nodeSymbol is
---
---
--- If first pos = [1, 2, 3]
---    and treeInfoDict[1].nodeSymbol = treeInfoDict[3].nodeSymbol = a
---
--- To transition from [1,2,3] through a,
---    go to state treeInfoDict[1].followPos ++ treeInfoDict[3].followPos
---    (e.g. [1,2,3,4])
--- To transition from [1,2,3] through b,
---    go to state treeInfoDict[3].followPos (e.g. [1,2,3])
---
--- Now do the same with the new states added ([1,2,3,4])
---
---
--- Every state that contains the root node's finalPos is an accepting state
--------
--- Contains all of the needed info to apply the algorithm
+-- TreeInfo contains all of the needed info to apply the algorithm
 
 
 type alias TreeInfo =

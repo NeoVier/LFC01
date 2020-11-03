@@ -51,7 +51,6 @@ type Msg
     = FileRequested (String -> Maybe Models.General)
     | FileSelected (String -> Maybe Models.General) File
     | FileLoaded (String -> Maybe Models.General) String
-    | ConvertAFNDToAFD
     | SetCurrent Models.General
     | RemoveItem Models.General
     | SetSentence String
@@ -59,6 +58,7 @@ type Msg
     | DoIntersection
     | DoComplement
     | Minimize
+    | ConvertAFNDToAFD
     | ConvertGRToAFND
     | ConvertAFDToGR
     | ConvertERToAFD

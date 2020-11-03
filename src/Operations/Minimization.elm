@@ -4,10 +4,9 @@
    Creation: October/2020
    This file contains functions to minimize automata
 -}
--- module Operations.Minimization exposing (minimizeAFD)
 
 
-module Operations.Minimization exposing (..)
+module Operations.Minimization exposing (minimizeAFD)
 
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
@@ -138,6 +137,7 @@ allAliveStates afd =
 
 
 -- CLASSES
+-- Type with necessary definitions for a Class
 
 
 type alias Class =
@@ -146,6 +146,10 @@ type alias Class =
     , isFinal : Bool
     , isInitial : Bool
     }
+
+
+
+-- Given a Class list, retrieve an AFD
 
 
 afdFromClassList : List Class -> Automata.AFD
@@ -204,18 +208,8 @@ afdFromClassList classes =
     }
 
 
-getStateClassIndex : State.State -> List Class -> Int
-getStateClassIndex state classes =
-    case classes of
-        [] ->
-            0
 
-        x :: xs ->
-            if List.member state x.states then
-                0
-
-            else
-                1 + getStateClassIndex state xs
+-- Given an automaton, retrieve the optimized list of Classes
 
 
 afdToClassList : Automata.AFD -> List Class
@@ -258,6 +252,10 @@ afdToClassList afd =
             Utils.replaceBy c { c | isInitial = True } result
 
 
+
+-- Helper function to recurse with classStep
+
+
 recurseClasses : List Class -> Automata.AFD -> List Class
 recurseClasses classes afd =
     let
@@ -271,6 +269,10 @@ recurseClasses classes afd =
         recurseClasses result afd
 
 
+
+-- Do a step in the Class assigning algorithm
+
+
 classStep : List Class -> Automata.AFD -> List Class
 classStep classes afd =
     List.foldl (\state classList -> assignClass state classList afd)
@@ -279,93 +281,7 @@ classStep classes afd =
 
 
 
--- |> List.filter
--- (\c ->
--- not (List.isEmpty c.states)
--- && not (List.isEmpty c.transitions)
--- )
-
-
-testState0 : State.State
-testState0 =
-    State.Valid "0"
-
-
-testState1 : State.State
-testState1 =
-    State.Valid "1"
-
-
-testState2 : State.State
-testState2 =
-    State.Valid "2"
-
-
-testState3 : State.State
-testState3 =
-    State.Valid "3"
-
-
-testTransition0 : Transition.DeterministicTransition
-testTransition0 =
-    { prevState = testState0
-    , nextState = testState1
-    , conditions = [ Alphabet.Single 'a' ]
-    }
-
-
-testTransition1 : Transition.DeterministicTransition
-testTransition1 =
-    { prevState = testState1
-    , nextState = testState2
-    , conditions = [ Alphabet.Single 'a' ]
-    }
-
-
-testTransition2 : Transition.DeterministicTransition
-testTransition2 =
-    { prevState = testState2
-    , nextState = testState3
-    , conditions = [ Alphabet.Single 'a' ]
-    }
-
-
-testTransition3 : Transition.DeterministicTransition
-testTransition3 =
-    { prevState = testState3
-    , nextState = testState3
-    , conditions = [ Alphabet.Single 'a' ]
-    }
-
-
-testAfd : Automata.AFD
-testAfd =
-    { states = [ testState0, testState1, testState2, testState3 ]
-    , initialState = testState0
-    , finalStates = [ testState2, testState3 ]
-    , alphabet = [ Alphabet.Single 'a' ]
-    , transitions =
-        [ testTransition0
-        , testTransition1
-        , testTransition2
-        , testTransition3
-        ]
-    }
-
-
-testInitialClasses : List Class
-testInitialClasses =
-    [ { states = [ testState0, testState1 ]
-      , transitions = []
-      , isFinal = False
-      , isInitial = False
-      }
-    , { states = [ testState2, testState3 ]
-      , transitions = []
-      , isFinal = True
-      , isInitial = False
-      }
-    ]
+-- Insert a state into a Class list
 
 
 assignClass : State.State -> List Class -> Automata.AFD -> List Class
@@ -431,6 +347,10 @@ assignClass state classes afd =
                 |> Utils.removeDuplicates
 
 
+
+-- Determine if two lists of transitions are equivalent
+
+
 equivalentTransitionLists :
     List Transition.DeterministicTransition
     -> List Transition.DeterministicTransition
@@ -442,6 +362,10 @@ equivalentTransitionLists t1s t2s classes =
         && (List.map2 (\t1 t2 -> equivalentTransitions t1 t2 classes) t1s t2s
                 |> List.all identity
            )
+
+
+
+-- Determine if two transitions are equivalent
 
 
 equivalentTransitions :
@@ -485,3 +409,21 @@ equivalentTransitions t1 t2 classes =
                         == t2.conditions
                         && isFinal t1
                         == isFinal t2
+
+
+
+-- Get the index of the class to which the state belongs
+
+
+getStateClassIndex : State.State -> List Class -> Int
+getStateClassIndex state classes =
+    case classes of
+        [] ->
+            0
+
+        x :: xs ->
+            if List.member state x.states then
+                0
+
+            else
+                1 + getStateClassIndex state xs

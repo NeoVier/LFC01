@@ -8,14 +8,7 @@
 
 module Parsing.Grammars exposing (parseGR)
 
-import Models.Grammars as Grammars
-    exposing
-        ( Grammar
-        , NonTerminalSymbol
-        , Production
-        , ProductionBody
-        , TerminalSymbol
-        )
+import Models.Grammars as Grammars exposing (..)
 import Parser as P exposing ((|.), (|=), Parser)
 import Parsing.Common as PC
 import Result.Extra as ResultE

@@ -89,7 +89,7 @@ getStateRow afd prevState =
                                 { afd
                                     | initialState = prevState
                                     , finalStates =
-                                        List.filter (\s -> s /= prevState)
+                                        List.filter ((/=) prevState)
                                             afd.finalStates
                                 }
                                     |> afdToGeneral
@@ -108,7 +108,7 @@ getStateRow afd prevState =
                             _ ->
                                 { afd
                                     | finalStates =
-                                        List.filter (\s -> s /= prevState)
+                                        List.filter ((/=) prevState)
                                             afd.finalStates
                                 }
                                     |> afdToGeneral
@@ -139,11 +139,9 @@ getStateRow afd prevState =
                 , onClick
                     ({ afd
                         | states =
-                            List.filter
-                                (\state -> state /= prevState)
-                                afd.states
+                            List.filter ((/=) prevState) afd.states
                         , finalStates =
-                            List.filter (\state -> state /= prevState)
+                            List.filter ((/=) prevState)
                                 afd.finalStates
                         , transitions =
                             List.filterMap

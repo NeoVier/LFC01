@@ -49,45 +49,149 @@ getAutomatonRows afnd =
 
 getStateRow : Automata.AFND -> State.State -> Html Types.Msg
 getStateRow afnd prevState =
-    case prevState of
-        State.Dead ->
-            text ""
+    let
+        isInitial =
+            prevState == afnd.initialState
 
-        State.Valid label ->
-            let
-                isInitial =
-                    prevState == afnd.initialState
+        isFinal =
+            List.member prevState afnd.finalStates
 
-                isFinal =
-                    List.member prevState afnd.finalStates
+        prefix =
+            if isInitial && isFinal then
+                "->*"
 
-                prefix =
-                    if isInitial && isFinal then
-                        "->* "
+            else if isInitial then
+                "->"
 
-                    else if isInitial then
-                        "-> "
+            else if isFinal then
+                "*"
 
-                    else if isFinal then
-                        "* "
+            else
+                ""
 
-                    else
-                        ""
+        prefixSelect =
+            select
+                [ value prefix
+                , onInput
+                    (\new ->
+                        case new of
+                            "->*" ->
+                                { afnd
+                                    | initialState = prevState
+                                    , finalStates =
+                                        afnd.finalStates
+                                            ++ [ prevState ]
+                                            |> Utils.removeDuplicates
+                                }
+                                    |> afndToGeneral
+                                    |> Types.UpdateCurrent
 
-                transitions =
-                    Utils.getFlatOutTransitionsNonDeterministic afnd prevState
-                        |> Utils.sortTransitionsNonDeterministic
-                        |> Utils.swapFirstAndLast
-            in
-            tr tableRowStyles
-                (td tableItemStyles []
-                    :: td tableItemStyles [ text (prefix ++ label) ]
-                    :: List.map
-                        (\transition ->
-                            viewFlatNonDeterministicTransition transition afnd
+                            "->" ->
+                                { afnd
+                                    | initialState = prevState
+                                    , finalStates =
+                                        List.filter ((/=) prevState)
+                                            afnd.finalStates
+                                }
+                                    |> afndToGeneral
+                                    |> Types.UpdateCurrent
+
+                            "*" ->
+                                { afnd
+                                    | finalStates =
+                                        afnd.finalStates
+                                            ++ [ prevState ]
+                                            |> Utils.removeDuplicates
+                                }
+                                    |> afndToGeneral
+                                    |> Types.UpdateCurrent
+
+                            _ ->
+                                { afnd
+                                    | finalStates =
+                                        List.filter
+                                            ((/=) prevState)
+                                            afnd.finalStates
+                                }
+                                    |> afndToGeneral
+                                    |> Types.UpdateCurrent
+                    )
+                ]
+                (option [ value prefix ] [ text prefix ]
+                    :: List.map (\t -> option [ value t ] [ text t ])
+                        (if prevState == afnd.initialState then
+                            [ "->*", "->" ]
+
+                         else
+                            [ "->*", "->", "*", "" ]
                         )
-                        transitions
                 )
+
+        transitions =
+            Utils.getFlatOutTransitionsNonDeterministic afnd prevState
+                |> Utils.sortTransitionsNonDeterministic
+                |> Utils.swapFirstAndLast
+    in
+    tr tableRowStyles
+        (td tableItemStyles
+            [ button
+                [ disabled isInitial
+                , onClick
+                    ({ afnd
+                        | states = List.filter ((/=) prevState) afnd.states
+                        , finalStates =
+                            List.filter ((/=) prevState)
+                                afnd.finalStates
+                        , transitions =
+                            List.filterMap
+                                (\transition ->
+                                    if
+                                        List.member prevState
+                                            transition.nextStates
+                                    then
+                                        Just
+                                            { transition
+                                                | nextStates =
+                                                    case
+                                                        List.filter
+                                                            ((/=) prevState)
+                                                            transition.nextStates
+                                                    of
+                                                        [] ->
+                                                            [ State.Dead ]
+
+                                                        a ->
+                                                            a
+                                            }
+
+                                    else if
+                                        transition.prevState
+                                            == prevState
+                                    then
+                                        Nothing
+
+                                    else
+                                        Just transition
+                                )
+                                afnd.transitions
+                     }
+                        |> afndToGeneral
+                        |> Types.UpdateCurrent
+                    )
+                ]
+                [ text "Remover estado" ]
+            ]
+            :: td tableItemStyles
+                [ prefixSelect
+                , text <| stateToString prevState
+                ]
+            :: List.map
+                (\transition ->
+                    viewFlatNonDeterministicTransition transition afnd
+                        |> td tableItemStyles
+                )
+                transitions
+        )
 
 
 
@@ -97,32 +201,93 @@ getStateRow afnd prevState =
 viewFlatNonDeterministicTransition :
     Transition.NonDeterministicTransition
     -> Automata.AFND
-    -> Html Types.Msg
+    -> List (Html Types.Msg)
 viewFlatNonDeterministicTransition transition afnd =
-    select []
-        (option [] [ text (statesToString transition.nextStates) ]
-            :: []
+    List.map
+        (\state ->
+            select
+                [ value (stateToString state)
+                , onInput
+                    (\new ->
+                        { afnd
+                            | transitions =
+                                Utils.replaceBy transition
+                                    { transition
+                                        | nextStates =
+                                            case
+                                                Utils.replaceBy
+                                                    state
+                                                    (stringToState new)
+                                                    transition.nextStates
+                                                    |> Utils.removeDuplicates
+                                                    |> List.filter
+                                                        ((/=) State.Dead)
+                                            of
+                                                [] ->
+                                                    [ State.Dead ]
+
+                                                a ->
+                                                    a
+                                    }
+                                    afnd.transitions
+                        }
+                            |> afndToGeneral
+                            |> Types.UpdateCurrent
+                    )
+                ]
+                (option [ value (stateToString state) ]
+                    [ text (stateToString state) ]
+                    :: List.filterMap
+                        (\s ->
+                            if
+                                List.member s transition.nextStates
+                                    && s
+                                    /= state
+                            then
+                                Nothing
+
+                            else
+                                Just <|
+                                    option [ value (stateToString s) ]
+                                        [ text (stateToString s) ]
+                        )
+                        (afnd.states ++ [ State.Dead ])
+                )
         )
+        transition.nextStates
+        ++ [ select
+                [ value ""
+                , onInput
+                    (\new ->
+                        { afnd
+                            | transitions =
+                                Utils.replaceBy transition
+                                    { transition
+                                        | nextStates =
+                                            transition.nextStates
+                                                ++ [ stringToState new ]
+                                                |> List.filter ((/=) State.Dead)
+                                    }
+                                    afnd.transitions
+                        }
+                            |> afndToGeneral
+                            |> Types.UpdateCurrent
+                    )
+                ]
+                (option [ value "" ] [ text "" ]
+                    :: List.filterMap
+                        (\state ->
+                            if List.member state transition.nextStates then
+                                Nothing
 
-
-
--- if transition.nextStates == [ State.Dead ] then
--- td tableItemStyles [ text "-" ]
--- else
--- td tableItemStyles
--- [ List.map
--- (\state ->
--- case state of
--- State.Dead ->
--- ""
--- State.Valid label ->
--- label
--- )
--- transition.nextStates
--- |> List.filter (\x -> x /= "")
--- |> String.join ", "
--- |> text
--- ]
+                            else
+                                Just <|
+                                    option [ value (stateToString state) ]
+                                        [ text (stateToString state) ]
+                        )
+                        afnd.states
+                )
+           ]
 
 
 afndToGeneral : Automata.AFND -> Models.General

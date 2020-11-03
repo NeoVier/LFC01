@@ -239,13 +239,8 @@ loadButton caption msg =
 
 
 maybeHtmlToHtml : Maybe (Html a) -> Html a
-maybeHtmlToHtml html =
-    case html of
-        Nothing ->
-            text ""
-
-        Just valid ->
-            valid
+maybeHtmlToHtml =
+    Maybe.withDefault (text "")
 
 
 convertButton : Types.Model -> Maybe (Html Types.Msg)

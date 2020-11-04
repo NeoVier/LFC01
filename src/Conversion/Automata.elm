@@ -140,6 +140,41 @@ afdToGr afd =
     , acceptsEmpty = List.member afd.initialState afd.finalStates
     }
         |> Utils.joinGrammarProductions
+        |> cleanGR
+
+
+cleanGR : Grammars.Grammar -> Grammars.Grammar
+cleanGR gr =
+    let
+        validNonTerminals =
+            List.filter
+                (\nonTerminal ->
+                    List.map .fromSymbol gr.productions
+                        |> List.member nonTerminal
+                )
+                gr.nonTerminals
+
+        cleanProduction : Grammars.Production -> Grammars.Production
+        cleanProduction prod =
+            { prod
+                | productions =
+                    List.filter
+                        (\body ->
+                            case body.toSymbol of
+                                Nothing ->
+                                    True
+
+                                Just s ->
+                                    List.member s validNonTerminals
+                        )
+                        prod.productions
+            }
+    in
+    { gr
+        | nonTerminals = validNonTerminals
+        , productions =
+            List.map cleanProduction gr.productions
+    }
 
 
 

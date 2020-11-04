@@ -71,8 +71,7 @@ getStateRow afnd prevState =
 
         prefixSelect =
             select
-                [ value prefix
-                , onInput
+                [ onInput
                     (\new ->
                         case new of
                             "->*" ->
@@ -117,14 +116,18 @@ getStateRow afnd prevState =
                                     |> Types.UpdateCurrent
                     )
                 ]
-                (option [ value prefix ] [ text prefix ]
-                    :: List.map (\t -> option [ value t ] [ text t ])
-                        (if prevState == afnd.initialState then
-                            [ "->*", "->" ]
+                (List.map
+                    (\t ->
+                        option
+                            [ value t, selected (t == prefix) ]
+                            [ text t ]
+                    )
+                    (if prevState == afnd.initialState then
+                        [ "->*", "->" ]
 
-                         else
-                            [ "->*", "->", "*", "" ]
-                        )
+                     else
+                        [ "->*", "->", "*", "" ]
+                    )
                 )
 
         transitions =
@@ -205,8 +208,7 @@ viewFlatNonDeterministicTransition transition afnd =
     List.map
         (\state ->
             select
-                [ value (stateToString state)
-                , onInput
+                [ onInput
                     (\new ->
                         { afnd
                             | transitions =
@@ -234,29 +236,29 @@ viewFlatNonDeterministicTransition transition afnd =
                             |> Types.UpdateCurrent
                     )
                 ]
-                (option [ value (stateToString state) ]
-                    [ text (stateToString state) ]
-                    :: List.filterMap
-                        (\s ->
-                            if
-                                List.member s transition.nextStates
-                                    && s
-                                    /= state
-                            then
-                                Nothing
+                (List.filterMap
+                    (\s ->
+                        if
+                            List.member s transition.nextStates
+                                && s
+                                /= state
+                        then
+                            Nothing
 
-                            else
-                                Just <|
-                                    option [ value (stateToString s) ]
-                                        [ text (stateToString s) ]
-                        )
-                        (afnd.states ++ [ State.Dead ])
+                        else
+                            Just <|
+                                option
+                                    [ value (stateToString s)
+                                    , selected (s == state)
+                                    ]
+                                    [ text (stateToString s) ]
+                    )
+                    (afnd.states ++ [ State.Dead ])
                 )
         )
         transition.nextStates
         ++ [ select
-                [ value ""
-                , onInput
+                [ onInput
                     (\new ->
                         { afnd
                             | transitions =
@@ -273,7 +275,7 @@ viewFlatNonDeterministicTransition transition afnd =
                             |> Types.UpdateCurrent
                     )
                 ]
-                (option [ value "" ] [ text "" ]
+                (option [ value "+", selected True ] [ text "+" ]
                     :: List.filterMap
                         (\state ->
                             if List.member state transition.nextStates then

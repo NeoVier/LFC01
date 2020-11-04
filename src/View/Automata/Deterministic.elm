@@ -114,16 +114,17 @@ getStateRow afd prevState =
                                     |> afdToGeneral
                                     |> Types.UpdateCurrent
                     )
-                , value prefix
                 ]
-                (option [ value prefix ] [ text prefix ]
-                    :: List.map (\t -> option [ value t ] [ text t ])
-                        (if prevState == afd.initialState then
-                            [ "->*", "->" ]
+                (List.map
+                    (\t ->
+                        option [ value t, selected (t == prefix) ] [ text t ]
+                    )
+                    (if prevState == afd.initialState then
+                        [ "->*", "->" ]
 
-                         else
-                            [ "->*", "->", "*", "" ]
-                        )
+                     else
+                        [ "->*", "->", "*", "" ]
+                    )
                 )
 
         transitions =
@@ -196,17 +197,16 @@ viewFlatDeterministicTransition transition afd =
                     |> Models.Automaton
                     |> Types.UpdateCurrent
             )
-        , value (stateToString transition.nextState)
         ]
-        (option [ value (stateToString transition.nextState) ]
-            [ text (stateToString transition.nextState) ]
-            :: List.map
-                (\state ->
-                    option
-                        [ value (stateToString state) ]
-                        [ text (stateToString state) ]
-                )
-                (List.filter ((/=) transition.nextState) afd.states ++ [ State.Dead ])
+        (List.map
+            (\state ->
+                option
+                    [ value (stateToString state)
+                    , selected (state == transition.nextState)
+                    ]
+                    [ text (stateToString state) ]
+            )
+            (afd.states ++ [ State.Dead ])
         )
 
 

@@ -1,211 +1,193 @@
-# Manipulating Regular and Context-Free Languages
+# Manipulação de Linguagens Regulares e Linguagens Livres de Contexto
 
-Professor: Jerusa Marchi
+## Universidade Federal de Santa Catarina
 
-Student: Henrique da Cunha Buss
+## CTC - Departamento de Informática e Estatística
 
-## Roadmap
+Novembro de 2020
 
-### First Submission (items 1-7, 05/11)
+Professora: Jerusa Marchi
 
-- [x] AFs
-  - [x] Display AF
-  - [x] Parse AF
-  - [x] Add AF to history
-  - [x] Read AF from file
-  - [x] Display AFND
-  - [x] Parse AFND
-  - [x] Add AFND to history
-  - [x] Convert AFND (no Epsilon) to AFD
-  - [x] Convert AFND (with Epsilon) to AFD
-  - [x] Recognize sentences with AFDs
-  - [x] Recognize sentences with AFs
-  - [x] AFD Union
-  - [x] AFD Intersection
-  - [x] Minimize AFD
-    - [x] Filter reachable states
-    - [x] Filter alive states
-    - [x] Apply classes algorithm
-  - [x] Convert AFD to GR
-- [x] GR
-  - [x] Display GR
-  - [x] Parse GR
-  - [x] Add GR to history
-  - [x] Add GR from file
-  - [x] Convert GR to AFND
-- [x] ER
-  - [x] Display ER
-  - [x] Parse ER
-  - [x] Add ER to history
-  - [x] Add ER from file
-  - [x] Convert ER to AFD
+Aluno: Henrique da Cunha Buss
 
-### Second Submission (items 8-12, 02/12)
+## Visão geral
 
-- [ ] Start
+A aplicação foi desenvolvida usando a linguagem [Elm](https://elm-lang.org/),
+uma linguagem puramente funcional focada em desenvolvimento Web, inspirada em
+[Haskell](https://www.haskell.org/). Para rodar a aplicação, basta abrir o
+arquivo `Aplicacao/index.html` com um browser, ou visitar
+[a página GitHub do projeto](https://neovier.github.io/LFC01/).
 
-## Tasks
+## Modelagem de dados
 
-Create an application, with a GUI, to manipulate Finite Automata, Regular
-Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
+As estruturas de dados e sua modelagem está contida na pasta `src/Models`, onde
+cada parte importante tem o seu arquivo com suas definições. Em geral, foram
+usados [custom types](https://guide.elm-lang.org/types/custom_types.html),
+fornecidos pela linguagem, e
+[type aliases](https://guide.elm-lang.org/types/type_aliases.html), que são
+semelhantes a objetos em linguagens como JavaScript.
 
-- First delivery
+### Símbolos
 
-  1. [x] Reading, writing and editing AF, GR and ER
-  2. [x] Converting AFND (with and without epsilon) to AFD
-  3. [x] Converting AFD to GR and GR to AFND
-  4. [x] Recognizing sentences in AF
-  5. [x] Minimizing AFD
-  6. [x] AFD union and intersection
-  7. [x] Converting ER to AFD (using syntactic tree-based algorithm)
+Símbolos são a unidade atômica de uma palavra: podem ser um único caractere,
+ou um grupo, como em `[a-z]`, `[a-zA-Z]`, etc.
 
-- Second delivery
+### Alfabetos
 
-  1. [ ] Reading, writing and editing GLC
-  2. [ ] Transforming GLC to a GLC in normal Chomsky form
-  3. [ ] Left-recursion elimination
-  4. [ ] Factoration
-  5. [ ] Recognizing sentences in AP (implementing one of the analysis tables)
+Assim como muitos dos dados relacionados a autômatos, alfabetos podem ser
+determinísticos ou não determinísticos, sendo que um alfabeto determinístico é
+uma simples lista de [símbolos](###Símbolos), enquanto um
+alfabeto não determinístico contém o tipo especial Epsilon junto da sua lista de
+símbolos.
 
-### Notes
+### Estados
 
-- AFs can be presented via transition tables
-- All AFs (intermediate or final) must be reutilizable (capable of being edited)
+Um estado de um autômato pode ser o estado Morto, ou um estado Válido com um
+rótulo (`String`).
 
-## Submitting
+### Transições
 
-### Due dates
+Existem duas variações de transições, novamente uma determinística e uma não
+determinística, onde a determinística possui um [estado](###Estados) anterior
+(pensando em um diagrama, o estado de onde a flecha sai), um próximo estado
+(pensando em um diagrama, o estado onde a flecha chega), e uma lista de
+Condições ([Símbolos](###Símbolos)), que no caso determinístico é uma simples
+lista de símbolos. Transições não determinísticas diferem no fato que podem ter
+vários próximos estados (de chegada), além de que suas condições podem ter
+Epsilon ou não.
 
-- 05/11 - First part - itens 1-7
-- 02/12 - Second part - itens 8-12
+### Autômatos Finitos
 
-### Instructions
+Automâtos finitos podem ser determinísticos ou não. Um autômato finito é
+definido como em aula: uma quintupla que possui
 
-The submition must be via moodle in a file \<Name>.zip, with two subdirectories:
-Aplicação and Testes.
+- Uma lista de [estados](###Estados)
+- Um estado inicial
+- Uma lista de estados finais
+- Um [alfabeto](###Alfabetos)
+- Uma lista de [transições](###Transições)
 
-Test files must be in the format \<teste\<i>\<funcionalidade>.ext> e.g.
-teste1AfndAfd.jff, and must follow the [specified format](##Format)
+Sendo que autômatos determinísticos usam as variações determinísticas destes
+itens, e os não determinísticos usam as variações não determinísticas. Por
+exemplo, um AFD possui um alfabeto determinístico, enquanto um AFND possui um
+alfabeto não determinístico.
 
-There must be a README (txt or pdf) file in the main directory with a header
-(institution, department, name and date) and information about the source code
-(used language, modeling details, data structures used, etc.) and details about
-the use of the application.
+### Símbolos Terminais
 
-Auxiliary libraries, that are not specificlly about automata, regex or grammars,
-can be used aiming to clean the code (e.g. for IO). All source files must have
-a header and be well commented.
+Um símbolo terminal é simplesmente um [símbolo](###Símbolos).
 
-## Grading
+### Símbolos Não Terminais
 
-The project will be graded by the algorithm correctness, usability and
-robustness (70%). Things like code legibility and source code organization
-(20%) will also be considered (subjective). Some of the final grade will come
-from the complete project presentation, which will happen between 03/12 and
-10/12 during the class times. Scheduling will be done via moodle.
+Um símbolo não terminal é modelado como uma `String`.
 
-## Format
+### Produções
 
-### AF
+Uma produção possui um [símbolo não terminal](###Símbolos-Não-Terminais) de
+origem (como o `S` em `S -> aA`), e uma lista de corpos de produção. Um corpo de produção, por sua vez, possui um [símbolo terminal](###Símbolos-Terminais)
+consumido (como o `a` em `S -> aA`), e possivelmente um símbolo não terminal
+destino (como o `A` em `S -> aA`). Assim, podemos dizer que a produção
+`S -> aA | aB | bB | b` possui `S` como símbolo de origem, e os corpos
+`aA`, `aB`, `bB` e `b` como corpos de produção.
 
-Files about AF must be like:
+### Gramáticas
 
-    number of states
-    initial state
-    final states
-    alphabet
-    transitions (one by line)
+Gramáticas regulares são, também, definidas como em aula: uma quadrupla com
 
-#### AF Examples
+- Uma lista de [símbolos não terminais](###Símbolos-Não-Terminais)
+- Uma lista de [símbolos terminais](###Símbolos-Terminais)
+- Uma lista de [produções](###Produções)
+- Um símbolo não terminal inicial
 
-AFD:
+Além disso, possuem o campo `acceptsEmpty` para dizer se a gramática aceita a
+palavra vazia ou não, já que usa um alfabeto determinístico e não poderia
+conter Epsilon.
 
-    5
-    0
-    1,2
-    a,b
-    0,a,1
-    0,b,2
-    1,a,1
-    1,b,3
-    2,a,4
-    2,b,2
-    3,a,1
-    3,b,3
-    4,a,4
-    4,b,2
+### Expressões Regulares
 
-AFND without epsilon-transitions:
+Expressões regulares são definidas através de um custom type recursivo, de modo
+que uma expressão regular pode ser:
 
-    4
-    0
-    3
-    a,b
-    0,a,0-1
-    0,b,0
-    1,b,2
-    2,b,3
+- Epsilon (palavra vazia)
+- Um [Símbolo](###Símbolos) (que abrange grupos como `[0-9]`, assim como
+  símbolos como `a`)
+- A união de duas expressões regulares
+- A concatenação de duas expressões regulares
+- O operador `*` de uma expressão regular
+- O operador `+` de uma expressão regular
+- O operador `?` de uma expressão regular
 
-AFND with epsilon-transitions (represented by &):
+Deste modo, expressões regulares tomam uma forma de árvore, onde cada folha é
+Epsilon ou um Símbolo.
 
-    4
-    0
-    3
-    a,b,&
-    0,&,1-2
-    1,a,1
-    1,b,2
-    2,a,1
-    2,&,3
-    3,b,3
+## Entrada de dados
 
-### ER
+Para a entrada de dados, foi utilizada a biblioteca
+[Parser](https://github.com/elm/parser), além de funções auxiliares adicionais.
+Toda a parte de entrada de dados está na pasta `Aplicacao/src/Parsing`, e cada
+modelo de dados possui seu próprio arquivo.
 
-Files about ER must be like
+Para inserir um autômato finito determinístico, basta clicar no botão
+`Carregar autômato finito determinístico`, e selecionar um arquivo como definido
+nas especificações do trabalho. O mesmo vale para autômatos finitos não
+determinísticos, gramáticas regulares e expressões regulares. Vale salientar que
+só será possível ler corretamente se o botão selecionado e o conteúdo do arquivo
+forem compatíveis, ou seja, ao clicar em
+`Carregar autômato finito determinístico`, o arquivo selecionado deve
+obrigatóriamente ser de um autômato finito determinístico.
 
-    def-reg1: ER1
-    def-reg2: ER2
-    ...
-    def-regn: ERn
+O usuário também tem a possibilidade de editar autômatos já carregados, podendo
+remover estados e alterar os estados destino de cada transiçãon.
 
-ERs must accept groups like \[a-zA-z] and \[0-9] and usual operators like \*, +, ?
+## Saída de dados
 
-#### ER Examples
+A apresentação de dados na tela ocorre através de um browser, abrindo o arquivo
+`Aplicacao/src/index.html`, ou executando `elm reactor` dentro da pasta
+`Aplicacao` e
+navegando até `src/Main.elm`. O arquivo `index.html` pode ser gerado novamente
+através do comando `elm make src/Main.elm` dentro da pasta `Aplicacao`. Para a
+visualização do programa, foi seguida a
+[The Elm Architecture](https://guide.elm-lang.org/architecture/), que define
+um `modelo` de dados, um modelo de `mensagens` e uma função de `update`. Na
+interface do programa, temos três colunas:
 
-Example 1:
+- À esquerda, o histórico, que mostra a lista de itens usados. Cada entrada do
+  histórico possui um botão de remover e um botão indicando o tipo do item (AFD,
+  AFND, GR ou ER). Ao clicar no botão que indica o tipo do item, o mesmo vai ser
+  mostrado na coluna central.
+- Ao centro, o item atualmente selecionado, ou mensagens de erro. Por exemplo,
+  a tabela de transições no caso de autômatos.
+- À direita, a parte de controles. Os botões disponíveis dependem do item atual
+  e do histórico, mas sempre estarão disponíveis os botões para carregar novos
+  itens.
 
-    digit: [0-9]
-    letter: [a-zA-Z]
-    id: letter(letter | digit)*
+## Operações
 
-Example 2:
+Todas as operações são feitas a partir da coluna da direita na interface, e
+algumas dependem do item atual e do histórico para ficarem disponíveis. As ações
+de carregar um novo item (AFD, AFND, GR ou ER) estão sempre disponíveis e no
+topo da lista de controles.
 
-    er: a?(a | b)+
+Se o item atual é um autômato (determinístico ou não), aparece uma caixa de
+texto onde o usuário pode inserir uma sentença, e abaixo da caixa de texto uma
+mensagem informando se a sentença é reconhecida pelo autômato ou não.
 
-### Grammars
+Se o item atual é um AFD, surgem as operações `Fazer complemento`,
+`Minimizar AFD` e `Converter para GR`.
 
-GR and GLC files must use the usual pattern used in class with & representing
-epsilon:
+Se o item atual é um AFND, surge a operação `Converter AFND para AFD`.
 
-### Grammars Examples
+Se o item atual é uma GR, surge a operação `Converter para AFND`.
 
-Example GR:
+Se o item atual é uma ER, surge a operação `Converter para AFD`, que irá
+converter todas as expressões em autômatos separados (um autômato para cada
+expressão).
 
-    S -> aA | a
-    A -> bA | a
+Se os dois itens mais recentes (mais acima) do histórico forem AFDs, surgem
+as operações `Fazer união nos últimos dois autômatos` e `Fazer interseção nos últimos dois autômatos`.
 
-Example GLC:
+## Testes
 
-    S -> aSb | &
-
-## Symbol table
-
-| Symbol | Meaning                                                                 |
-| :----- | :---------------------------------------------------------------------- |
-| AF     | Finite Automaton (Autômato Finito)                                      |
-| GR     | Regular Grammar (Gramática Regular)                                     |
-| ER     | Regular Expression (Expressão Regular)                                  |
-| AFD    | Deterministic Finite Automaton (Autômato Finito Determinístico)         |
-| AFND   | Non-deterministic Finite Automaton (Autômato Finito Não Determinístico) |
-| GLC    | Context-Free Grammar (Gramática Livre de Contexto)                      |
-| AP     | Stack/Push Automaton (Autômato de Pilha)                                |
+Os arquivos de teste estão separados na pasta Teste nas pastas `automatos`,
+`gramaticas` e `regexes`, e podem ser carregados pela aplicação. Os arquivos de
+teste fornecidos têm a extensão `.txt`, embora isso não vá importar, desde
+que tenham o formato válido.

@@ -23,10 +23,24 @@ viewGR gr =
 
         finalProductions =
             List.filter (\p -> p.fromSymbol /= gr.initialSymbol) gr.productions
+
+        initialProductionsStrings =
+            let
+                defaultStrings =
+                    List.map viewGRProduction initialProductions
+            in
+            if gr.acceptsEmpty then
+                List.map (String.replace " -> " " -> ε | ") defaultStrings
+
+            else
+                defaultStrings
+
+        finalProductionsStrings =
+            List.map viewGRProduction finalProductions
     in
     List.map
-        (\production -> h3 [] [ text (viewGRProduction production) ])
-        (initialProductions ++ finalProductions)
+        (\productionString -> h3 [] [ text productionString ])
+        (initialProductionsStrings ++ finalProductionsStrings)
         |> div Styles.grammarContainerStyles
 
 

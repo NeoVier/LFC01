@@ -419,6 +419,7 @@ getEpsilonStar afnd state =
     in
     state
         :: outEpsilonStates
+        |> removeDuplicates
 
 
 

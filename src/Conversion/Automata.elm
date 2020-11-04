@@ -38,6 +38,7 @@ afndToAfd afnd =
                     List.concatMap
                         (Utils.getEpsilonStar afnd)
                         (Utils.stateToListOfStates complexState)
+                        |> Utils.removeDuplicates
                         |> List.concatMap
                             (\state ->
                                 Utils.getOutTransitionsNonDeterministic afnd
@@ -63,6 +64,7 @@ afndToAfd afnd =
             List.map CTransition.nonDeterministicToDeterministic
                 (afnd.transitions ++ newStatesTransitions)
                 |> Utils.sortTransitionsDeterministic
+                |> List.filter (.conditions >> List.isEmpty >> not)
 
         newFinalStates =
             List.filter
@@ -73,7 +75,8 @@ afndToAfd afnd =
                 newStates
 
         newInitialState =
-            Utils.getEpsilonStar afnd afnd.initialState
+            -- Utils.getEpsilonStar afnd afnd.initialState
+            followEpsilonStar afnd [] [ afnd.initialState ]
                 |> Utils.listOfStatesToState
     in
     { states = List.append afnd.states newStates
@@ -82,6 +85,26 @@ afndToAfd afnd =
     , alphabet = CAlphabet.nonDeterministicToDeterministic afnd.alphabet
     , transitions = newTransitions
     }
+
+
+followEpsilonStar :
+    Automata.AFND
+    -> List State.State
+    -> List State.State
+    -> List State.State
+followEpsilonStar afnd seen unseen =
+    case List.head unseen of
+        Nothing ->
+            seen
+
+        Just curr ->
+            if List.member curr seen then
+                followEpsilonStar afnd seen (List.drop 1 unseen)
+
+            else
+                followEpsilonStar afnd
+                    (seen ++ [ curr ])
+                    (List.drop 1 unseen ++ Utils.getEpsilonStar afnd curr)
 
 
 

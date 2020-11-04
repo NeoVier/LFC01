@@ -4,17 +4,19 @@
    Creation: October/2020
    This file contains functions to convert between Automata
 -}
+-- module Conversion.Automata exposing (afdToGr, afndToAfd)
 
 
-module Conversion.Automata exposing (afdToGr, afndToAfd)
+module Conversion.Automata exposing (..)
 
 import Conversion.Alphabet as CAlphabet
 import Conversion.Transition as CTransition
+import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.Grammars as Grammars
 import Models.State as State
 import Models.Transition as Transition
-import Utils.Utils as Utils exposing (stateToListOfStates)
+import Utils.Utils as Utils
 
 
 
@@ -25,46 +27,25 @@ import Utils.Utils as Utils exposing (stateToListOfStates)
 afndToAfd : Automata.AFND -> Automata.AFD
 afndToAfd afnd =
     let
+        -- All combinations of states
         newStates =
             Utils.subsequences afnd.states
                 |> List.sortBy List.length
                 |> List.map Utils.listOfStatesToState
-                |> List.filter (\state -> not (List.member state afnd.states))
 
-        -- Add Epsilon star
-        newStatesTransitions =
+        newTransitions : List Transition.DeterministicTransition
+        newTransitions =
             List.concatMap
                 (\complexState ->
-                    List.concatMap
-                        (Utils.getEpsilonStar afnd)
-                        (Utils.stateToListOfStates complexState)
+                    Utils.stateToListOfStates complexState
+                        |> List.concatMap (getTransitions afnd)
+                        |> List.map (\t -> { t | prevState = complexState })
+                        |> List.filter (.nextState >> (/=) State.Dead)
                         |> Utils.removeDuplicates
-                        |> List.concatMap
-                            (\state ->
-                                Utils.getOutTransitionsNonDeterministic afnd
-                                    state
-                            )
-                        |> List.filter
-                            (\transition ->
-                                transition.nextStates /= [ State.Dead ]
-                            )
-                        |> Utils.groupByConditions
-                        |> List.map
-                            (\x ->
-                                let
-                                    newTransition =
-                                        Utils.joinTransitionsWithSameCondition x
-                                in
-                                { newTransition | prevState = complexState }
-                            )
                 )
                 newStates
-
-        newTransitions =
-            List.map CTransition.nonDeterministicToDeterministic
-                (afnd.transitions ++ newStatesTransitions)
+                |> Utils.removeDuplicates
                 |> Utils.sortTransitionsDeterministic
-                |> List.filter (.conditions >> List.isEmpty >> not)
 
         newFinalStates =
             List.filter
@@ -75,11 +56,10 @@ afndToAfd afnd =
                 newStates
 
         newInitialState =
-            -- Utils.getEpsilonStar afnd afnd.initialState
-            followEpsilonStar afnd [] [ afnd.initialState ]
+            followEpsilonStar afnd afnd.initialState
                 |> Utils.listOfStatesToState
     in
-    { states = List.append afnd.states newStates
+    { states = newStates
     , initialState = newInitialState
     , finalStates = List.append afnd.finalStates newFinalStates
     , alphabet = CAlphabet.nonDeterministicToDeterministic afnd.alphabet
@@ -87,22 +67,69 @@ afndToAfd afnd =
     }
 
 
-followEpsilonStar :
+getTransitionThrough :
+    Automata.AFND
+    -> State.State
+    -> Alphabet.Symbol
+    -> Transition.DeterministicTransition
+getTransitionThrough afnd state symbol =
+    let
+        epsilonStar =
+            followEpsilonStar afnd state
+
+        allStates =
+            List.concatMap (Utils.getFlatOutTransitionsNonDeterministic afnd)
+                epsilonStar
+                |> List.filter
+                    (\t ->
+                        t.conditions
+                            == Transition.NoEpsilon [ symbol ]
+                            && t.nextStates
+                            /= [ State.Dead ]
+                    )
+                |> List.concatMap (\t -> followEpsilonStar afnd t.prevState)
+                |> Utils.removeDuplicates
+    in
+    { prevState = state
+    , conditions = [ symbol ]
+    , nextState = Utils.listOfStatesToState allStates
+    }
+
+
+
+-- TODO - Handle non deterministic transitions with multiple nextStates
+
+
+getTransitions :
+    Automata.AFND
+    -> State.State
+    -> List Transition.DeterministicTransition
+getTransitions afnd origin =
+    CAlphabet.nonDeterministicToDeterministic afnd.alphabet
+        |> List.map (getTransitionThrough afnd origin)
+
+
+followEpsilonStar : Automata.AFND -> State.State -> List State.State
+followEpsilonStar afnd state =
+    followEpsilonStarHelp afnd [] [ state ]
+
+
+followEpsilonStarHelp :
     Automata.AFND
     -> List State.State
     -> List State.State
     -> List State.State
-followEpsilonStar afnd seen unseen =
+followEpsilonStarHelp afnd seen unseen =
     case List.head unseen of
         Nothing ->
             seen
 
         Just curr ->
             if List.member curr seen then
-                followEpsilonStar afnd seen (List.drop 1 unseen)
+                followEpsilonStarHelp afnd seen (List.drop 1 unseen)
 
             else
-                followEpsilonStar afnd
+                followEpsilonStarHelp afnd
                     (seen ++ [ curr ])
                     (List.drop 1 unseen ++ Utils.getEpsilonStar afnd curr)
 

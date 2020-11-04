@@ -125,17 +125,24 @@ getFlatTransitionNonDeterministic transition =
         Transition.NoEpsilon conditions ->
             map
                 (\condition ->
-                    { transition | conditions = Transition.NoEpsilon [ condition ] }
+                    { transition
+                        | conditions = Transition.NoEpsilon [ condition ]
+                    }
                 )
                 conditions
 
         Transition.WithEpsilon conditions ->
             map
                 (\condition ->
-                    { transition | conditions = Transition.WithEpsilon [ condition ] }
+                    { transition
+                        | conditions = Transition.NoEpsilon [ condition ]
+                    }
                 )
                 conditions
-                ++ [ { transition | conditions = Transition.WithEpsilon [] } ]
+                ++ [ { transition
+                        | conditions = Transition.WithEpsilon []
+                     }
+                   ]
 
 
 
@@ -358,11 +365,11 @@ getEpsilonTransitions automaton =
 
 listOfStatesToState : List State.State -> State.State
 listOfStatesToState states =
-    case states of
-        [ State.Dead ] ->
+    case List.filter ((/=) State.Dead) states of
+        [] ->
             State.Dead
 
-        otherwise ->
+        withoutDead ->
             List.map
                 (\state ->
                     case state of
@@ -372,7 +379,7 @@ listOfStatesToState states =
                         State.Valid label ->
                             label
                 )
-                states
+                withoutDead
                 |> List.sort
                 |> String.join ", "
                 |> State.Valid

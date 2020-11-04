@@ -206,7 +206,7 @@ viewFlatDeterministicTransition transition afd =
                         [ value (stateToString state) ]
                         [ text (stateToString state) ]
                 )
-                (afd.states ++ [ State.Dead ])
+                (List.filter ((/=) transition.nextState) afd.states ++ [ State.Dead ])
         )
 
 

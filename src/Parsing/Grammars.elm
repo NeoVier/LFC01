@@ -41,14 +41,12 @@ parseGR s =
                         >> String.replace "&" ""
                     )
                 |> Maybe.withDefault ""
-                |> Debug.log "firstLine"
 
         newLines : List String
         newLines =
             String.lines s
                 |> List.drop 1
                 |> (::) firstLineWithoutEpsilon
-                |> Debug.log "newLines"
 
         results : Result (List P.DeadEnd) (List Production)
         results =

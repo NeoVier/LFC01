@@ -169,9 +169,14 @@ afdFromClassList classes =
                                     | prevState =
                                         State.Valid (String.fromInt classIndex)
                                     , nextState =
-                                        getStateClassIndex t.nextState classes
-                                            |> String.fromInt
-                                            |> State.Valid
+                                        if t.nextState == State.Dead then
+                                            State.Dead
+
+                                        else
+                                            getStateClassIndex t.nextState
+                                                classes
+                                                |> String.fromInt
+                                                |> State.Valid
                                 }
                             )
                             class.transitions

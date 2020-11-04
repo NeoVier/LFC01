@@ -381,6 +381,7 @@ listOfStatesToState states =
                 )
                 withoutDead
                 |> List.sort
+                |> removeDuplicates
                 |> String.join ", "
                 |> State.Valid
 
@@ -614,6 +615,84 @@ joinConditions c1 c2 =
 
     else
         Transition.NoEpsilon newSymbols
+
+
+joinTransitionsWithConditionsAndStateDeterministic :
+    List Transition.DeterministicTransition
+    -> Transition.DeterministicConditions
+    -> State.State
+    -> Transition.DeterministicTransition
+joinTransitionsWithConditionsAndStateDeterministic transitions conditions state =
+    List.filter
+        (\t ->
+            t.conditions
+                == conditions
+                && t.prevState
+                == state
+                && t.nextState
+                /= State.Dead
+        )
+        transitions
+        |> List.concatMap (.nextState >> stateToListOfStates)
+        |> removeDuplicates
+        |> (\states ->
+                { prevState = state
+                , nextState = listOfStatesToState states
+                , conditions = conditions
+                }
+           )
+
+
+joinTransitionsDeterministic :
+    List Transition.DeterministicTransition
+    -> List Transition.DeterministicTransition
+joinTransitionsDeterministic transitions =
+    let
+        allStates =
+            List.map .prevState transitions
+                |> removeDuplicates
+
+        allConditions =
+            List.map .conditions transitions
+                |> removeDuplicates
+    in
+    List.concatMap
+        (\state ->
+            List.map
+                (\condition ->
+                    joinTransitionsWithConditionsAndStateDeterministic
+                        transitions
+                        condition
+                        state
+                )
+                allConditions
+        )
+        allStates
+
+
+followEpsilonStar : Automata.AFND -> State.State -> List State.State
+followEpsilonStar afnd state =
+    followEpsilonStarHelp afnd [] [ state ]
+
+
+followEpsilonStarHelp :
+    Automata.AFND
+    -> List State.State
+    -> List State.State
+    -> List State.State
+followEpsilonStarHelp afnd seen unseen =
+    case List.head unseen of
+        Nothing ->
+            seen
+
+        Just curr ->
+            if List.member curr seen then
+                followEpsilonStarHelp afnd seen (List.drop 1 unseen)
+
+            else
+                followEpsilonStarHelp afnd
+                    (seen ++ [ curr ])
+                    (List.drop 1 unseen ++ getEpsilonStar afnd curr)
 
 
 

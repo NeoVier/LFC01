@@ -4,10 +4,9 @@
    Creation: October/2020
    This file contains functions to convert between Automata
 -}
--- module Conversion.Automata exposing (afdToGr, afndToAfd)
 
 
-module Conversion.Automata exposing (..)
+module Conversion.Automata exposing (afdToGr, afndToAfd)
 
 import Conversion.Alphabet as CAlphabet
 import Conversion.Transition as CTransition
@@ -46,6 +45,7 @@ afndToAfd afnd =
                 newStates
                 |> Utils.removeDuplicates
                 |> Utils.sortTransitionsDeterministic
+                |> Utils.joinTransitionsDeterministic
 
         newFinalStates =
             List.filter
@@ -56,7 +56,7 @@ afndToAfd afnd =
                 newStates
 
         newInitialState =
-            followEpsilonStar afnd afnd.initialState
+            Utils.followEpsilonStar afnd afnd.initialState
                 |> Utils.listOfStatesToState
     in
     { states = newStates
@@ -75,7 +75,7 @@ getTransitionThrough :
 getTransitionThrough afnd state symbol =
     let
         epsilonStar =
-            followEpsilonStar afnd state
+            Utils.followEpsilonStar afnd state
 
         allStates =
             List.concatMap (Utils.getFlatOutTransitionsNonDeterministic afnd)
@@ -87,17 +87,16 @@ getTransitionThrough afnd state symbol =
                             && t.nextStates
                             /= [ State.Dead ]
                     )
-                |> List.concatMap (\t -> followEpsilonStar afnd t.prevState)
+                |> List.concatMap
+                    (.nextStates
+                        >> List.concatMap (Utils.followEpsilonStar afnd)
+                    )
                 |> Utils.removeDuplicates
     in
     { prevState = state
     , conditions = [ symbol ]
     , nextState = Utils.listOfStatesToState allStates
     }
-
-
-
--- TODO - Handle non deterministic transitions with multiple nextStates
 
 
 getTransitions :
@@ -107,31 +106,6 @@ getTransitions :
 getTransitions afnd origin =
     CAlphabet.nonDeterministicToDeterministic afnd.alphabet
         |> List.map (getTransitionThrough afnd origin)
-
-
-followEpsilonStar : Automata.AFND -> State.State -> List State.State
-followEpsilonStar afnd state =
-    followEpsilonStarHelp afnd [] [ state ]
-
-
-followEpsilonStarHelp :
-    Automata.AFND
-    -> List State.State
-    -> List State.State
-    -> List State.State
-followEpsilonStarHelp afnd seen unseen =
-    case List.head unseen of
-        Nothing ->
-            seen
-
-        Just curr ->
-            if List.member curr seen then
-                followEpsilonStarHelp afnd seen (List.drop 1 unseen)
-
-            else
-                followEpsilonStarHelp afnd
-                    (seen ++ [ curr ])
-                    (List.drop 1 unseen ++ Utils.getEpsilonStar afnd curr)
 
 
 

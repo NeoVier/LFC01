@@ -140,8 +140,7 @@ getStateRow afnd prevState =
                     ({ afnd
                         | states = List.filter ((/=) prevState) afnd.states
                         , finalStates =
-                            List.filter ((/=) prevState)
-                                afnd.finalStates
+                            List.filter ((/=) prevState) afnd.finalStates
                         , transitions =
                             List.filterMap
                                 (\transition ->
@@ -153,9 +152,9 @@ getStateRow afnd prevState =
                                             { transition
                                                 | nextStates =
                                                     case
-                                                        List.filter
-                                                            ((/=) prevState)
-                                                            transition.nextStates
+                                                        transition.nextStates
+                                                            |> List.filter
+                                                                ((/=) prevState)
                                                     of
                                                         [] ->
                                                             [ State.Dead ]

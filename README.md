@@ -1,8 +1,6 @@
 # Manipulação de Linguagens Regulares e Linguagens Livres de Contexto
 
-## Universidade Federal de Santa Catarina
-
-## CTC - Departamento de Informática e Estatística
+## Universidade Federal de Santa Catarina - CTC - Departamento de Informática e Estatística
 
 Novembro de 2020
 
@@ -83,7 +81,8 @@ Um símbolo não terminal é modelado como uma `String`.
 ### Produções
 
 Uma produção possui um [símbolo não terminal](###Símbolos-Não-Terminais) de
-origem (como o `S` em `S -> aA`), e uma lista de corpos de produção. Um corpo de produção, por sua vez, possui um [símbolo terminal](###Símbolos-Terminais)
+origem (como o `S` em `S -> aA`), e uma lista de corpos de produção. Um corpo de
+produção, por sua vez, possui um [símbolo terminal](###Símbolos-Terminais)
 consumido (como o `a` em `S -> aA`), e possivelmente um símbolo não terminal
 destino (como o `A` em `S -> aA`). Assim, podemos dizer que a produção
 `S -> aA | aB | bB | b` possui `S` como símbolo de origem, e os corpos
@@ -133,19 +132,20 @@ determinísticos, gramáticas regulares e expressões regulares. Vale salientar 
 só será possível ler corretamente se o botão selecionado e o conteúdo do arquivo
 forem compatíveis, ou seja, ao clicar em
 `Carregar autômato finito determinístico`, o arquivo selecionado deve
-obrigatóriamente ser de um autômato finito determinístico.
+obrigatoriamente ser de um autômato finito determinístico.
 
 O usuário também tem a possibilidade de editar autômatos já carregados, podendo
-remover estados e alterar os estados destino de cada transiçãon.
+remover estados e alterar os estados destino de cada transição.
 
 ## Saída de dados
 
 A apresentação de dados na tela ocorre através de um browser, abrindo o arquivo
-`Aplicacao/src/index.html`, ou executando `elm reactor` dentro da pasta
-`Aplicacao` e
-navegando até `src/Main.elm`. O arquivo `index.html` pode ser gerado novamente
-através do comando `elm make src/Main.elm` dentro da pasta `Aplicacao`. Para a
-visualização do programa, foi seguida a
+`Aplicacao/src/index.html`, executando `elm reactor` dentro da pasta
+`Aplicacao` e navegando até `src/Main.elm`, ou acessando a
+[página GitHub do projeto](https://neovier.github.io/LFC01/). O arquivo
+`index.html` pode ser gerado novamente através do comando
+`elm make src/Main.elm` dentro da pasta `Aplicacao`. Para a visualização do
+programa, foi seguida a
 [The Elm Architecture](https://guide.elm-lang.org/architecture/), que define
 um `modelo` de dados, um modelo de `mensagens` e uma função de `update`. Na
 interface do programa, temos três colunas:
@@ -183,7 +183,8 @@ converter todas as expressões em autômatos separados (um autômato para cada
 expressão).
 
 Se os dois itens mais recentes (mais acima) do histórico forem AFDs, surgem
-as operações `Fazer união nos últimos dois autômatos` e `Fazer interseção nos últimos dois autômatos`.
+as operações `Fazer união nos últimos dois autômatos` e
+`Fazer interseção nos últimos dois autômatos`.
 
 ## Testes
 

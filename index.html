@@ -8826,6 +8826,13 @@ var $author$project$Operations$Minimization$minimizeAFD = function (afd) {
 						afd.transitions)
 				})));
 };
+var $elm$file$File$Download$string = F3(
+	function (name, mime, content) {
+		return A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$never,
+			A3(_File_download, name, mime, content));
+	});
 var $elm$file$File$toString = _File_toString;
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -8871,6 +8878,13 @@ var $author$project$Main$update = F2(
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
+			case 'SaveFile':
+				var name = msg.a;
+				var filetype = msg.b;
+				var content = msg.c;
+				return _Utils_Tuple2(
+					model,
+					A3($elm$file$File$Download$string, name, filetype, content));
 			case 'ConvertAFNDToAFD':
 				var _v2 = model.currentItem;
 				if (((_v2.$ === 'Ok') && (_v2.a.$ === 'Automaton')) && (_v2.a.a.$ === 'FiniteNonDeterministic')) {
@@ -10525,8 +10539,6 @@ var $author$project$View$View$loadButton = F2(
 					$elm$html$Html$text('Carregar ' + caption)
 				]));
 	});
-var $author$project$View$View$maybeHtmlToHtml = $elm$core$Maybe$withDefault(
-	$elm$html$Html$text(''));
 var $author$project$Types$Types$Minimize = {$: 'Minimize'};
 var $author$project$View$View$minimizeButton = function (model) {
 	var _v0 = model.currentItem;
@@ -12315,6 +12327,541 @@ var $author$project$View$Styles$rightPanelStyles = _List_fromArray(
 		A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
 		A2($elm$html$Html$Attributes$style, 'align-items', 'center')
 	]);
+var $author$project$Types$Types$SaveFile = F3(
+	function (a, b, c) {
+		return {$: 'SaveFile', a: a, b: b, c: c};
+	});
+var $author$project$Saving$Automata$stateToString = function (s) {
+	if (s.$ === 'Dead') {
+		return '';
+	} else {
+		var label = s.a;
+		return label;
+	}
+};
+var $elm$core$String$fromList = _String_fromList;
+var $author$project$Saving$Automata$symbolToString = function (s) {
+	if (s.$ === 'Single') {
+		var c = s.a;
+		return $elm$core$String$fromChar(c);
+	} else {
+		var g = s.a;
+		return '[' + (A2(
+			$elm$core$String$join,
+			'',
+			A2(
+				$elm$core$List$map,
+				function (_v1) {
+					var c1 = _v1.a;
+					var c2 = _v1.b;
+					return $elm$core$String$fromList(
+						_List_fromArray(
+							[
+								c1,
+								_Utils_chr('-'),
+								c2
+							]));
+				},
+				g)) + ']');
+	}
+};
+var $author$project$Saving$Automata$flatDeterministicTransitionToString = function (t) {
+	var _v0 = $elm$core$List$head(t.conditions);
+	if (_v0.$ === 'Nothing') {
+		return '';
+	} else {
+		var symbol = _v0.a;
+		return A2(
+			$elm$core$String$join,
+			',',
+			_List_fromArray(
+				[
+					$author$project$Saving$Automata$stateToString(t.prevState),
+					$author$project$Saving$Automata$symbolToString(symbol),
+					$author$project$Saving$Automata$stateToString(t.nextState)
+				]));
+	}
+};
+var $author$project$Saving$Automata$renameState = F2(
+	function (state, newName) {
+		if (state.$ === 'Dead') {
+			return $author$project$Models$State$Dead;
+		} else {
+			return $author$project$Models$State$Valid(newName);
+		}
+	});
+var $author$project$Saving$Automata$findAndRenameState = F2(
+	function (state, dict) {
+		var _v0 = A2(
+			$elm$core$Dict$get,
+			$author$project$Saving$Automata$stateToString(state),
+			dict);
+		if (_v0.$ === 'Nothing') {
+			return $author$project$Models$State$Dead;
+		} else {
+			var newName = _v0.a;
+			return A2($author$project$Saving$Automata$renameState, state, newName);
+		}
+	});
+var $author$project$Saving$Automata$labelStatesAsIntsDeterministic = function (afd) {
+	var newNames = $elm$core$Dict$fromList(
+		A3(
+			$elm$core$List$map2,
+			F2(
+				function (prevName, idx) {
+					return _Utils_Tuple2(
+						$author$project$Saving$Automata$stateToString(prevName),
+						$elm$core$String$fromInt(idx));
+				}),
+			afd.states,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(afd.states))));
+	var renameTransition = function (transition) {
+		return _Utils_update(
+			transition,
+			{
+				nextState: A2($author$project$Saving$Automata$findAndRenameState, transition.nextState, newNames),
+				prevState: A2($author$project$Saving$Automata$findAndRenameState, transition.prevState, newNames)
+			});
+	};
+	var initialState = $author$project$Models$State$Valid('0');
+	var finalStatesLabels = A2($elm$core$List$map, $author$project$Saving$Automata$stateToString, afd.finalStates);
+	return _Utils_update(
+		afd,
+		{
+			finalStates: A2(
+				$elm$core$List$map,
+				$author$project$Models$State$Valid,
+				A2(
+					$elm$core$List$filter,
+					function (old) {
+						return A2($elm$core$List$member, old, finalStatesLabels);
+					},
+					$elm$core$Dict$keys(newNames))),
+			initialState: initialState,
+			states: A2(
+				$elm$core$List$cons,
+				initialState,
+				A2(
+					$elm$core$List$map,
+					A2($elm$core$Basics$composeL, $author$project$Models$State$Valid, $elm$core$String$fromInt),
+					A2(
+						$elm$core$List$range,
+						1,
+						$elm$core$List$length(afd.states) - 1))),
+			transitions: A2($elm$core$List$map, renameTransition, afd.transitions)
+		});
+};
+var $author$project$Saving$Automata$deterministicAutomatonToString = function (afd) {
+	var stateNumber = $elm$core$String$fromInt(
+		$elm$core$List$length(afd.states));
+	var relabeledAfd = $author$project$Saving$Automata$labelStatesAsIntsDeterministic(afd);
+	var transitions = A2(
+		$elm$core$String$join,
+		'\n',
+		$elm$core$List$sort(
+			A2(
+				$elm$core$List$concatMap,
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Utils$Utils$getFlatTransitionDeterministic,
+					$elm$core$List$filterMap(
+						function (transition) {
+							var _v0 = transition.nextState;
+							if (_v0.$ === 'Dead') {
+								return $elm$core$Maybe$Nothing;
+							} else {
+								return $elm$core$Maybe$Just(
+									$author$project$Saving$Automata$flatDeterministicTransitionToString(transition));
+							}
+						})),
+				relabeledAfd.transitions)));
+	var initialState = $author$project$Saving$Automata$stateToString(afd.initialState);
+	var finalStates = A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Saving$Automata$stateToString, relabeledAfd.finalStates));
+	var alphabet = A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Saving$Automata$symbolToString, afd.alphabet));
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		_List_fromArray(
+			[stateNumber, initialState, finalStates, alphabet, transitions]));
+};
+var $author$project$Saving$Grammars$symbolToString = function (s) {
+	if (s.$ === 'Single') {
+		var c = s.a;
+		return $elm$core$String$fromChar(c);
+	} else {
+		var g = s.a;
+		return '[' + (A2(
+			$elm$core$String$join,
+			'',
+			A2(
+				$elm$core$List$map,
+				function (_v1) {
+					var c1 = _v1.a;
+					var c2 = _v1.b;
+					return $elm$core$String$fromList(
+						_List_fromArray(
+							[
+								c1,
+								_Utils_chr('-'),
+								c2
+							]));
+				},
+				g)) + ']');
+	}
+};
+var $author$project$Saving$Grammars$productionBodyToString = function (body) {
+	var _v0 = body.toSymbol;
+	if (_v0.$ === 'Nothing') {
+		return $author$project$Saving$Grammars$symbolToString(body.consumed);
+	} else {
+		var to = _v0.a;
+		return _Utils_ap(
+			$author$project$Saving$Grammars$symbolToString(body.consumed),
+			to);
+	}
+};
+var $author$project$Saving$Grammars$productionToString = function (prod) {
+	return prod.fromSymbol + (' -> ' + A2(
+		$elm$core$String$join,
+		' | ',
+		A2($elm$core$List$map, $author$project$Saving$Grammars$productionBodyToString, prod.productions)));
+};
+var $author$project$Saving$Grammars$grammarToString = function (gr) {
+	var otherProductions = A2(
+		$elm$core$List$filter,
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.fromSymbol;
+			},
+			$elm$core$Basics$neq(gr.initialSymbol)),
+		gr.productions);
+	var initialProduction = A2(
+		$elm$core$List$filter,
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.fromSymbol;
+			},
+			$elm$core$Basics$eq(gr.initialSymbol)),
+		gr.productions);
+	var addEpsilon = A2($elm$core$String$replace, ' -> ', ' -> & | ');
+	var _v0 = $elm$core$List$head(initialProduction);
+	if (_v0.$ === 'Nothing') {
+		return '';
+	} else {
+		var f = _v0.a;
+		var firstProduction = gr.acceptsEmpty ? addEpsilon(
+			$author$project$Saving$Grammars$productionToString(f)) : $author$project$Saving$Grammars$productionToString(f);
+		return A2(
+			$elm$core$String$join,
+			'\n',
+			A2(
+				$elm$core$List$cons,
+				firstProduction,
+				A2($elm$core$List$map, $author$project$Saving$Grammars$productionToString, otherProductions)));
+	}
+};
+var $author$project$Saving$Regex$isSymbolEpsilonOrUnion = function (r) {
+	switch (r.$) {
+		case 'Epsilon':
+			return true;
+		case 'Symbol':
+			return true;
+		case 'Union':
+			return true;
+		default:
+			return false;
+	}
+};
+var $author$project$Saving$Regex$symbolToString = function (s) {
+	if (s.$ === 'Single') {
+		var c = s.a;
+		return $elm$core$String$fromChar(c);
+	} else {
+		var g = s.a;
+		return '[' + (A2(
+			$elm$core$String$join,
+			'',
+			A2(
+				$elm$core$List$map,
+				function (_v1) {
+					var c1 = _v1.a;
+					var c2 = _v1.b;
+					return $elm$core$String$fromList(
+						_List_fromArray(
+							[
+								c1,
+								_Utils_chr('-'),
+								c2
+							]));
+				},
+				g)) + ']');
+	}
+};
+var $author$project$Saving$Regex$regexToString = function (r) {
+	switch (r.$) {
+		case 'Epsilon':
+			return '&';
+		case 'Symbol':
+			var s = r.a;
+			return $author$project$Saving$Regex$symbolToString(s);
+		case 'Union':
+			var r1 = r.a;
+			var r2 = r.b;
+			return '(' + ($author$project$Saving$Regex$regexToString(r1) + (' | ' + ($author$project$Saving$Regex$regexToString(r2) + ')')));
+		case 'Concat':
+			var r1 = r.a;
+			var r2 = r.b;
+			return _Utils_ap(
+				$author$project$Saving$Regex$regexToString(r1),
+				$author$project$Saving$Regex$regexToString(r2));
+		case 'Star':
+			var r1 = r.a;
+			return $author$project$Saving$Regex$isSymbolEpsilonOrUnion(r1) ? ($author$project$Saving$Regex$regexToString(r1) + '*') : ('(' + ($author$project$Saving$Regex$regexToString(r1) + (')' + '*')));
+		case 'Plus':
+			var r1 = r.a;
+			return $author$project$Saving$Regex$isSymbolEpsilonOrUnion(r1) ? ($author$project$Saving$Regex$regexToString(r1) + '+') : ('(' + ($author$project$Saving$Regex$regexToString(r1) + (')' + '+')));
+		default:
+			var r1 = r.a;
+			return $author$project$Saving$Regex$isSymbolEpsilonOrUnion(r1) ? ($author$project$Saving$Regex$regexToString(r1) + '?') : ('(' + ($author$project$Saving$Regex$regexToString(r1) + (')' + '?')));
+	}
+};
+var $author$project$Saving$Regex$idRegexToString = function (idR) {
+	var id = idR.a;
+	var r = idR.b;
+	return id + (': ' + $author$project$Saving$Regex$regexToString(r));
+};
+var $author$project$Saving$Automata$flatNonDeterministicTransitionToString = function (t) {
+	var _v0 = function () {
+		var _v1 = t.conditions;
+		if (_v1.$ === 'NoEpsilon') {
+			var c = _v1.a;
+			return _Utils_Tuple2(false, c);
+		} else {
+			var c = _v1.a;
+			return _Utils_Tuple2(true, c);
+		}
+	}();
+	var hasEpsilon = _v0.a;
+	var conditions = _v0.b;
+	var _v2 = $elm$core$List$head(conditions);
+	if (_v2.$ === 'Nothing') {
+		return (!hasEpsilon) ? '' : A2(
+			$elm$core$String$join,
+			',',
+			_List_fromArray(
+				[
+					$author$project$Saving$Automata$stateToString(t.prevState),
+					'&',
+					A2(
+					$elm$core$String$join,
+					'-',
+					A2($elm$core$List$map, $author$project$Saving$Automata$stateToString, t.nextStates))
+				]));
+	} else {
+		var symbol = _v2.a;
+		return A2(
+			$elm$core$String$join,
+			',',
+			_List_fromArray(
+				[
+					$author$project$Saving$Automata$stateToString(t.prevState),
+					$author$project$Saving$Automata$symbolToString(symbol),
+					A2(
+					$elm$core$String$join,
+					'-',
+					A2($elm$core$List$map, $author$project$Saving$Automata$stateToString, t.nextStates))
+				]));
+	}
+};
+var $author$project$Saving$Automata$labelStatesAsIntsNonDeterministic = function (afnd) {
+	var newNames = $elm$core$Dict$fromList(
+		A3(
+			$elm$core$List$map2,
+			F2(
+				function (prevName, idx) {
+					return _Utils_Tuple2(
+						$author$project$Saving$Automata$stateToString(prevName),
+						$elm$core$String$fromInt(idx));
+				}),
+			afnd.states,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(afnd.states))));
+	var renameTransition = function (transition) {
+		return _Utils_update(
+			transition,
+			{
+				nextStates: A2(
+					$elm$core$List$map,
+					function (state) {
+						return A2($author$project$Saving$Automata$findAndRenameState, state, newNames);
+					},
+					transition.nextStates),
+				prevState: A2($author$project$Saving$Automata$findAndRenameState, transition.prevState, newNames)
+			});
+	};
+	var initialState = $author$project$Models$State$Valid('0');
+	var finalStatesLabels = A2($elm$core$List$map, $author$project$Saving$Automata$stateToString, afnd.finalStates);
+	return _Utils_update(
+		afnd,
+		{
+			finalStates: A2(
+				$elm$core$List$map,
+				$author$project$Models$State$Valid,
+				A2(
+					$elm$core$List$filter,
+					function (old) {
+						return A2($elm$core$List$member, old, finalStatesLabels);
+					},
+					$elm$core$Dict$keys(newNames))),
+			initialState: initialState,
+			states: A2(
+				$elm$core$List$cons,
+				initialState,
+				A2(
+					$elm$core$List$map,
+					A2($elm$core$Basics$composeL, $author$project$Models$State$Valid, $elm$core$String$fromInt),
+					A2(
+						$elm$core$List$range,
+						1,
+						$elm$core$List$length(afnd.states) - 1))),
+			transitions: A2($elm$core$List$map, renameTransition, afnd.transitions)
+		});
+};
+var $author$project$Saving$Automata$nonDeterministicAutomatonToString = function (afnd) {
+	var stateNumber = $elm$core$String$fromInt(
+		$elm$core$List$length(afnd.states));
+	var relabeledAfnd = $author$project$Saving$Automata$labelStatesAsIntsNonDeterministic(afnd);
+	var transitions = A2(
+		$elm$core$String$join,
+		'\n',
+		$elm$core$List$sort(
+			A2(
+				$elm$core$List$concatMap,
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Utils$Utils$getFlatTransitionNonDeterministic,
+					$elm$core$List$filterMap(
+						function (transition) {
+							var _v2 = transition.nextStates;
+							if ((_v2.b && (_v2.a.$ === 'Dead')) && (!_v2.b.b)) {
+								var _v3 = _v2.a;
+								return $elm$core$Maybe$Nothing;
+							} else {
+								return $elm$core$Maybe$Just(
+									$author$project$Saving$Automata$flatNonDeterministicTransitionToString(transition));
+							}
+						})),
+				relabeledAfnd.transitions)));
+	var initialState = $author$project$Saving$Automata$stateToString(afnd.initialState);
+	var hasEpsilon = A2(
+		$elm$core$List$any,
+		function (transition) {
+			var _v1 = transition.conditions;
+			if (_v1.$ === 'WithEpsilon') {
+				return true;
+			} else {
+				return false;
+			}
+		},
+		afnd.transitions);
+	var symbols = function () {
+		var _v0 = afnd.alphabet;
+		var s = _v0.a;
+		return hasEpsilon ? _Utils_ap(
+			s,
+			_List_fromArray(
+				[
+					$author$project$Models$Alphabet$Single(
+					_Utils_chr('&'))
+				])) : s;
+	}();
+	var finalStates = A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Saving$Automata$stateToString, relabeledAfnd.finalStates));
+	var alphabet = A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Saving$Automata$symbolToString, symbols));
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		_List_fromArray(
+			[stateNumber, initialState, finalStates, alphabet, transitions]));
+};
+var $author$project$View$View$saveButton = function (model) {
+	var _v0 = function () {
+		var _v1 = model.currentItem;
+		if (_v1.$ === 'Ok') {
+			switch (_v1.a.$) {
+				case 'Automaton':
+					if (_v1.a.a.$ === 'FiniteDeterministic') {
+						var afd = _v1.a.a.a;
+						return _Utils_Tuple3(
+							'afd',
+							'autômato finito determinístico',
+							$author$project$Saving$Automata$deterministicAutomatonToString(afd));
+					} else {
+						var afnd = _v1.a.a.a;
+						return _Utils_Tuple3(
+							'afnd',
+							'autômato finito não determinístico',
+							$author$project$Saving$Automata$nonDeterministicAutomatonToString(afnd));
+					}
+				case 'Grammar':
+					var grammar = _v1.a.a;
+					return _Utils_Tuple3(
+						'gr',
+						'gramática regular',
+						$author$project$Saving$Grammars$grammarToString(grammar));
+				default:
+					var regexes = _v1.a.a;
+					return _Utils_Tuple3(
+						'er',
+						'expressão regular',
+						A2(
+							$elm$core$String$join,
+							'\n',
+							A2($elm$core$List$map, $author$project$Saving$Regex$idRegexToString, regexes)));
+			}
+		} else {
+			return _Utils_Tuple3('', '', '');
+		}
+	}();
+	var name = _v0.a;
+	var title = _v0.b;
+	var content = _v0.c;
+	var _v2 = model.currentItem;
+	if (_v2.$ === 'Ok') {
+		return $elm$core$Maybe$Just(
+			A2(
+				$elm$html$Html$button,
+				A2(
+					$elm$core$List$cons,
+					$elm$html$Html$Events$onClick(
+						A3($author$project$Types$Types$SaveFile, name + '.txt', 'text/txt', content)),
+					$author$project$View$Styles$rightPanelButtonStyles),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Salvar ' + title)
+					])));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Types$Types$DoUnion = {$: 'DoUnion'};
 var $author$project$View$View$unionButton = function (model) {
 	return $author$project$Utils$Utils$firstTwoAreAFDs(model.itemHistory) ? $elm$core$Maybe$Just(
@@ -12362,7 +12909,7 @@ var $author$project$View$View$viewRightPanel = function (model) {
 						$elm$core$List$cons,
 						A2(
 							$author$project$View$View$loadButton,
-							'autômato finito não-determinístico',
+							'autômato finito não determinístico',
 							$author$project$Types$Types$FileRequested(
 								A2(
 									$elm$core$Basics$composeR,
@@ -12392,13 +12939,12 @@ var $author$project$View$View$viewRightPanel = function (model) {
 											$author$project$Parsing$Regex$parseRegex,
 											$elm$core$Maybe$map($author$project$Models$Models$Regex)))),
 								A2(
-									$elm$core$List$map,
+									$elm$core$List$filterMap,
 									function (f) {
-										return $author$project$View$View$maybeHtmlToHtml(
-											f(model));
+										return f(model);
 									},
 									_List_fromArray(
-										[$author$project$View$View$convertButton, $author$project$View$View$complementButton, $author$project$View$View$minimizeButton, $author$project$View$View$unionButton, $author$project$View$View$intersectionButton, $author$project$View$View$grToAfdButton, $author$project$View$View$afdToGrButton, $author$project$View$View$erToAfdButton])))))))
+										[$author$project$View$View$saveButton, $author$project$View$View$convertButton, $author$project$View$View$complementButton, $author$project$View$View$minimizeButton, $author$project$View$View$unionButton, $author$project$View$View$intersectionButton, $author$project$View$View$grToAfdButton, $author$project$View$View$afdToGrButton, $author$project$View$View$erToAfdButton])))))))
 			]));
 };
 var $author$project$View$View$view = function (model) {

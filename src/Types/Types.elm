@@ -51,6 +51,7 @@ type Msg
     = FileRequested (String -> Maybe Models.General)
     | FileSelected (String -> Maybe Models.General) File
     | FileLoaded (String -> Maybe Models.General) String
+    | SaveFile String String String
     | SetCurrent Models.General
     | UpdateCurrent Models.General
     | RemoveItem Models.General

@@ -17,6 +17,9 @@ import Operations.SentenceValidation as Validation
 import Parsing.Automata as PAutomata
 import Parsing.Grammars as PGrammars
 import Parsing.Regex as PRegex
+import Saving.Automata as SAutomata
+import Saving.Grammars as SGrammars
+import Saving.Regex as SRegex
 import Types.Types as Types
 import Utils.Utils as Utils
 import View.Automata as VAutomata
@@ -201,7 +204,7 @@ viewRightPanel model =
                         >> Maybe.map Models.Automaton
                     )
                 )
-                :: loadButton "autômato finito não-determinístico"
+                :: loadButton "autômato finito não determinístico"
                     (Types.FileRequested
                         (PAutomata.parseAFND
                             >> Maybe.map Automata.FiniteNonDeterministic
@@ -218,8 +221,9 @@ viewRightPanel model =
                     (Types.FileRequested
                         (PRegex.parseRegex >> Maybe.map Models.Regex)
                     )
-                :: List.map (\f -> f model |> maybeHtmlToHtml)
-                    [ convertButton
+                :: List.filterMap (\f -> f model)
+                    [ saveButton
+                    , convertButton
                     , complementButton
                     , minimizeButton
                     , unionButton
@@ -241,6 +245,52 @@ loadButton caption msg =
 maybeHtmlToHtml : Maybe (Html a) -> Html a
 maybeHtmlToHtml =
     Maybe.withDefault (text "")
+
+
+saveButton : Types.Model -> Maybe (Html Types.Msg)
+saveButton model =
+    let
+        ( name, title, content ) =
+            case model.currentItem of
+                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+                    ( "afd"
+                    , "autômato finito determinístico"
+                    , SAutomata.deterministicAutomatonToString afd
+                    )
+
+                Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
+                    ( "afnd"
+                    , "autômato finito não determinístico"
+                    , SAutomata.nonDeterministicAutomatonToString afnd
+                    )
+
+                Ok (Models.Grammar grammar) ->
+                    ( "gr"
+                    , "gramática regular"
+                    , SGrammars.grammarToString grammar
+                    )
+
+                Ok (Models.Regex regexes) ->
+                    ( "er"
+                    , "expressão regular"
+                    , String.join "\n" <|
+                        List.map SRegex.idRegexToString regexes
+                    )
+
+                _ ->
+                    ( "", "", "" )
+    in
+    case model.currentItem of
+        Ok _ ->
+            button
+                (onClick (Types.SaveFile (name ++ ".txt") "text/txt" content)
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text ("Salvar " ++ title) ]
+                |> Just
+
+        _ ->
+            Nothing
 
 
 convertButton : Types.Model -> Maybe (Html Types.Msg)

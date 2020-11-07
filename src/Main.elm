@@ -14,6 +14,7 @@ import Conversion.Automata as CAutomata
 import Conversion.Grammars as CGrammars
 import Conversion.Regex as CRegex
 import File exposing (File)
+import File.Download as Download
 import File.Select as Select
 import Models.Automata as Automata
 import Models.Models as Models
@@ -72,6 +73,9 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        Types.SaveFile name filetype content ->
+            ( model, Download.string name filetype content )
 
         Types.ConvertAFNDToAFD ->
             case model.currentItem of

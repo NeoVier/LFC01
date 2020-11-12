@@ -43,7 +43,7 @@ Student: Henrique da Cunha Buss
 ### [ ] Second Submission (items 8-12, 02/12)
 
 - [ ] GLC
-  - [ ] Model GLC
+  - [x] Model GLC
   - [ ] Display GLC
   - [ ] Parse GLC
   - [ ] Add GLC to history

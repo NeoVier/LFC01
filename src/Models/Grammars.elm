@@ -12,6 +12,48 @@ import Models.Alphabet as Alphabet
 
 
 
+-- A Context-Free Grammar is a 4-tuple with a list of non terminal symbols,
+-- a list of terminal symbols, a list of productions and an initial symbol.
+
+
+type alias ContextFreeGrammar =
+    { nonTerminals : List NonTerminalSymbol
+    , terminals : List TerminalSymbol
+    , productions : List ContextFreeProduction
+    , initialSymbol : NonTerminalSymbol
+    }
+
+
+
+-- A context-free production has an origin symbol and a list of context-free
+-- production bodies
+
+
+type alias ContextFreeProduction =
+    { fromSymbol : NonTerminalSymbol
+    , productions : List ContextFreeProductionBody
+    }
+
+
+
+-- A context-free production body is a list of terminal/nonterminal symbols,
+-- in any order. If the production body is epsilon, the list is empty
+
+
+type alias ContextFreeProductionBody =
+    List ContextFreeProductionItem
+
+
+
+-- A production item can either be a terminal symbol or a non terminal symbol
+
+
+type ContextFreeProductionItem
+    = Terminal TerminalSymbol
+    | NonTerminal NonTerminalSymbol
+
+
+
 -- A Regular Grammar is a 4-tuple with a list of non terminal symbols,
 -- a list of terminal symbols, a list of productions and an initial symbol.
 -- Plus a flag that determines if it accepts the empty word

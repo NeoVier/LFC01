@@ -6,7 +6,7 @@ Student: Henrique da Cunha Buss
 
 ## Roadmap
 
-### First Submission (items 1-7, 05/11)
+### [x] First Submission (items 1-7, 05/11)
 
 - [x] AFs
   - [x] Display AF
@@ -40,9 +40,29 @@ Student: Henrique da Cunha Buss
   - [x] Add ER from file
   - [x] Convert ER to AFD
 
-### Second Submission (items 8-12, 02/12)
+### [ ] Second Submission (items 8-12, 02/12)
 
-- [ ] Start
+- [ ] GLC
+  - [ ] Model GLC
+  - [ ] Display GLC
+  - [ ] Parse GLC
+  - [ ] Add GLC to history
+  - [ ] Add GLC from file
+  - [ ] Remove Epsilon
+  - [ ] Eliminate left recursion
+    - [ ] Direct
+    - [ ] Indirect
+    - [ ] All
+  - [ ] Factor GLC (Remove non-determinism)
+    - [ ] Direct
+    - [ ] Indirect
+    - [ ] All
+  - [ ] Transform to normal Chomsky
+    - [ ] Remove non-productive symbols
+    - [ ] Remove non-used symbols
+    - [ ] Remove unitary productions
+- [ ] AP
+  - TODO
 
 ## Tasks
 

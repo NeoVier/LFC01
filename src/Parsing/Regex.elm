@@ -4,9 +4,10 @@
    Creation: October/2020
    This file contains functions to parse Regexes
 -}
+-- module Parsing.Regex exposing (concat, parseRegex, regex, unary, union)
 
 
-module Parsing.Regex exposing (parseRegex)
+module Parsing.Regex exposing (..)
 
 import Models.Alphabet as Alphabet
 import Models.Regex as Regex exposing (Regex(..))
@@ -164,54 +165,21 @@ regexId =
 
 regex : Parser Regex
 regex =
-    P.oneOf
-        [ P.backtrackable <| concat
-        , P.backtrackable <| unary
-        , P.backtrackable <| union
-        ]
-        |. P.oneOf [ P.end, P.symbol "\n" ]
-
-
-
--- CONCAT
--- Parse a concat node
-
-
-concat : Parser Regex
-concat =
-    P.loop Nothing concatHelp
-
-
-
--- Helper function for concat
-
-
-concatHelp : Maybe Regex -> Parser (P.Step (Maybe Regex) Regex)
-concatHelp current =
     let
-        join s =
-            case current of
-                Nothing ->
-                    P.Loop (Just s)
-
-                Just expression ->
-                    P.Loop <| Just <| Regex.Concat expression s
+        base =
+            { start = ""
+            , separator = "|"
+            , end = ""
+            , spaces = P.spaces
+            , item = union
+            , trailing = P.Optional
+            }
     in
     P.oneOf
-        [ P.backtrackable <|
-            P.succeed join
-                |. P.symbol "("
-                |= P.oneOf [ concat, union ]
-                |. P.symbol ")"
-        , unary
-            |> P.map join
-        , case current of
-            Nothing ->
-                P.problem "Invalid RegEx"
-
-            Just expression ->
-                P.succeed (P.Done expression)
+        [ P.sequence base
+        , P.sequence { base | start = "(", end = ")" }
         ]
+        |> P.andThen (joinWithMaybe Union "regex")
 
 
 
@@ -221,41 +189,71 @@ concatHelp current =
 
 union : Parser Regex
 union =
+    let
+        base =
+            { start = ""
+            , separator = "|"
+            , end = ""
+            , spaces = P.spaces
+            , item = concat
+            , trailing = P.Forbidden
+            }
+    in
     P.oneOf
-        [ P.backtrackable <|
-            P.succeed Regex.Union
-                |= P.oneOf [ baseUnion, concat ]
-                |. P.spaces
-                |. P.symbol "|"
-                |. P.spaces
-                |= P.oneOf [ baseUnion, concat ]
-        , baseUnion
+        [ P.sequence base
+        , P.sequence { base | start = "(", end = ")" } |> P.backtrackable
         ]
+        |> P.andThen (joinWithMaybe Union "union")
 
 
 
--- Parse a single union node
+-- CONCAT
+-- Parse a concat node
 
 
-baseUnion : Parser Regex
-baseUnion =
-    P.backtrackable <|
-        P.oneOf
-            [ P.succeed Regex.Union
-                |. P.symbol "("
-                |= concat
-                |. P.spaces
-                |. P.symbol "|"
-                |. P.spaces
-                |= concat
-                |. P.symbol ")"
-            , P.succeed Regex.Union
-                |= concat
-                |. P.spaces
-                |. P.symbol "|"
-                |. P.spaces
-                |= concat
-            ]
+concat : Parser Regex
+concat =
+    let
+        base =
+            { start = ""
+            , separator = ""
+            , end = ""
+            , spaces = P.spaces
+            , item = unary
+            , trailing = P.Forbidden
+            }
+    in
+    P.oneOf
+        [ P.sequence base
+        , P.sequence { base | start = "(", end = ")" }
+        , P.lazy
+            (\_ ->
+                P.sequence
+                    { base
+                        | start = "("
+                        , end = ")"
+                        , item = concat
+                    }
+            )
+        , P.lazy (\_ -> P.sequence { base | item = concat })
+        ]
+        |> P.andThen (joinWithMaybe Concat "concat")
+
+
+joinWithMaybe :
+    (Regex -> Regex -> Regex)
+    -> String
+    -> List Regex
+    -> Parser Regex
+joinWithMaybe f regexType regexes =
+    Maybe.map2 (List.foldl f) (List.head regexes) (List.tail regexes)
+        |> parserFromMaybe regexType
+
+
+parserFromMaybe : String -> Maybe a -> Parser a
+parserFromMaybe regexType =
+    Maybe.map P.succeed
+        >> Maybe.withDefault (P.problem ("Invalid " ++ regexType))
 
 
 
@@ -272,12 +270,15 @@ createUnary id f =
     P.backtrackable <|
         P.oneOf
             [ defSucc
-                |= regexSymbol
+                |. P.symbol "("
+                |= P.oneOf
+                    [ P.lazy (\_ -> regex)
+                    , regexSymbol
+                    ]
+                |. P.symbol ")"
                 |. P.symbol id
             , defSucc
-                |. P.symbol "("
-                |= P.oneOf [ union, concat ]
-                |. P.symbol ")"
+                |= regexSymbol
                 |. P.symbol id
             ]
 
@@ -317,6 +318,8 @@ epsilon : Parser Regex
 epsilon =
     P.succeed Regex.Epsilon
         |. P.symbol "&"
+        |> wrapWithParens
+        |> P.backtrackable
 
 
 
@@ -325,7 +328,19 @@ epsilon =
 
 unary : Parser Regex
 unary =
-    P.oneOf [ epsilon, star, plus, question, regexSymbol ]
+    List.map P.backtrackable
+        [ epsilon, star, plus, question, regexSymbol ]
+        |> P.oneOf
+
+
+wrapWithParens : Parser Regex -> Parser Regex
+wrapWithParens p =
+    P.succeed identity
+        |. P.symbol "("
+        |. P.spaces
+        |= p
+        |. P.spaces
+        |. P.symbol ")"
 
 
 

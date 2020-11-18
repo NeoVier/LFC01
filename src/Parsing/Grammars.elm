@@ -205,14 +205,18 @@ contextFreeProductionItem =
 
 contextFreeProductionBody : Parser ContextFreeProductionBody
 contextFreeProductionBody =
-    P.sequence
-        { start = ""
-        , separator = ""
-        , end = ""
-        , spaces = P.spaces
-        , item = contextFreeProductionItem
-        , trailing = P.Optional
-        }
+    P.oneOf
+        [ P.succeed []
+            |. P.symbol "&"
+        , P.sequence
+            { start = ""
+            , separator = ""
+            , end = ""
+            , spaces = P.spaces
+            , item = contextFreeProductionItem
+            , trailing = P.Optional
+            }
+        ]
 
 
 

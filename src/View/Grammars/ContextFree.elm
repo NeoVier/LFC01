@@ -34,9 +34,13 @@ viewGLCProduction production =
 
 
 viewGLCProductionBody : Grammars.ContextFreeProductionBody -> String
-viewGLCProductionBody =
-    List.map viewContextFreeProductionItem
-        >> String.join ""
+viewGLCProductionBody body =
+    case body of
+        [] ->
+            "ε"
+
+        _ ->
+            List.map viewContextFreeProductionItem body |> String.join ""
 
 
 viewContextFreeProductionItem : Grammars.ContextFreeProductionItem -> String

@@ -20,7 +20,7 @@ import Utils.Utils as Utils
 -- Convert a GR to an AFND
 
 
-grToAfnd : Grammars.Grammar -> Automata.AFND
+grToAfnd : Grammars.RegularGrammar -> Automata.AFND
 grToAfnd gr =
     let
         finalStates =

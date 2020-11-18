@@ -857,14 +857,14 @@ groupGrammarProductions l =
 
 
 productionsWithSameFromSymbol :
-    Grammars.Grammar
+    Grammars.RegularGrammar
     -> Grammars.NonTerminalSymbol
     -> List Grammars.Production
 productionsWithSameFromSymbol gr symbol =
     List.filter (\production -> production.fromSymbol == symbol) gr.productions
 
 
-joinGrammarProductions : Grammars.Grammar -> Grammars.Grammar
+joinGrammarProductions : Grammars.RegularGrammar -> Grammars.RegularGrammar
 joinGrammarProductions gr =
     let
         newProductions =

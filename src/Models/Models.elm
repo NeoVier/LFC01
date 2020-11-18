@@ -20,5 +20,5 @@ import Models.Regex as Regex
 
 type General
     = Automaton Automata.Automaton
-    | Grammar Grammars.Grammar
+    | Grammar Grammars.RegularGrammar
     | Regex (List Regex.IdRegex)

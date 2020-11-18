@@ -4,7 +4,7 @@ import Models.Alphabet as Alphabet
 import Models.Grammars as Grammars
 
 
-grammarToString : Grammars.Grammar -> String
+grammarToString : Grammars.RegularGrammar -> String
 grammarToString gr =
     let
         initialProduction =

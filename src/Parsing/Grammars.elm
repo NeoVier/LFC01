@@ -20,7 +20,7 @@ import Utils.Utils as Utils
 -- Parse a GR
 
 
-parseGR : String -> Maybe Grammar
+parseGR : String -> Maybe RegularGrammar
 parseGR s =
     let
         acceptsEmpty =

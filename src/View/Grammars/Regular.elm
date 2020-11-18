@@ -15,7 +15,7 @@ import Utils.Utils as Utils
 import View.Styles as Styles
 
 
-viewGR : Grammars.Grammar -> Html msg
+viewGR : Grammars.RegularGrammar -> Html msg
 viewGR gr =
     let
         initialProductions =

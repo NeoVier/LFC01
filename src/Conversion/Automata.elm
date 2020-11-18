@@ -113,7 +113,7 @@ getTransitions afnd origin =
 -- Converts and AFD to a GR
 
 
-afdToGr : Automata.AFD -> Grammars.Grammar
+afdToGr : Automata.AFD -> Grammars.RegularGrammar
 afdToGr afd =
     let
         nonTerminals =
@@ -143,7 +143,7 @@ afdToGr afd =
         |> cleanGR
 
 
-cleanGR : Grammars.Grammar -> Grammars.Grammar
+cleanGR : Grammars.RegularGrammar -> Grammars.RegularGrammar
 cleanGR gr =
     let
         validNonTerminals =

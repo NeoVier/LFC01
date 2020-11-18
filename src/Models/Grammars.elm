@@ -12,6 +12,15 @@ import Models.Alphabet as Alphabet
 
 
 
+-- General Grammar type
+
+
+type Grammar
+    = Regular RegularGrammar
+    | ContextFree ContextFreeGrammar
+
+
+
 -- A Context-Free Grammar is a 4-tuple with a list of non terminal symbols,
 -- a list of terminal symbols, a list of productions and an initial symbol.
 
@@ -59,7 +68,7 @@ type ContextFreeProductionItem
 -- Plus a flag that determines if it accepts the empty word
 
 
-type alias Grammar =
+type alias RegularGrammar =
     { nonTerminals : List NonTerminalSymbol
     , terminals : List TerminalSymbol
     , productions : List Production

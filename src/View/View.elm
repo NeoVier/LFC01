@@ -220,6 +220,13 @@ viewRightPanel model =
                             >> Maybe.map (Grammars.Regular >> Models.Grammar)
                         )
                     )
+                :: loadButton "gramática livre de contexto"
+                    (Types.FileRequested
+                        (PGrammars.parseGLC
+                            >> Maybe.map
+                                (Grammars.ContextFree >> Models.Grammar)
+                        )
+                    )
                 :: loadButton "expressão regular"
                     (Types.FileRequested
                         (PRegex.parseRegex >> Maybe.map Models.Regex)

@@ -46,8 +46,8 @@ Student: Henrique da Cunha Buss
   - [x] Model GLC
   - [ ] Display GLC
   - [x] Parse GLC
-  - [ ] Add GLC to history
-  - [ ] Add GLC from file
+  - [x] Add GLC to history
+  - [x] Add GLC from file
   - [ ] Remove Epsilon
   - [ ] Eliminate left recursion
     - [ ] Direct

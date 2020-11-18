@@ -76,8 +76,11 @@ historyView model =
                 Models.Automaton (Automata.FiniteNonDeterministic _) ->
                     "AFND"
 
-                Models.Grammar _ ->
+                Models.Grammar (Grammars.Regular _) ->
                     "GR"
+
+                Models.Grammar (Grammars.ContextFree _) ->
+                    "GLC"
 
                 Models.Regex _ ->
                     "ER"

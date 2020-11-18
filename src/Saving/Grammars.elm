@@ -4,8 +4,18 @@ import Models.Alphabet as Alphabet
 import Models.Grammars as Grammars
 
 
-grammarToString : Grammars.RegularGrammar -> String
-grammarToString gr =
+grammarToString : Grammars.Grammar -> String
+grammarToString grammar =
+    case grammar of
+        Grammars.Regular gr ->
+            regularGrammarToString gr
+
+        Grammars.ContextFree glc ->
+            "not implemented"
+
+
+regularGrammarToString : Grammars.RegularGrammar -> String
+regularGrammarToString gr =
     let
         initialProduction =
             List.filter (.fromSymbol >> (==) gr.initialSymbol) gr.productions

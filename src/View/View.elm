@@ -12,6 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Models.Automata as Automata
+import Models.Grammars as Grammars
 import Models.Models as Models
 import Operations.SentenceValidation as Validation
 import Parsing.Automata as PAutomata
@@ -23,7 +24,7 @@ import Saving.Regex as SRegex
 import Types.Types as Types
 import Utils.Utils as Utils
 import View.Automata as VAutomata
-import View.Grammars.Regular as VGrammars
+import View.Grammars as VGrammars
 import View.Regex as VRegex
 import View.Styles as Styles
 
@@ -142,7 +143,7 @@ viewCurrentModel model =
             VAutomata.viewCurrentAutomaton automaton
 
         Ok (Models.Grammar grammar) ->
-            VGrammars.viewGR grammar
+            VGrammars.viewCurrentGrammar grammar
 
         Ok (Models.Regex idRegexes) ->
             VRegex.viewIdRegexes idRegexes
@@ -207,14 +208,16 @@ viewRightPanel model =
                 :: loadButton "autômato finito não determinístico"
                     (Types.FileRequested
                         (PAutomata.parseAFND
-                            >> Maybe.map Automata.FiniteNonDeterministic
-                            >> Maybe.map Models.Automaton
+                            >> Maybe.map
+                                (Automata.FiniteNonDeterministic
+                                    >> Models.Automaton
+                                )
                         )
                     )
                 :: loadButton "gramática regular"
                     (Types.FileRequested
                         (PGrammars.parseGR
-                            >> Maybe.map Models.Grammar
+                            >> Maybe.map (Grammars.Regular >> Models.Grammar)
                         )
                     )
                 :: loadButton "expressão regular"

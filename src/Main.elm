@@ -17,6 +17,7 @@ import File exposing (File)
 import File.Download as Download
 import File.Select as Select
 import Models.Automata as Automata
+import Models.Grammars as Grammars
 import Models.Models as Models
 import Operations.Basics as BasicOperations
 import Operations.Minimization as Minimization
@@ -226,7 +227,7 @@ update msg model =
 
         Types.ConvertGRToAFND ->
             case model.currentItem of
-                Ok (Models.Grammar grammar) ->
+                Ok (Models.Grammar (Grammars.Regular grammar)) ->
                     let
                         result =
                             CGrammars.grToAfnd grammar
@@ -249,6 +250,7 @@ update msg model =
                     let
                         result =
                             CAutomata.afdToGr afd
+                                |> Grammars.Regular
                                 |> Models.Grammar
                     in
                     ( { model

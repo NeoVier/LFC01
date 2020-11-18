@@ -4,10 +4,9 @@
    Creation: October/2020
    This file contains functions to parse Regexes
 -}
--- module Parsing.Regex exposing (concat, parseRegex, regex, unary, union)
 
 
-module Parsing.Regex exposing (..)
+module Parsing.Regex exposing (parseRegex)
 
 import Models.Alphabet as Alphabet
 import Models.Regex as Regex exposing (Regex(..))

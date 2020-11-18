@@ -246,7 +246,9 @@ joinWithMaybe :
     -> List Regex
     -> Parser Regex
 joinWithMaybe f regexType regexes =
-    Maybe.map2 (List.foldl f) (List.head regexes) (List.tail regexes)
+    Maybe.map2 (List.foldl (\acc new -> f new acc))
+        (List.head regexes)
+        (List.tail regexes)
         |> parserFromMaybe regexType
 
 

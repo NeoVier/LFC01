@@ -11,6 +11,7 @@ module View.Grammars exposing (..)
 import Html exposing (..)
 import Models.Grammars as Grammars
 import Types.Types as Types
+import View.Grammars.ContextFree as VGLC
 import View.Grammars.Regular as VGR
 
 
@@ -25,4 +26,4 @@ viewCurrentGrammar grammar =
             VGR.viewGR gr
 
         Grammars.ContextFree glc ->
-            text "not implemented"
+            VGLC.viewGLC glc

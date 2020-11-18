@@ -58,10 +58,10 @@ viewGRProductionBody body =
     let
         consumed =
             case body.consumed of
-                Alphabet.Single s ->
+                Alphabet.Single _ ->
                     Utils.symbolToString body.consumed
 
-                Alphabet.Group g ->
+                Alphabet.Group _ ->
                     "[" ++ Utils.symbolToString body.consumed ++ "]"
 
         toSymbol =

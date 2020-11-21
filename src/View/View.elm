@@ -244,6 +244,7 @@ viewRightPanel model =
                     , grToAfdButton
                     , afdToGrButton
                     , erToAfdButton
+                    , removeEpsilonButton
                     ]
             )
         ]
@@ -409,6 +410,18 @@ erToAfdButton model =
         Ok (Models.Regex _) ->
             button (onClick Types.ConvertERToAFD :: Styles.rightPanelButtonStyles)
                 [ text "Converter para AFD" ]
+                |> Just
+
+        _ ->
+            Nothing
+
+
+removeEpsilonButton : Types.Model -> Maybe (Html Types.Msg)
+removeEpsilonButton model =
+    case model.currentItem of
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            button (onClick Types.RemoveEpsilon :: Styles.rightPanelButtonStyles)
+                [ text "Remover Epsilon" ]
                 |> Just
 
         _ ->

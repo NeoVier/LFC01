@@ -20,6 +20,7 @@ import Models.Automata as Automata
 import Models.Grammars as Grammars
 import Models.Models as Models
 import Operations.Basics as BasicOperations
+import Operations.GLC as OpGLC
 import Operations.Minimization as Minimization
 import Parsing.Automata as PAutomata
 import Parsing.Grammars as PGrammars
@@ -287,6 +288,25 @@ update msg model =
                               }
                             , Cmd.none
                             )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        Types.RemoveEpsilon ->
+            case model.currentItem of
+                Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+                    let
+                        result =
+                            OpGLC.removeEpsilon glc
+                                |> Grammars.ContextFree
+                                |> Models.Grammar
+                    in
+                    ( { model
+                        | currentItem = Ok result
+                        , itemHistory = result :: model.itemHistory
+                      }
+                    , Cmd.none
+                    )
 
                 _ ->
                     ( model, Cmd.none )

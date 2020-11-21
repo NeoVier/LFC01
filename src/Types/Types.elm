@@ -64,3 +64,4 @@ type Msg
     | ConvertGRToAFND
     | ConvertAFDToGR
     | ConvertERToAFD
+    | RemoveEpsilon

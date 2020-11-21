@@ -1,0 +1,5 @@
+S -> AB | aS
+A -> bA | BC
+B -> dB | C | &
+C -> cCc | BD
+D -> CD | d | &

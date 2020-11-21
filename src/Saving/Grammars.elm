@@ -1,4 +1,4 @@
-module Saving.Grammars exposing (grammarToString)
+module Saving.Grammars exposing (contextFreeGrammarToString, grammarToString, regularGrammarToString)
 
 import Models.Alphabet as Alphabet
 import Models.Grammars as Grammars
@@ -10,9 +10,8 @@ grammarToString grammar =
         Grammars.Regular gr ->
             regularGrammarToString gr
 
-        -- TODO
         Grammars.ContextFree glc ->
-            "not implemented"
+            contextFreeGrammarToString glc
 
 
 regularGrammarToString : Grammars.RegularGrammar -> String
@@ -46,6 +45,25 @@ regularGrammarToString gr =
                 )
 
 
+contextFreeGrammarToString : Grammars.ContextFreeGrammar -> String
+contextFreeGrammarToString glc =
+    let
+        initialProduction =
+            List.filter (.fromSymbol >> (==) glc.initialSymbol) glc.productions
+
+        nonInitialProductions =
+            List.filter (.fromSymbol >> (/=) glc.initialSymbol) glc.productions
+    in
+    case List.head initialProduction of
+        Nothing ->
+            ""
+
+        Just s ->
+            contextFreeProductionToString s
+                :: List.map contextFreeProductionToString nonInitialProductions
+                |> String.join "\n"
+
+
 symbolToString : Alphabet.Symbol -> String
 symbolToString s =
     case s of
@@ -62,6 +80,33 @@ symbolToString s =
                         g
                     )
                 ++ "]"
+
+
+contextFreeProductionToString : Grammars.ContextFreeProduction -> String
+contextFreeProductionToString prod =
+    prod.fromSymbol
+        ++ " -> "
+        ++ String.join " | "
+            (List.map contextFreeProductionBodyToString prod.productions)
+
+
+contextFreeProductionBodyToString : Grammars.ContextFreeProductionBody -> String
+contextFreeProductionBodyToString body =
+    if List.isEmpty body then
+        "&"
+
+    else
+        List.map
+            (\item ->
+                case item of
+                    Grammars.Terminal symbol ->
+                        symbolToString symbol
+
+                    Grammars.NonTerminal symbol ->
+                        symbol
+            )
+            body
+            |> String.join ""
 
 
 productionToString : Grammars.Production -> String

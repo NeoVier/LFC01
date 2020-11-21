@@ -278,10 +278,16 @@ saveButton model =
                     , SAutomata.nonDeterministicAutomatonToString afnd
                     )
 
-                Ok (Models.Grammar grammar) ->
+                Ok (Models.Grammar (Grammars.Regular gr)) ->
                     ( "gr"
                     , "gramática regular"
-                    , SGrammars.grammarToString grammar
+                    , SGrammars.regularGrammarToString gr
+                    )
+
+                Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+                    ( "glc"
+                    , "gramática livre de contexto"
+                    , SGrammars.contextFreeGrammarToString glc
                     )
 
                 Ok (Models.Regex regexes) ->

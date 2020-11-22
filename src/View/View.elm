@@ -8,12 +8,17 @@
 
 module View.View exposing (view)
 
+import Conversion.Automata as CAutomata
+import Conversion.Grammars as CGrammars
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Models.Automata as Automata
 import Models.Grammars as Grammars
 import Models.Models as Models
+import Operations.Basics as OpBasics
+import Operations.GLC as OpGLC
+import Operations.Minimization as OpMin
 import Operations.SentenceValidation as Validation
 import Parsing.Automata as PAutomata
 import Parsing.Grammars as PGrammars
@@ -236,12 +241,12 @@ viewRightPanel model =
                     )
                 :: List.filterMap (\f -> f model)
                     [ saveButton
-                    , convertButton
+                    , afndToAfdButton
                     , complementButton
                     , minimizeButton
                     , unionButton
                     , intersectionButton
-                    , grToAfdButton
+                    , grToAfndButton
                     , afdToGrButton
                     , erToAfdButton
                     , removeEpsilonButton
@@ -313,21 +318,6 @@ saveButton model =
             Nothing
 
 
-convertButton : Types.Model -> Maybe (Html Types.Msg)
-convertButton model =
-    case model.currentItem of
-        Ok (Models.Automaton (Automata.FiniteNonDeterministic _)) ->
-            button
-                (onClick Types.ConvertAFNDToAFD
-                    :: Styles.rightPanelButtonStyles
-                )
-                [ text "Converter AFND para AFD" ]
-                |> Just
-
-        _ ->
-            Nothing
-
-
 unionButton : Types.Model -> Maybe (Html Types.Msg)
 unionButton model =
     if Utils.firstTwoAreAFDs model.itemHistory then
@@ -338,22 +328,6 @@ unionButton model =
 
     else
         Nothing
-
-
-complementButton : Types.Model -> Maybe (Html Types.Msg)
-complementButton model =
-    case model.currentItem of
-        Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
-            Just
-                (button
-                    (onClick Types.DoComplement
-                        :: Styles.rightPanelButtonStyles
-                    )
-                    [ text "Fazer complemento" ]
-                )
-
-        _ ->
-            Nothing
 
 
 intersectionButton : Types.Model -> Maybe (Html Types.Msg)
@@ -371,11 +345,63 @@ intersectionButton model =
         Nothing
 
 
+afndToAfdButton : Types.Model -> Maybe (Html Types.Msg)
+afndToAfdButton model =
+    case model.currentItem of
+        Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
+            button
+                (onClick
+                    (Types.SetCurrent
+                        (CAutomata.afndToAfd afnd
+                            |> Automata.FiniteDeterministic
+                            |> Models.Automaton
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Converter AFND para AFD" ]
+                |> Just
+
+        _ ->
+            Nothing
+
+
+complementButton : Types.Model -> Maybe (Html Types.Msg)
+complementButton model =
+    case model.currentItem of
+        Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+            Just
+                (button
+                    (onClick
+                        (Types.SetCurrent
+                            (OpBasics.complement afd
+                                |> Automata.FiniteDeterministic
+                                |> Models.Automaton
+                            )
+                        )
+                        :: Styles.rightPanelButtonStyles
+                    )
+                    [ text "Fazer complemento" ]
+                )
+
+        _ ->
+            Nothing
+
+
 minimizeButton : Types.Model -> Maybe (Html Types.Msg)
 minimizeButton model =
     case model.currentItem of
-        Ok (Models.Automaton (Automata.FiniteDeterministic _)) ->
-            button (onClick Types.Minimize :: Styles.rightPanelButtonStyles)
+        Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
+            button
+                (onClick
+                    (Types.SetCurrent
+                        (OpMin.minimizeAFD afd
+                            |> Automata.FiniteDeterministic
+                            |> Models.Automaton
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
                 [ text "Minimizar AFD" ]
                 |> Just
 
@@ -383,12 +409,18 @@ minimizeButton model =
             Nothing
 
 
-grToAfdButton : Types.Model -> Maybe (Html Types.Msg)
-grToAfdButton model =
+grToAfndButton : Types.Model -> Maybe (Html Types.Msg)
+grToAfndButton model =
     case model.currentItem of
-        Ok (Models.Grammar grammar) ->
+        Ok (Models.Grammar (Grammars.Regular grammar)) ->
             button
-                (onClick Types.ConvertGRToAFND
+                (onClick
+                    (Types.SetCurrent
+                        (CGrammars.grToAfnd grammar
+                            |> Automata.FiniteNonDeterministic
+                            |> Models.Automaton
+                        )
+                    )
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Converter para AFND" ]
@@ -402,7 +434,16 @@ afdToGrButton : Types.Model -> Maybe (Html Types.Msg)
 afdToGrButton model =
     case model.currentItem of
         Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
-            button (onClick Types.ConvertAFDToGR :: Styles.rightPanelButtonStyles)
+            button
+                (onClick
+                    (Types.SetCurrent
+                        (CAutomata.afdToGr afd
+                            |> Grammars.Regular
+                            |> Models.Grammar
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
                 [ text "Converter para GR" ]
                 |> Just
 
@@ -426,7 +467,16 @@ removeEpsilonButton : Types.Model -> Maybe (Html Types.Msg)
 removeEpsilonButton model =
     case model.currentItem of
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
-            button (onClick Types.RemoveEpsilon :: Styles.rightPanelButtonStyles)
+            button
+                (onClick
+                    (Types.SetCurrent
+                        (OpGLC.removeEpsilon glc
+                            |> Grammars.ContextFree
+                            |> Models.Grammar
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
                 [ text "Remover Epsilon" ]
                 |> Just
 

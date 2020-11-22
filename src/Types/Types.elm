@@ -58,10 +58,4 @@ type Msg
     | SetSentence String
     | DoUnion
     | DoIntersection
-    | DoComplement
-    | Minimize
-    | ConvertAFNDToAFD
-    | ConvertGRToAFND
-    | ConvertAFDToGR
     | ConvertERToAFD
-    | RemoveEpsilon

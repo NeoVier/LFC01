@@ -79,29 +79,6 @@ update msg model =
         Types.SaveFile name filetype content ->
             ( model, Download.string name filetype content )
 
-        Types.ConvertAFNDToAFD ->
-            case model.currentItem of
-                Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
-                    let
-                        converted =
-                            Automata.FiniteDeterministic
-                                (CAutomata.afndToAfd
-                                    afnd
-                                )
-                                |> Models.Automaton
-                    in
-                    ( { model
-                        | currentItem =
-                            Ok
-                                converted
-                        , itemHistory = converted :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
-
         Types.SetCurrent general ->
             ( { model | currentItem = Ok general }, Cmd.none )
 
@@ -164,25 +141,6 @@ update msg model =
                     , Cmd.none
                     )
 
-        Types.DoComplement ->
-            case model.currentItem of
-                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
-                    let
-                        result =
-                            BasicOperations.complement afd
-                                |> Automata.FiniteDeterministic
-                                |> Models.Automaton
-                    in
-                    ( { model
-                        | currentItem = Ok result
-                        , itemHistory = result :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
-
         Types.DoIntersection ->
             case Utils.getFirstTwoAsAFDs model.itemHistory of
                 Nothing ->
@@ -205,64 +163,6 @@ update msg model =
                       }
                     , Cmd.none
                     )
-
-        Types.Minimize ->
-            case model.currentItem of
-                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
-                    let
-                        result =
-                            Minimization.minimizeAFD afd
-                                |> Automata.FiniteDeterministic
-                                |> Models.Automaton
-                    in
-                    ( { model
-                        | currentItem =
-                            Ok result
-                        , itemHistory = result :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        Types.ConvertGRToAFND ->
-            case model.currentItem of
-                Ok (Models.Grammar (Grammars.Regular grammar)) ->
-                    let
-                        result =
-                            CGrammars.grToAfnd grammar
-                                |> Automata.FiniteNonDeterministic
-                                |> Models.Automaton
-                    in
-                    ( { model
-                        | currentItem = Ok result
-                        , itemHistory = result :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        Types.ConvertAFDToGR ->
-            case model.currentItem of
-                Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
-                    let
-                        result =
-                            CAutomata.afdToGr afd
-                                |> Grammars.Regular
-                                |> Models.Grammar
-                    in
-                    ( { model
-                        | currentItem = Ok result
-                        , itemHistory = result :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
 
         Types.ConvertERToAFD ->
             case model.currentItem of
@@ -288,25 +188,6 @@ update msg model =
                               }
                             , Cmd.none
                             )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        Types.RemoveEpsilon ->
-            case model.currentItem of
-                Ok (Models.Grammar (Grammars.ContextFree glc)) ->
-                    let
-                        result =
-                            OpGLC.removeEpsilon glc
-                                |> Grammars.ContextFree
-                                |> Models.Grammar
-                    in
-                    ( { model
-                        | currentItem = Ok result
-                        , itemHistory = result :: model.itemHistory
-                      }
-                    , Cmd.none
-                    )
 
                 _ ->
                     ( model, Cmd.none )

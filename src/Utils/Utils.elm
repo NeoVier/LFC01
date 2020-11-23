@@ -826,6 +826,35 @@ replaceBy original new xs =
     List.take idx xs ++ (new :: List.drop (idx + 1) xs)
 
 
+insertAfter : a -> a -> List a -> List a
+insertAfter original new xs =
+    let
+        idx =
+            indexOf original xs + 1
+    in
+    List.take idx xs ++ (new :: List.drop idx xs)
+
+
+
+-- Takes elements from a list up until it finds an element. The resulting list
+-- does not contain the target element. If it doesn't find the element, it will
+-- return the entire list.
+
+
+takeUntil : a -> List a -> List a
+takeUntil target l =
+    case List.head l of
+        Nothing ->
+            []
+
+        Just h ->
+            if target == h then
+                []
+
+            else
+                h :: takeUntil target (List.drop 1 l)
+
+
 maybeMaybeToMaybe : Maybe (Maybe a) -> Maybe a
 maybeMaybeToMaybe x =
     case x of

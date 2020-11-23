@@ -87,7 +87,7 @@ contextFreeProductionToString prod =
     prod.fromSymbol
         ++ " -> "
         ++ String.join " | "
-            (List.map contextFreeProductionBodyToString prod.productions)
+            (List.map contextFreeProductionBodyToString prod.bodies)
 
 
 contextFreeProductionBodyToString : Grammars.ContextFreeProductionBody -> String

@@ -40,7 +40,7 @@ type alias ContextFreeGrammar =
 
 type alias ContextFreeProduction =
     { fromSymbol : NonTerminalSymbol
-    , productions : List ContextFreeProductionBody
+    , bodies : List ContextFreeProductionBody
     }
 
 

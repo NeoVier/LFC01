@@ -28,7 +28,7 @@ viewGLCProduction production =
         ++ " -> "
         ++ (List.map
                 viewGLCProductionBody
-                production.productions
+                production.bodies
                 |> String.join " | "
            )
 

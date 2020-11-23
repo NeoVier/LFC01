@@ -82,7 +82,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
 - Second delivery
 
-  1. [ ] Reading, writing and editing GLC
+  1. [x] Reading, writing and editing GLC
   2. [ ] Transforming GLC to a GLC in normal Chomsky form
   3. [ ] Left-recursion elimination
   4. [ ] Factoration

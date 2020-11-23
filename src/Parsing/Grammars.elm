@@ -143,7 +143,7 @@ parseGLC s =
                     List.map .fromSymbol productions |> Utils.removeDuplicates
 
                 terminals =
-                    List.concatMap .productions productions
+                    List.concatMap .bodies productions
                         |> List.concat
                         |> List.filterMap getAsTerminal
                         |> Utils.removeDuplicates
@@ -228,7 +228,7 @@ contextFreeProduction =
     P.succeed
         (\from productions ->
             { fromSymbol = from
-            , productions = productions
+            , bodies = productions
             }
         )
         |= nonTerminal

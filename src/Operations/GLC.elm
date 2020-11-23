@@ -9,8 +9,9 @@
 module Operations.GLC exposing (..)
 
 import Dict exposing (Dict)
+import Html exposing (th)
 import Models.Alphabet as Alphabet
-import Models.Grammars as Grammars
+import Models.Grammars as Grammars exposing (..)
 import Utils.Utils as Utils
 
 
@@ -20,29 +21,29 @@ import Utils.Utils as Utils
 
 
 type alias NullableInfo =
-    Dict Grammars.NonTerminalSymbol Bool
+    Dict NonTerminalSymbol Bool
 
 
 
 -- Remove epsilon
 
 
-removeEpsilon : Grammars.ContextFreeGrammar -> Grammars.ContextFreeGrammar
+removeEpsilon : ContextFreeGrammar -> ContextFreeGrammar
 removeEpsilon glc =
     let
         nullables =
             allNullables glc
 
         newInitial =
-            "NoEpsilonStart"
+            getNextName glc glc.initialSymbol
 
         newProductions =
             List.map
                 (\production ->
                     { production
-                        | productions =
+                        | bodies =
                             List.concatMap (newBodies glc nullables)
-                                production.productions
+                                production.bodies
                     }
                 )
                 glc.productions
@@ -52,8 +53,8 @@ removeEpsilon glc =
             | initialSymbol = newInitial
             , productions =
                 { fromSymbol = newInitial
-                , productions =
-                    [ [ Grammars.NonTerminal glc.initialSymbol ]
+                , bodies =
+                    [ [ NonTerminal glc.initialSymbol ]
                     , []
                     ]
                 }
@@ -70,18 +71,18 @@ removeEpsilon glc =
 
 
 newBodies :
-    Grammars.ContextFreeGrammar
-    -> List Grammars.NonTerminalSymbol
-    -> Grammars.ContextFreeProductionBody
-    -> List Grammars.ContextFreeProductionBody
+    ContextFreeGrammar
+    -> List NonTerminalSymbol
+    -> ContextFreeProductionBody
+    -> List ContextFreeProductionBody
 newBodies glc nullables originalBody =
     conditionalTree originalBody
         (\item ->
             case item of
-                Grammars.Terminal _ ->
+                Terminal _ ->
                     False
 
-                Grammars.NonTerminal symbol ->
+                NonTerminal symbol ->
                     List.member symbol nullables
         )
         |> List.filter (not << List.isEmpty)
@@ -135,7 +136,7 @@ conditionalTree l f =
 -- Get all the nullable NonTerminals in a glc
 
 
-allNullables : Grammars.ContextFreeGrammar -> List Grammars.NonTerminalSymbol
+allNullables : ContextFreeGrammar -> List NonTerminalSymbol
 allNullables glc =
     allNullablesHelp glc []
 
@@ -145,9 +146,9 @@ allNullables glc =
 
 
 allNullablesHelp :
-    Grammars.ContextFreeGrammar
-    -> List Grammars.NonTerminalSymbol
-    -> List Grammars.NonTerminalSymbol
+    ContextFreeGrammar
+    -> List NonTerminalSymbol
+    -> List NonTerminalSymbol
 allNullablesHelp glc seen =
     let
         newSeen =
@@ -158,14 +159,14 @@ allNullablesHelp glc seen =
                             (List.all
                                 (\symbol ->
                                     case symbol of
-                                        Grammars.Terminal _ ->
+                                        Terminal _ ->
                                             False
 
-                                        Grammars.NonTerminal nonTerminal ->
+                                        NonTerminal nonTerminal ->
                                             List.member nonTerminal seen
                                 )
                             )
-                            production.productions
+                            production.bodies
                     then
                         Just production
 
@@ -180,3 +181,206 @@ allNullablesHelp glc seen =
 
     else
         allNullablesHelp glc newSeen
+
+
+
+-- LEFT RECURSION
+-- Eliminate left recursion from a GLC
+
+
+eliminateLeftRecursion : ContextFreeGrammar -> ContextFreeGrammar
+eliminateLeftRecursion glc =
+    removeEpsilon glc
+
+
+
+-- Given a GLC, return the same GLC, but without direct left recursion
+-- (useful for testing)
+
+
+eliminateAllLeftRecursionDirect : ContextFreeGrammar -> ContextFreeGrammar
+eliminateAllLeftRecursionDirect glc =
+    List.foldr (\prod accGlc -> eliminateLeftRecursionDirect accGlc prod)
+        glc
+        glc.productions
+
+
+
+-- Given a GLC and a production, return a GLC that removed the left recursion
+-- from that production
+
+
+eliminateLeftRecursionDirect :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> ContextFreeGrammar
+eliminateLeftRecursionDirect glc prod =
+    let
+        recursiveBodies =
+            List.filter (isDirectlyRecursive prod.fromSymbol) prod.bodies
+                |> List.map (List.drop 1)
+
+        nonRecursiveBodies =
+            List.filter (not << isDirectlyRecursive prod.fromSymbol)
+                prod.bodies
+
+        nextSymbol =
+            getNextName glc prod.fromSymbol
+
+        replacementProduction =
+            { prod
+                | bodies =
+                    List.map (\body -> body ++ [ NonTerminal nextSymbol ])
+                        nonRecursiveBodies
+            }
+
+        newProduction =
+            { fromSymbol = nextSymbol
+            , bodies =
+                List.map (\body -> body ++ [ NonTerminal nextSymbol ])
+                    recursiveBodies
+                    ++ [ [] ]
+            }
+    in
+    if List.isEmpty recursiveBodies then
+        glc
+
+    else
+        { glc
+            | productions =
+                Utils.replaceBy prod replacementProduction glc.productions
+                    |> Utils.insertAfter replacementProduction newProduction
+            , nonTerminals =
+                Utils.insertAfter prod.fromSymbol
+                    nextSymbol
+                    glc.nonTerminals
+        }
+
+
+
+-- Check if a body (given the symbol it comes from) is left recursive
+
+
+isDirectlyRecursive : NonTerminalSymbol -> ContextFreeProductionBody -> Bool
+isDirectlyRecursive fromSymbol body =
+    case List.head body of
+        Just (NonTerminal h) ->
+            fromSymbol == h
+
+        _ ->
+            False
+
+
+
+-- Get the next available name, given a symbol (S -> S', S' -> S'', A -> A', ..)
+
+
+getNextName : ContextFreeGrammar -> NonTerminalSymbol -> NonTerminalSymbol
+getNextName glc symbol =
+    let
+        nextName =
+            symbol ++ "'"
+    in
+    if List.member nextName glc.nonTerminals then
+        getNextName glc nextName
+
+    else
+        nextName
+
+
+
+{- Para i := 1 até n faça
+   | Para j:= 1 até i-1 faça
+   |  | Se Ai ::= Ajα ∈ P então
+   |  |  | Remova Ai ::= Aj de P
+   |  |  | Se Aj ::= β ∈ P então
+   |  |  |  | P′ = P′ ∪ {Ai::=βα}
+   |  Elimine as recursões diretas das produções de P′com lado esquerdo Ai
+
+
+   For each production p1 in glc.productions:
+   |  For each production p2 before p1:
+   |  | If p1 derives p2 (p1 ::= p2+[alpha]) then
+   |  |  | Remove p1 ::= p2+[alpha] from glc.productions
+   |  |  | For each body in p2:
+   |  |  |  | If p2 ::= [beta]:
+   |  |  |  |  | p1.productions ++ [[beta] ++ [alfa]]
+   | Remove direct left recursion from p1
+-}
+
+
+isIndirectlyRecursive : ContextFreeGrammar -> NonTerminalSymbol -> Bool
+isIndirectlyRecursive glc symbol =
+    let
+        production =
+            List.filter (.fromSymbol >> (==) symbol) glc.productions
+                |> List.head
+    in
+    case production of
+        Nothing ->
+            False
+
+        Just p ->
+            let
+                derivables =
+                    List.filterMap
+                        (\body ->
+                            case List.head body of
+                                Just (NonTerminal nt) ->
+                                    Just nt
+
+                                _ ->
+                                    Nothing
+                        )
+                        p.bodies
+            in
+            isIndirectlyRecursiveHelp glc symbol [ symbol ] derivables
+
+
+isIndirectlyRecursiveHelp :
+    ContextFreeGrammar
+    -> NonTerminalSymbol
+    -> List NonTerminalSymbol
+    -> List NonTerminalSymbol
+    -> Bool
+isIndirectlyRecursiveHelp glc target seen unseen =
+    case List.head unseen of
+        Nothing ->
+            False
+
+        Just curr ->
+            if List.member curr seen then
+                isIndirectlyRecursiveHelp glc target seen (List.drop 1 unseen)
+
+            else
+                let
+                    maybeProduction =
+                        List.filter (.fromSymbol >> (==) curr) glc.productions
+                            |> List.head
+                in
+                case maybeProduction of
+                    Nothing ->
+                        False
+
+                    Just production ->
+                        let
+                            derivables =
+                                List.filterMap
+                                    (\body ->
+                                        case List.head body of
+                                            Just (NonTerminal nt) ->
+                                                Just nt
+
+                                            _ ->
+                                                Nothing
+                                    )
+                                    production.bodies
+                        in
+                        if List.member target derivables then
+                            True
+
+                        else
+                            isIndirectlyRecursiveHelp glc
+                                target
+                                (curr :: seen)
+                                (List.drop 1 unseen ++ derivables)

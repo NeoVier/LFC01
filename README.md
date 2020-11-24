@@ -56,7 +56,7 @@ Student: Henrique da Cunha Buss
     - [x] All
   - [ ] Factor GLC (Remove non-determinism)
     - [x] Direct
-    - [ ] Indirect
+    - [x] Indirect
     - [ ] All
   - [ ] Transform to normal Chomsky
     - [ ] Remove non-productive symbols

@@ -475,7 +475,54 @@ factorGLC glc =
 
 
 -- If a body starts with a nonterminal, substitute the nonterminal by its productions
--- factorIndirectly
+{- Remove indirect non determinism from a production -}
+
+
+factorIndirectly :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> ContextFreeGrammar
+factorIndirectly glc production =
+    let
+        newBodies : List ContextFreeProductionBody
+        newBodies =
+            List.concatMap
+                (\body ->
+                    case List.head body of
+                        Just (NonTerminal nt) ->
+                            let
+                                maybeNtProduction =
+                                    List.filter (.fromSymbol >> (==) nt)
+                                        glc.productions
+                                        |> List.head
+                            in
+                            case maybeNtProduction of
+                                Nothing ->
+                                    [ body ]
+
+                                Just ntProd ->
+                                    List.map
+                                        (\ntBody ->
+                                            ntBody
+                                                ++ List.drop 1 body
+                                        )
+                                        ntProd.bodies
+
+                        _ ->
+                            [ body ]
+                )
+                production.bodies
+
+        newProduction =
+            { production | bodies = newBodies }
+    in
+    { glc
+        | productions =
+            Utils.replaceBy production newProduction glc.productions
+    }
+
+
+
 {- Remove direct non determinism from a production -}
 
 
@@ -633,3 +680,93 @@ contextFreeProductionItemToString x =
 
         NonTerminal nt ->
             nt
+
+
+test0Indirect : ContextFreeGrammar
+test0Indirect =
+    { initialSymbol = "S"
+    , nonTerminals = [ "S", "A", "B", "C", "D" ]
+    , productions =
+        [ { bodies =
+                [ [ NonTerminal "A", NonTerminal "C" ]
+                , [ NonTerminal "B", NonTerminal "C" ]
+                ]
+          , fromSymbol = "S"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'a'), NonTerminal "D" ]
+                , [ Terminal (Single 'c'), NonTerminal "C" ]
+                ]
+          , fromSymbol = "A"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'a'), NonTerminal "B" ]
+                , [ Terminal (Single 'd'), NonTerminal "D" ]
+                ]
+          , fromSymbol = "B"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'e'), NonTerminal "C" ]
+                , [ Terminal (Single 'e'), NonTerminal "A" ]
+                ]
+          , fromSymbol = "C"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'f'), NonTerminal "D" ]
+                , [ NonTerminal "C", NonTerminal "B" ]
+                ]
+          , fromSymbol = "D"
+          }
+        ]
+    , terminals = [ Single 'a', Single 'c', Single 'd', Single 'e', Single 'f' ]
+    }
+
+
+sProd : ContextFreeProduction
+sProd =
+    { bodies =
+        [ [ NonTerminal "A", NonTerminal "C" ]
+        , [ NonTerminal "B", NonTerminal "C" ]
+        ]
+    , fromSymbol = "S"
+    }
+
+
+aProd : ContextFreeProduction
+aProd =
+    { bodies =
+        [ [ Terminal (Single 'a'), NonTerminal "D" ]
+        , [ Terminal (Single 'c'), NonTerminal "C" ]
+        ]
+    , fromSymbol = "A"
+    }
+
+
+bProd : ContextFreeProduction
+bProd =
+    { bodies =
+        [ [ Terminal (Single 'a'), NonTerminal "B" ]
+        , [ Terminal (Single 'd'), NonTerminal "D" ]
+        ]
+    , fromSymbol = "B"
+    }
+
+
+cProd : ContextFreeProduction
+cProd =
+    { bodies =
+        [ [ Terminal (Single 'e'), NonTerminal "C" ]
+        , [ Terminal (Single 'e'), NonTerminal "A" ]
+        ]
+    , fromSymbol = "C"
+    }
+
+
+dProd : ContextFreeProduction
+dProd =
+    { bodies =
+        [ [ Terminal (Single 'f'), NonTerminal "D" ]
+        , [ NonTerminal "C", NonTerminal "B" ]
+        ]
+    , fromSymbol = "D"
+    }

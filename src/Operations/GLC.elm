@@ -609,7 +609,6 @@ factorGLCStep glc =
 
 
 
--- If a body starts with a nonterminal, substitute the nonterminal by its productions
 {- Remove indirect non determinism from a production -}
 
 
@@ -817,29 +816,341 @@ contextFreeProductionItemToString x =
             nt
 
 
-test0Recursion : ContextFreeGrammar
-test0Recursion =
+
+-- USELESS SYMBOLS
+{- Remove all useless symbols (unreachable and unproductive) -}
+
+
+removeUseless : ContextFreeGrammar -> ContextFreeGrammar
+removeUseless =
+    removeUnproductives >> removeUnreachables >> reassignTerminals
+
+
+
+{- Remove all unreachable symbols from a grammar -}
+
+
+removeUnreachables : ContextFreeGrammar -> ContextFreeGrammar
+removeUnreachables glc =
+    let
+        initialProduction =
+            List.filter (.fromSymbol >> (==) glc.initialSymbol) glc.productions
+                |> List.head
+    in
+    case initialProduction of
+        Nothing ->
+            glc
+
+        Just prod ->
+            removeUnreachableHelp glc [] [ prod ]
+                |> reassignTerminals
+
+
+
+{- Helper function -}
+
+
+removeUnreachableHelp :
+    ContextFreeGrammar
+    -> List ContextFreeProduction
+    -> List ContextFreeProduction
+    -> ContextFreeGrammar
+removeUnreachableHelp glc seen unseen =
+    case List.head unseen of
+        Nothing ->
+            { glc
+                | productions =
+                    List.filter (\p -> List.member p seen) glc.productions
+                , nonTerminals =
+                    List.filter
+                        (\s -> List.member s (List.map .fromSymbol seen))
+                        glc.nonTerminals
+            }
+
+        Just curr ->
+            if List.member curr seen then
+                removeUnreachableHelp glc seen (List.drop 1 unseen)
+
+            else
+                removeUnreachableHelp glc
+                    ((curr :: seen ++ reachables glc curr) |> Utils.removeDuplicates)
+                    (List.drop 1 unseen)
+
+
+
+{- Get all the reachable symbols from a grammar -}
+
+
+reachables :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> List ContextFreeProduction
+reachables glc prod =
+    List.concat prod.bodies
+        |> List.filterMap
+            (\item ->
+                case item of
+                    NonTerminal x ->
+                        Just x
+
+                    _ ->
+                        Nothing
+            )
+        |> List.filterMap
+            (\nt ->
+                List.filter (.fromSymbol >> (==) nt) glc.productions
+                    |> List.head
+            )
+
+
+
+{- Remove all unproductive symbols from a grammar -}
+
+
+removeUnproductives : ContextFreeGrammar -> ContextFreeGrammar
+removeUnproductives glc =
+    let
+        ps =
+            productives glc
+    in
+    { glc
+        | nonTerminals = List.filter (\nt -> List.member nt ps) glc.nonTerminals
+        , productions =
+            List.filterMap
+                (\p ->
+                    if not (List.member p.fromSymbol ps) then
+                        Nothing
+
+                    else
+                        Just
+                            { p
+                                | bodies =
+                                    List.filter
+                                        (List.all
+                                            (\item ->
+                                                case item of
+                                                    Terminal _ ->
+                                                        True
+
+                                                    NonTerminal x ->
+                                                        List.member x ps
+                                            )
+                                        )
+                                        p.bodies
+                            }
+                )
+                glc.productions
+    }
+        |> reassignTerminals
+
+
+
+{- Gets all the productive NonTerminals from a grammar -}
+
+
+productives : ContextFreeGrammar -> List NonTerminalSymbol
+productives glc =
+    List.foldl
+        (\item ( accProductives, accUnproductives ) ->
+            if
+                productivesHelp glc
+                    ( accProductives, accUnproductives )
+                    (NonTerminal item)
+            then
+                ( item :: accProductives, accUnproductives )
+
+            else
+                ( accProductives, item :: accUnproductives )
+        )
+        ( [], [] )
+        glc.nonTerminals
+        |> Tuple.first
+
+
+
+{- Helper function -}
+
+
+productivesHelp :
+    ContextFreeGrammar
+    -> ( List NonTerminalSymbol, List NonTerminalSymbol )
+    -> ContextFreeProductionItem
+    -> Bool
+productivesHelp glc ( productiveSymbols, unproductiveSymbols ) item =
+    case item of
+        Terminal _ ->
+            True
+
+        NonTerminal nt ->
+            if List.member nt productiveSymbols then
+                True
+
+            else if List.member nt unproductiveSymbols then
+                False
+
+            else
+                let
+                    production =
+                        List.filter (.fromSymbol >> (==) nt) glc.productions
+                            |> List.head
+                in
+                case production of
+                    Nothing ->
+                        False
+
+                    Just p ->
+                        List.any
+                            (\b ->
+                                not (List.member item b)
+                                    && List.all
+                                        (productivesHelp glc
+                                            ( productiveSymbols
+                                            , unproductiveSymbols
+                                            )
+                                        )
+                                        b
+                            )
+                            p.bodies
+
+
+reassignTerminals : ContextFreeGrammar -> ContextFreeGrammar
+reassignTerminals glc =
+    let
+        allTerminals : List TerminalSymbol
+        allTerminals =
+            List.concatMap (.bodies >> List.concat) glc.productions
+                |> Utils.removeDuplicates
+                |> List.filterMap
+                    (\i ->
+                        case i of
+                            Terminal x ->
+                                Just x
+
+                            NonTerminal _ ->
+                                Nothing
+                    )
+    in
+    { glc
+        | terminals =
+            List.filter (\t -> List.member t allTerminals) glc.terminals
+    }
+
+
+
+-- CHOMSKY
+-- TESTS (TODO - REMOVE)
+
+
+test0 : ContextFreeGrammar
+test0 =
     { initialSymbol = "S"
-    , nonTerminals = [ "S", "B", "A" ]
+    , nonTerminals = [ "S", "B", "D" ]
     , productions =
         [ { bodies =
-                [ [ NonTerminal "B", Terminal (Single 'd') ]
-                , []
+                [ [ Terminal (Single 'b')
+                  , Terminal (Single 'c')
+                  , NonTerminal "D"
+                  ]
+                , [ NonTerminal "B"
+                  , Terminal (Single 'c')
+                  , Terminal (Single 'd')
+                  ]
                 ]
           , fromSymbol = "S"
           }
         , { bodies =
-                [ [ NonTerminal "A", Terminal (Single 'b') ]
-                , [ NonTerminal "B", Terminal (Single 'c') ]
+                [ [ Terminal (Single 'b'), NonTerminal "B" ]
+                , [ Terminal (Single 'b') ]
                 ]
           , fromSymbol = "B"
           }
         , { bodies =
-                [ [ NonTerminal "S", Terminal (Single 'a') ]
-                , []
+                [ [ Terminal (Single 'd')
+                  , NonTerminal "B"
+                  ]
+                , [ Terminal (Single 'd') ]
                 ]
-          , fromSymbol = "A"
+          , fromSymbol = "D"
           }
         ]
-    , terminals = [ Single 'd', Single 'b', Single 'c', Single 'a' ]
+    , terminals = [ Single 'b', Single 'c', Single 'd' ]
+    }
+
+
+sProd : ContextFreeProduction
+sProd =
+    { bodies =
+        [ [ Terminal (Single 'b')
+          , Terminal (Single 'c')
+          , NonTerminal "D"
+          ]
+        , [ NonTerminal "B"
+          , Terminal (Single 'c')
+          , Terminal (Single 'd')
+          ]
+        ]
+    , fromSymbol = "S"
+    }
+
+
+test1 : ContextFreeGrammar
+test1 =
+    { initialSymbol = "S"
+    , nonTerminals = [ "S", "B", "D", "E" ]
+    , productions =
+        [ { bodies =
+                [ [ Terminal (Single 'b'), Terminal (Single 'c'), NonTerminal "D" ]
+                , [ NonTerminal "B", Terminal (Single 'c'), Terminal (Single 'd') ]
+                ]
+          , fromSymbol = "S"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'b'), NonTerminal "B" ]
+                , [ Terminal (Single 'b') ]
+                ]
+          , fromSymbol = "B"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'd'), NonTerminal "B" ]
+                , [ Terminal (Single 'd') ]
+                ]
+          , fromSymbol = "D"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'c') ]
+                , [ Terminal (Single 'b') ]
+                ]
+          , fromSymbol = "E"
+          }
+        ]
+    , terminals = [ Single 'b', Single 'c', Single 'd' ]
+    }
+
+
+test2 : ContextFreeGrammar
+test2 =
+    { initialSymbol = "S"
+    , nonTerminals = [ "S", "A", "B", "C" ]
+    , productions =
+        [ { bodies =
+                [ [ NonTerminal "A", NonTerminal "B", NonTerminal "B" ]
+                , [ NonTerminal "C", NonTerminal "A", NonTerminal "C" ]
+                ]
+          , fromSymbol = "S"
+          }
+        , { bodies = [ [ Terminal (Single 'a') ] ], fromSymbol = "A" }
+        , { bodies =
+                [ [ NonTerminal "B", Terminal (Single 'c') ]
+                , [ NonTerminal "A", NonTerminal "B", NonTerminal "B" ]
+                ]
+          , fromSymbol = "B"
+          }
+        , { bodies =
+                [ [ Terminal (Single 'b'), NonTerminal "B" ]
+                , [ Terminal (Single 'a') ]
+                ]
+          , fromSymbol = "C"
+          }
+        ]
+    , terminals = [ Single 'a', Single 'c', Single 'b' ]
     }

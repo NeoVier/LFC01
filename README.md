@@ -59,9 +59,9 @@ Student: Henrique da Cunha Buss
     - [x] Indirect
     - [x] All
   - [ ] Transform to normal Chomsky
-    - [ ] Remove non-productive symbols
-    - [ ] Remove non-used symbols
+    - [x] Remove epsilon productions
     - [ ] Remove unitary productions
+    - [x] Remove useless symbols
 - [ ] AP
   - TODO
 

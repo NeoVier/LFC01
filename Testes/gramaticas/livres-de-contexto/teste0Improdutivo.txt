@@ -1,0 +1,4 @@
+S -> ABB | CAC
+A -> a
+B -> Bc | ABB
+C -> bB | a

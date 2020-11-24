@@ -256,6 +256,7 @@ viewRightPanel model =
                     , removeEpsilonButton
                     , removeLeftRecursionButton
                     , removeNonDeterminismButton
+                    , removeUselessButton
                     ]
             )
         ]
@@ -648,6 +649,38 @@ removeNonDeterminismButton model =
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Fatorar/Remover não determinismo" ]
+                |> Just
+
+        _ ->
+            Nothing
+
+
+
+{- Button to remove useless symbols -}
+
+
+removeUselessButton : Types.Model -> Maybe (Html Types.Msg)
+removeUselessButton model =
+    case model.currentItem of
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            button
+                (onClick
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Grammar (Grammars.ContextFree g) ->
+                                    OpGLC.removeUseless g
+                                        |> Grammars.ContextFree
+                                        |> Models.Grammar
+                                        |> Ok
+
+                                _ ->
+                                    Ok m
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Remover símbolos inúteis" ]
                 |> Just
 
         _ ->

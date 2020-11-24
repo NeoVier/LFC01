@@ -126,14 +126,6 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        Types.Add general ->
-            ( { model
-                | currentItem = Ok general
-                , itemHistory = general :: model.itemHistory
-              }
-            , Cmd.none
-            )
-
         Types.RemoveItem general ->
             let
                 newHistory =

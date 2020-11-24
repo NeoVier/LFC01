@@ -56,7 +56,6 @@ type Msg
     | SetCurrent Models.General
     | UpdateCurrent Models.General
     | SetWithFunction (Models.General -> Result String Models.General)
-    | Add Models.General
     | RemoveItem Models.General
     | SetSentence String
     | DoUnion

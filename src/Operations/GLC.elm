@@ -210,32 +210,39 @@ allNullablesHelp glc seen =
 {- Eliminate left recursion from a GLC -}
 
 
-eliminateLeftRecursion : ContextFreeGrammar -> Maybe ContextFreeGrammar
+eliminateLeftRecursion : ContextFreeGrammar -> Result String ContextFreeGrammar
 eliminateLeftRecursion glc =
     let
         maxSteps =
-            1
+            10
     in
     List.foldl
         (\idx ( finished, accGlc ) ->
-            if finished then
-                if accGlc == Just glc then
-                    ( True, Nothing )
+            case accGlc of
+                Ok g ->
+                    if finished then
+                        if g == glc then
+                            ( True, Ok g )
 
-                else
-                    ( True, accGlc )
+                        else
+                            ( True, accGlc )
 
-            else if idx == maxSteps then
-                ( False, Nothing )
+                    else if idx == maxSteps then
+                        ( False
+                        , Err "Depois de muitos passos, a gramática não se resolveu, então deve ter entrado em loop"
+                        )
 
-            else
-                let
-                    thisStep =
-                        Maybe.map eliminateLeftRecursionStep accGlc
-                in
-                ( thisStep == accGlc, thisStep )
+                    else
+                        let
+                            thisStep =
+                                eliminateLeftRecursionStep g
+                        in
+                        ( thisStep == g, Ok thisStep )
+
+                Err x ->
+                    ( finished, Err x )
         )
-        ( False, Just glc )
+        ( False, Ok glc )
         (List.range 1 maxSteps)
         |> Tuple.second
 
@@ -548,10 +555,7 @@ factorGLC glc =
                     else if idx == maxSteps then
                         ( False
                         , Err
-                            ("Depois de "
-                                ++ String.fromInt maxSteps
-                                ++ " passos, a gramática não se resolveu, então deve ter entrado em loop"
-                            )
+                            "Depois de muitos passos, a gramática não se resolveu, então deve ter entrado em loop"
                         )
 
                     else

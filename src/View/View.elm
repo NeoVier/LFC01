@@ -381,10 +381,17 @@ afndToAfdButton model =
         Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
             button
                 (onClick
-                    (Types.Add
-                        (CAutomata.afndToAfd afnd
-                            |> Automata.FiniteDeterministic
-                            |> Models.Automaton
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Automaton (Automata.FiniteNonDeterministic a) ->
+                                    CAutomata.afndToAfd a
+                                        |> Automata.FiniteDeterministic
+                                        |> Models.Automaton
+                                        |> Ok
+
+                                _ ->
+                                    Ok m
                         )
                     )
                     :: Styles.rightPanelButtonStyles
@@ -407,10 +414,17 @@ complementButton model =
             Just
                 (button
                     (onClick
-                        (Types.Add
-                            (OpBasics.complement afd
-                                |> Automata.FiniteDeterministic
-                                |> Models.Automaton
+                        (Types.SetWithFunction
+                            (\m ->
+                                case m of
+                                    Models.Automaton (Automata.FiniteDeterministic a) ->
+                                        OpBasics.complement a
+                                            |> Automata.FiniteDeterministic
+                                            |> Models.Automaton
+                                            |> Ok
+
+                                    _ ->
+                                        Ok m
                             )
                         )
                         :: Styles.rightPanelButtonStyles
@@ -432,10 +446,17 @@ minimizeButton model =
         Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
             button
                 (onClick
-                    (Types.Add
-                        (OpMin.minimizeAFD afd
-                            |> Automata.FiniteDeterministic
-                            |> Models.Automaton
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Automaton (Automata.FiniteDeterministic a) ->
+                                    OpMin.minimizeAFD a
+                                        |> Automata.FiniteDeterministic
+                                        |> Models.Automaton
+                                        |> Ok
+
+                                _ ->
+                                    Ok m
                         )
                     )
                     :: Styles.rightPanelButtonStyles
@@ -457,10 +478,17 @@ grToAfndButton model =
         Ok (Models.Grammar (Grammars.Regular grammar)) ->
             button
                 (onClick
-                    (Types.Add
-                        (CGrammars.grToAfnd grammar
-                            |> Automata.FiniteNonDeterministic
-                            |> Models.Automaton
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Grammar (Grammars.Regular g) ->
+                                    CGrammars.grToAfnd g
+                                        |> Automata.FiniteNonDeterministic
+                                        |> Models.Automaton
+                                        |> Ok
+
+                                _ ->
+                                    Ok m
                         )
                     )
                     :: Styles.rightPanelButtonStyles
@@ -482,10 +510,17 @@ afdToGrButton model =
         Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
             button
                 (onClick
-                    (Types.Add
-                        (CAutomata.afdToGr afd
-                            |> Grammars.Regular
-                            |> Models.Grammar
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Automaton (Automata.FiniteDeterministic a) ->
+                                    CAutomata.afdToGr a
+                                        |> Grammars.Regular
+                                        |> Models.Grammar
+                                        |> Ok
+
+                                _ ->
+                                    Ok m
                         )
                     )
                     :: Styles.rightPanelButtonStyles
@@ -521,25 +556,25 @@ removeEpsilonButton : Types.Model -> Maybe (Html Types.Msg)
 removeEpsilonButton model =
     case model.currentItem of
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
-            let
-                result =
-                    OpGLC.removeEpsilon glc
-            in
-            if result == glc then
-                Nothing
+            button
+                (onClick
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Grammar (Grammars.ContextFree g) ->
+                                    OpGLC.removeEpsilon g
+                                        |> Grammars.ContextFree
+                                        |> Models.Grammar
+                                        |> Ok
 
-            else
-                button
-                    (onClick
-                        (result
-                            |> Grammars.ContextFree
-                            |> Models.Grammar
-                            |> Types.Add
+                                _ ->
+                                    Ok m
                         )
-                        :: Styles.rightPanelButtonStyles
                     )
-                    [ text "Remover Epsilon" ]
-                    |> Just
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Remover Epsilon" ]
+                |> Just
 
         _ ->
             Nothing
@@ -553,26 +588,30 @@ removeLeftRecursionButton : Types.Model -> Maybe (Html Types.Msg)
 removeLeftRecursionButton model =
     case model.currentItem of
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
-            let
-                result =
-                    OpGLC.eliminateLeftRecursion glc
-            in
-            case result of
-                Nothing ->
-                    Nothing
+            button
+                (onClick
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Grammar (Grammars.ContextFree g) ->
+                                    case OpGLC.eliminateLeftRecursion g of
+                                        Ok newGlc ->
+                                            newGlc
+                                                |> Grammars.ContextFree
+                                                |> Models.Grammar
+                                                |> Ok
 
-                Just newGlc ->
-                    button
-                        (onClick
-                            (newGlc
-                                |> Grammars.ContextFree
-                                |> Models.Grammar
-                                |> Types.Add
-                            )
-                            :: Styles.rightPanelButtonStyles
+                                        Err x ->
+                                            Err x
+
+                                _ ->
+                                    Ok m
                         )
-                        [ text "Remover recursão à esquerda" ]
-                        |> Just
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Remover recursão à esquerda" ]
+                |> Just
 
         _ ->
             Nothing

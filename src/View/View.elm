@@ -553,40 +553,9 @@ removeLeftRecursionButton : Types.Model -> Maybe (Html Types.Msg)
 removeLeftRecursionButton model =
     case model.currentItem of
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
-            -- let
-            --     result =
-            --         OpGLC.eliminateLeftRecursion glc
-            -- in
-            -- if result == glc then
-            --     Nothing
-            -- else
-            button
-                (onClick
-                    (OpGLC.eliminateLeftRecursion glc
-                        |> Grammars.ContextFree
-                        |> Models.Grammar
-                        |> Types.Add
-                    )
-                    :: Styles.rightPanelButtonStyles
-                )
-                [ text "Remover recursão à esquerda" ]
-                |> Just
-
-        _ ->
-            Nothing
-
-
-
-{- Button to remove non determinism -}
-
-
-removeNonDeterminismButton : Types.Model -> Maybe (Html Types.Msg)
-removeNonDeterminismButton model =
-    case model.currentItem of
-        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
             let
                 result =
-                    OpGLC.factorGLC glc
+                    OpGLC.eliminateLeftRecursion glc
             in
             case result of
                 Nothing ->
@@ -602,8 +571,45 @@ removeNonDeterminismButton model =
                             )
                             :: Styles.rightPanelButtonStyles
                         )
-                        [ text "Fatorar/Remover não determinismo" ]
+                        [ text "Remover recursão à esquerda" ]
                         |> Just
+
+        _ ->
+            Nothing
+
+
+
+{- Button to remove non determinism -}
+
+
+removeNonDeterminismButton : Types.Model -> Maybe (Html Types.Msg)
+removeNonDeterminismButton model =
+    case model.currentItem of
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            button
+                (onClick
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Grammar (Grammars.ContextFree g) ->
+                                    case OpGLC.factorGLC g of
+                                        Ok newGlc ->
+                                            newGlc
+                                                |> Grammars.ContextFree
+                                                |> Models.Grammar
+                                                |> Ok
+
+                                        Err x ->
+                                            Err x
+
+                                _ ->
+                                    Ok m
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Fatorar/Remover não determinismo" ]
+                |> Just
 
         _ ->
             Nothing

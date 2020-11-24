@@ -97,6 +97,35 @@ update msg model =
             , Cmd.none
             )
 
+        Types.SetWithFunction f ->
+            case model.currentItem of
+                Ok m ->
+                    let
+                        result =
+                            f m
+
+                        newHistory =
+                            case result of
+                                Ok r ->
+                                    if result == model.currentItem then
+                                        model.itemHistory
+
+                                    else
+                                        r :: model.itemHistory
+
+                                _ ->
+                                    model.itemHistory
+                    in
+                    ( { model
+                        | currentItem = result
+                        , itemHistory = newHistory
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
         Types.Add general ->
             ( { model
                 | currentItem = Ok general
@@ -200,6 +229,9 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        Types.NoOp ->
+            ( model, Cmd.none )
 
 
 

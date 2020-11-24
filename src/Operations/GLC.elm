@@ -46,20 +46,43 @@ removeEpsilon glc =
                     }
                 )
                 glc.productions
+
+        newInitialProduction =
+            { fromSymbol = newInitial
+            , bodies =
+                [ [ NonTerminal glc.initialSymbol ]
+                , []
+                ]
+            }
+
+        previousInitialProduction =
+            List.filter (.fromSymbol >> (==) glc.initialSymbol)
+                glc.productions
+                |> List.head
     in
     if List.member glc.initialSymbol nullables then
-        { glc
-            | initialSymbol = newInitial
-            , productions =
-                { fromSymbol = newInitial
-                , bodies =
-                    [ [ NonTerminal glc.initialSymbol ]
-                    , []
-                    ]
-                }
-                    :: newProductions
-            , nonTerminals = newInitial :: glc.nonTerminals
-        }
+        case previousInitialProduction of
+            Just pp ->
+                case pp.bodies of
+                    [ [ NonTerminal _ ], [] ] ->
+                        { glc | productions = newProductions }
+
+                    _ ->
+                        { glc
+                            | initialSymbol = newInitial
+                            , productions =
+                                { fromSymbol = newInitial
+                                , bodies =
+                                    [ [ NonTerminal glc.initialSymbol ]
+                                    , []
+                                    ]
+                                }
+                                    :: newProductions
+                            , nonTerminals = newInitial :: glc.nonTerminals
+                        }
+
+            Nothing ->
+                glc
 
     else
         { glc | productions = newProductions }
@@ -187,8 +210,42 @@ allNullablesHelp glc seen =
 {- Eliminate left recursion from a GLC -}
 
 
-eliminateLeftRecursion : ContextFreeGrammar -> ContextFreeGrammar
+eliminateLeftRecursion : ContextFreeGrammar -> Maybe ContextFreeGrammar
 eliminateLeftRecursion glc =
+    let
+        maxSteps =
+            1
+    in
+    List.foldl
+        (\idx ( finished, accGlc ) ->
+            if finished then
+                if accGlc == Just glc then
+                    ( True, Nothing )
+
+                else
+                    ( True, accGlc )
+
+            else if idx == maxSteps then
+                ( False, Nothing )
+
+            else
+                let
+                    thisStep =
+                        Maybe.map eliminateLeftRecursionStep accGlc
+                in
+                ( thisStep == accGlc, thisStep )
+        )
+        ( False, Just glc )
+        (List.range 1 maxSteps)
+        |> Tuple.second
+
+
+
+{- Step to eliminate left recursion from a GLC -}
+
+
+eliminateLeftRecursionStep : ContextFreeGrammar -> ContextFreeGrammar
+eliminateLeftRecursionStep glc =
     let
         withoutEpsilon =
             removeEpsilon glc
@@ -202,7 +259,7 @@ eliminateLeftRecursion glc =
                 withoutEpsilon.productions
     in
     if List.any (isIndirectlyRecursive glc) glc.nonTerminals then
-        eliminateLeftRecursion step
+        step
 
     else
         eliminateAllLeftRecursionDirect glc
@@ -468,32 +525,53 @@ isIndirectlyRecursiveHelp glc target seen unseen =
 {- Factor GLC -}
 
 
-factorGLC : ContextFreeGrammar -> Maybe ContextFreeGrammar
+factorGLC : ContextFreeGrammar -> Result String ContextFreeGrammar
 factorGLC glc =
     let
         maxSteps =
             10
+
+        minFactor =
+            5
     in
     List.foldl
         (\idx ( finished, accGlc ) ->
-            if finished then
-                if accGlc == Just glc then
-                    ( True, Nothing )
+            case accGlc of
+                Ok prevGlc ->
+                    if finished then
+                        if prevGlc == glc then
+                            ( True, Ok prevGlc )
 
-                else
-                    ( True, accGlc )
+                        else
+                            ( True, Ok prevGlc )
 
-            else if idx == maxSteps then
-                ( False, Nothing )
+                    else if idx == maxSteps then
+                        ( False
+                        , Err
+                            ("Depois de "
+                                ++ String.fromInt maxSteps
+                                ++ " passos, a gramática não se resolveu, então deve ter entrado em loop"
+                            )
+                        )
 
-            else
-                let
-                    thisStep =
-                        Maybe.map factorGLCStep accGlc
-                in
-                ( thisStep == accGlc, thisStep )
+                    else
+                        let
+                            thisStep =
+                                factorGLCStep prevGlc
+                        in
+                        if
+                            List.length thisStep.productions
+                                > (minFactor * List.length prevGlc.productions)
+                        then
+                            ( False, Err "A gramática cresceu demais em um único passo, então deve ter entrado em loop" )
+
+                        else
+                            ( thisStep == prevGlc, Ok thisStep )
+
+                Err x ->
+                    ( finished, Err x )
         )
-        ( False, Just glc )
+        ( False, Ok glc )
         (List.range 1 maxSteps)
         |> Tuple.second
 
@@ -735,91 +813,29 @@ contextFreeProductionItemToString x =
             nt
 
 
-test0Indirect : ContextFreeGrammar
-test0Indirect =
+test0Recursion : ContextFreeGrammar
+test0Recursion =
     { initialSymbol = "S"
-    , nonTerminals = [ "S", "A", "B", "C", "D" ]
+    , nonTerminals = [ "S", "B", "A" ]
     , productions =
         [ { bodies =
-                [ [ NonTerminal "A", NonTerminal "C" ]
-                , [ NonTerminal "B", NonTerminal "C" ]
+                [ [ NonTerminal "B", Terminal (Single 'd') ]
+                , []
                 ]
           , fromSymbol = "S"
           }
         , { bodies =
-                [ [ Terminal (Single 'a'), NonTerminal "D" ]
-                , [ Terminal (Single 'c'), NonTerminal "C" ]
-                ]
-          , fromSymbol = "A"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'a'), NonTerminal "B" ]
-                , [ Terminal (Single 'd'), NonTerminal "D" ]
+                [ [ NonTerminal "A", Terminal (Single 'b') ]
+                , [ NonTerminal "B", Terminal (Single 'c') ]
                 ]
           , fromSymbol = "B"
           }
         , { bodies =
-                [ [ Terminal (Single 'e'), NonTerminal "C" ]
-                , [ Terminal (Single 'e'), NonTerminal "A" ]
+                [ [ NonTerminal "S", Terminal (Single 'a') ]
+                , []
                 ]
-          , fromSymbol = "C"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'f'), NonTerminal "D" ]
-                , [ NonTerminal "C", NonTerminal "B" ]
-                ]
-          , fromSymbol = "D"
+          , fromSymbol = "A"
           }
         ]
-    , terminals = [ Single 'a', Single 'c', Single 'd', Single 'e', Single 'f' ]
-    }
-
-
-sProd : ContextFreeProduction
-sProd =
-    { bodies =
-        [ [ NonTerminal "A", NonTerminal "C" ]
-        , [ NonTerminal "B", NonTerminal "C" ]
-        ]
-    , fromSymbol = "S"
-    }
-
-
-aProd : ContextFreeProduction
-aProd =
-    { bodies =
-        [ [ Terminal (Single 'a'), NonTerminal "D" ]
-        , [ Terminal (Single 'c'), NonTerminal "C" ]
-        ]
-    , fromSymbol = "A"
-    }
-
-
-bProd : ContextFreeProduction
-bProd =
-    { bodies =
-        [ [ Terminal (Single 'a'), NonTerminal "B" ]
-        , [ Terminal (Single 'd'), NonTerminal "D" ]
-        ]
-    , fromSymbol = "B"
-    }
-
-
-cProd : ContextFreeProduction
-cProd =
-    { bodies =
-        [ [ Terminal (Single 'e'), NonTerminal "C" ]
-        , [ Terminal (Single 'e'), NonTerminal "A" ]
-        ]
-    , fromSymbol = "C"
-    }
-
-
-dProd : ContextFreeProduction
-dProd =
-    { bodies =
-        [ [ Terminal (Single 'f'), NonTerminal "D" ]
-        , [ NonTerminal "C", NonTerminal "B" ]
-        ]
-    , fromSymbol = "D"
+    , terminals = [ Single 'd', Single 'b', Single 'c', Single 'a' ]
     }

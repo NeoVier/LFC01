@@ -250,6 +250,7 @@ viewRightPanel model =
                     , afdToGrButton
                     , erToAfdButton
                     , removeEpsilonButton
+                    , removeLeftRecursionButton
                     ]
             )
         ]
@@ -351,7 +352,7 @@ afndToAfdButton model =
         Ok (Models.Automaton (Automata.FiniteNonDeterministic afnd)) ->
             button
                 (onClick
-                    (Types.SetCurrent
+                    (Types.Add
                         (CAutomata.afndToAfd afnd
                             |> Automata.FiniteDeterministic
                             |> Models.Automaton
@@ -373,7 +374,7 @@ complementButton model =
             Just
                 (button
                     (onClick
-                        (Types.SetCurrent
+                        (Types.Add
                             (OpBasics.complement afd
                                 |> Automata.FiniteDeterministic
                                 |> Models.Automaton
@@ -394,7 +395,7 @@ minimizeButton model =
         Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
             button
                 (onClick
-                    (Types.SetCurrent
+                    (Types.Add
                         (OpMin.minimizeAFD afd
                             |> Automata.FiniteDeterministic
                             |> Models.Automaton
@@ -415,7 +416,7 @@ grToAfndButton model =
         Ok (Models.Grammar (Grammars.Regular grammar)) ->
             button
                 (onClick
-                    (Types.SetCurrent
+                    (Types.Add
                         (CGrammars.grToAfnd grammar
                             |> Automata.FiniteNonDeterministic
                             |> Models.Automaton
@@ -436,7 +437,7 @@ afdToGrButton model =
         Ok (Models.Automaton (Automata.FiniteDeterministic afd)) ->
             button
                 (onClick
-                    (Types.SetCurrent
+                    (Types.Add
                         (CAutomata.afdToGr afd
                             |> Grammars.Regular
                             |> Models.Grammar
@@ -469,7 +470,7 @@ removeEpsilonButton model =
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
             button
                 (onClick
-                    (Types.SetCurrent
+                    (Types.Add
                         (OpGLC.removeEpsilon glc
                             |> Grammars.ContextFree
                             |> Models.Grammar
@@ -478,6 +479,26 @@ removeEpsilonButton model =
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Remover Epsilon" ]
+                |> Just
+
+        _ ->
+            Nothing
+
+
+removeLeftRecursionButton : Types.Model -> Maybe (Html Types.Msg)
+removeLeftRecursionButton model =
+    case model.currentItem of
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            button
+                (onClick
+                    (OpGLC.eliminateLeftRecursion glc
+                        |> Grammars.ContextFree
+                        |> Models.Grammar
+                        |> Types.Add
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Remover recursão à esquerda" ]
                 |> Just
 
         _ ->

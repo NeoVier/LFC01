@@ -9,8 +9,6 @@
 module Operations.GLC exposing (..)
 
 import Dict exposing (Dict)
-import Html exposing (th)
-import Models.Alphabet as Alphabet
 import Models.Grammars as Grammars exposing (..)
 import Utils.Utils as Utils
 
@@ -42,7 +40,7 @@ removeEpsilon glc =
                 (\production ->
                     { production
                         | bodies =
-                            List.concatMap (newBodies glc nullables)
+                            List.concatMap (newEpsilonFreeBodies glc nullables)
                                 production.bodies
                     }
                 )
@@ -70,12 +68,12 @@ removeEpsilon glc =
 -- Generate new bodies for an Epsilon-free glc
 
 
-newBodies :
+newEpsilonFreeBodies :
     ContextFreeGrammar
     -> List NonTerminalSymbol
     -> ContextFreeProductionBody
     -> List ContextFreeProductionBody
-newBodies glc nullables originalBody =
+newEpsilonFreeBodies glc nullables originalBody =
     conditionalTree originalBody
         (\item ->
             case item of
@@ -190,7 +188,23 @@ allNullablesHelp glc seen =
 
 eliminateLeftRecursion : ContextFreeGrammar -> ContextFreeGrammar
 eliminateLeftRecursion glc =
-    removeEpsilon glc
+    let
+        withoutEpsilon =
+            removeEpsilon glc
+
+        step =
+            List.foldl
+                (\prod accGlc ->
+                    eliminateLeftRecursionIndirect accGlc prod
+                )
+                withoutEpsilon
+                withoutEpsilon.productions
+    in
+    -- if step == glc then
+    --     step
+    -- else
+    --     eliminateLeftRecursion step
+    step
 
 
 
@@ -206,8 +220,8 @@ eliminateAllLeftRecursionDirect glc =
 
 
 
--- Given a GLC and a production, return a GLC that removed the left recursion
--- from that production
+-- Given a GLC and a production, return a GLC that removed the direct left
+-- recursion from that production
 
 
 eliminateLeftRecursionDirect :
@@ -272,7 +286,9 @@ isDirectlyRecursive fromSymbol body =
 
 
 
--- Get the next available name, given a symbol (S -> S', S' -> S'', A -> A', ..)
+{- Get the next available name, given a symbol
+   (e.g. S -> S', S' -> S'', A -> A', ...)
+-}
 
 
 getNextName : ContextFreeGrammar -> NonTerminalSymbol -> NonTerminalSymbol
@@ -289,24 +305,79 @@ getNextName glc symbol =
 
 
 
-{- Para i := 1 até n faça
-   | Para j:= 1 até i-1 faça
-   |  | Se Ai ::= Ajα ∈ P então
-   |  |  | Remova Ai ::= Aj de P
-   |  |  | Se Aj ::= β ∈ P então
-   |  |  |  | P′ = P′ ∪ {Ai::=βα}
-   |  Elimine as recursões diretas das produções de P′com lado esquerdo Ai
-
-
-   For each production p1 in glc.productions:
-   |  For each production p2 before p1:
-   |  | If p1 derives p2 (p1 ::= p2+[alpha]) then
-   |  |  | Remove p1 ::= p2+[alpha] from glc.productions
-   |  |  | For each body in p2:
-   |  |  |  | If p2 ::= [beta]:
-   |  |  |  |  | p1.productions ++ [[beta] ++ [alfa]]
-   | Remove direct left recursion from p1
+{- Given a GLC and a production, return a GLC that removed the indirect left
+   recursion from that production
 -}
+
+
+eliminateLeftRecursionIndirect :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> ContextFreeGrammar
+eliminateLeftRecursionIndirect glc prod =
+    if not <| isIndirectlyRecursive glc prod.fromSymbol then
+        glc
+
+    else
+        let
+            p2s : List ContextFreeProduction
+            p2s =
+                Utils.takeUntil prod glc.productions
+
+            ( newProd, newGlc ) =
+                List.foldl
+                    (\currProd ( accProd, accGlc ) ->
+                        let
+                            -- Every body in p1 that left-most derives p2
+                            recursiveBodies =
+                                List.filter (isDirectlyRecursive currProd.fromSymbol)
+                                    accProd.bodies
+
+                            -- Replace items in p2 into p1
+                            newRecursiveBodies =
+                                List.concatMap
+                                    (\beta ->
+                                        List.map (\alpha -> alpha ++ List.drop 1 beta)
+                                            currProd.bodies
+                                    )
+                                    recursiveBodies
+
+                            -- Generate new bodies
+                            newBodies =
+                                List.filter
+                                    (not << isDirectlyRecursive currProd.fromSymbol)
+                                    accProd.bodies
+                                    ++ newRecursiveBodies
+                                    |> Utils.removeDuplicates
+
+                            newProduction =
+                                { accProd | bodies = newBodies }
+                        in
+                        if List.isEmpty recursiveBodies then
+                            -- If p1 doesn't derive p2, continue
+                            ( accProd, accGlc )
+
+                        else
+                            -- Else, replace the production with the new
+                            -- production
+                            ( newProduction
+                            , { accGlc
+                                | productions =
+                                    Utils.replaceBy accProd
+                                        newProduction
+                                        accGlc.productions
+                              }
+                            )
+                    )
+                    ( prod, glc )
+                    p2s
+        in
+        eliminateLeftRecursionDirect newGlc newProd
+
+
+
+-- Checks whether or not a production with fromSymbol == symbol is indirectly
+-- left recursive
 
 
 isIndirectlyRecursive : ContextFreeGrammar -> NonTerminalSymbol -> Bool
@@ -335,6 +406,10 @@ isIndirectlyRecursive glc symbol =
                         p.bodies
             in
             isIndirectlyRecursiveHelp glc symbol [ symbol ] derivables
+
+
+
+-- Helper function
 
 
 isIndirectlyRecursiveHelp :

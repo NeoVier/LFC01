@@ -54,6 +54,7 @@ type Msg
     | SaveFile String String String
     | SetCurrent Models.General
     | UpdateCurrent Models.General
+    | Add Models.General
     | RemoveItem Models.General
     | SetSentence String
     | DoUnion

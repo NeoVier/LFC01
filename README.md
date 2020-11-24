@@ -50,10 +50,10 @@ Student: Henrique da Cunha Buss
   - [x] Add GLC to history
   - [x] Add GLC from file
   - [x] Remove Epsilon
-  - [ ] Eliminate left recursion
-    - [ ] Direct
-    - [ ] Indirect
-    - [ ] All
+  - [x] Eliminate left recursion
+    - [x] Direct
+    - [x] Indirect
+    - [x] All
   - [ ] Factor GLC (Remove non-determinism)
     - [ ] Direct
     - [ ] Indirect
@@ -84,7 +84,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 
   1. [x] Reading, writing and editing GLC
   2. [ ] Transforming GLC to a GLC in normal Chomsky form
-  3. [ ] Left-recursion elimination
+  3. [x] Left-recursion elimination
   4. [ ] Factoration
   5. [ ] Recognizing sentences in AP (implementing one of the analysis tables)
 

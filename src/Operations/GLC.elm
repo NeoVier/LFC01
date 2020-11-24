@@ -8,7 +8,8 @@
 
 module Operations.GLC exposing (..)
 
-import Dict exposing (Dict)
+import GenericDict as Dict exposing (Dict)
+import Models.Alphabet exposing (Symbol(..))
 import Models.Grammars as Grammars exposing (..)
 import Utils.Utils as Utils
 
@@ -460,3 +461,175 @@ isIndirectlyRecursiveHelp glc target seen unseen =
                                 target
                                 (curr :: seen)
                                 (List.drop 1 unseen ++ derivables)
+
+
+
+-- FACTORATION
+{- Factor GLC -}
+
+
+factorGLC : ContextFreeGrammar -> ContextFreeGrammar
+factorGLC glc =
+    glc
+
+
+
+-- If a body starts with a nonterminal, substitute the nonterminal by its productions
+-- factorIndirectly
+{- Remove direct non determinism from a production -}
+
+
+factorDirectly :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> ContextFreeGrammar
+factorDirectly glc production =
+    let
+        groups =
+            getBiggestBlobs production.bodies
+    in
+    Dict.fold
+        (\group accBodies accGlc ->
+            let
+                replacementProduction =
+                    { production
+                        | bodies =
+                            (group ++ [ NonTerminal newProduction.fromSymbol ])
+                                :: List.filter
+                                    (\b -> not <| List.member b accBodies)
+                                    production.bodies
+                    }
+
+                newProduction =
+                    { fromSymbol = getNextName accGlc production.fromSymbol
+                    , bodies =
+                        List.map (List.drop (List.length group))
+                            accBodies
+                    }
+            in
+            if List.length newProduction.bodies == 0 then
+                accGlc
+
+            else
+                { accGlc
+                    | productions =
+                        Utils.replaceBy production
+                            replacementProduction
+                            accGlc.productions
+                            |> Utils.insertAfter replacementProduction newProduction
+                    , nonTerminals =
+                        Utils.insertAfter replacementProduction.fromSymbol
+                            newProduction.fromSymbol
+                            accGlc.nonTerminals
+                }
+        )
+        glc
+        groups
+
+
+
+{- Create groups of production bodies that start with the same N symbols -}
+
+
+joinByFirstN :
+    List ContextFreeProductionBody
+    -> Int
+    -> Dict ContextFreeProductionBody (List ContextFreeProductionBody)
+joinByFirstN bodies n =
+    List.foldl
+        (\body accDict ->
+            let
+                key =
+                    List.take n body
+            in
+            case Dict.get contextFreeProductionBodyToString key accDict of
+                Nothing ->
+                    Dict.insert contextFreeProductionBodyToString
+                        key
+                        [ body ]
+                        accDict
+
+                Just v ->
+                    Dict.insert contextFreeProductionBodyToString
+                        key
+                        (v ++ [ body ])
+                        accDict
+        )
+        Dict.empty
+        bodies
+
+
+
+{- Separate elements in the list that have the same starting chain, keeping the
+   biggest chain possible. Keys in the dict are the chains, and the values
+   are the entire elements
+-}
+
+
+getBiggestBlobs :
+    List ContextFreeProductionBody
+    -> Dict ContextFreeProductionBody (List ContextFreeProductionBody)
+getBiggestBlobs l =
+    let
+        initialDict =
+            joinByFirstN l 1
+    in
+    initialDict
+        |> Dict.toList
+        |> List.map (\( k, v ) -> getBiggestBlobsHelp k v)
+        |> Dict.fromList contextFreeProductionBodyToString
+
+
+
+{- Gets the biggest possible chain of elements that is repeated in every single
+   element in value
+-}
+
+
+getBiggestBlobsHelp :
+    ContextFreeProductionBody
+    -> List ContextFreeProductionBody
+    -> ( ContextFreeProductionBody, List ContextFreeProductionBody )
+getBiggestBlobsHelp key value =
+    List.foldl
+        (\n ( accKey, accValue ) ->
+            let
+                newPairs =
+                    joinByFirstN accValue n |> Dict.toList
+            in
+            if List.length newPairs == 1 then
+                List.head newPairs |> Maybe.withDefault ( accKey, accValue )
+
+            else
+                ( accKey, accValue )
+        )
+        ( key, value )
+        (List.range 0
+            (List.map List.length value
+                |> List.maximum
+                |> Maybe.withDefault 0
+            )
+        )
+
+
+
+{- Transform a Context Free Production Body into a String -}
+
+
+contextFreeProductionBodyToString : ContextFreeProductionBody -> String
+contextFreeProductionBodyToString =
+    List.map contextFreeProductionItemToString >> String.join ""
+
+
+
+{- Transform a Context Free Production Item into a String -}
+
+
+contextFreeProductionItemToString : ContextFreeProductionItem -> String
+contextFreeProductionItemToString x =
+    case x of
+        Terminal t ->
+            Utils.symbolToString t
+
+        NonTerminal nt ->
+            nt

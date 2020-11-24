@@ -54,10 +54,10 @@ Student: Henrique da Cunha Buss
     - [x] Direct
     - [x] Indirect
     - [x] All
-  - [ ] Factor GLC (Remove non-determinism)
+  - [x] Factor GLC (Remove non-determinism)
     - [x] Direct
     - [x] Indirect
-    - [ ] All
+    - [x] All
   - [ ] Transform to normal Chomsky
     - [ ] Remove non-productive symbols
     - [ ] Remove non-used symbols
@@ -85,7 +85,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
   1. [x] Reading, writing and editing GLC
   2. [ ] Transforming GLC to a GLC in normal Chomsky form
   3. [x] Left-recursion elimination
-  4. [ ] Factoration
+  4. [x] Factoration
   5. [ ] Recognizing sentences in AP (implementing one of the analysis tables)
 
 ### Notes

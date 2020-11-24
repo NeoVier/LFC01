@@ -255,6 +255,7 @@ viewRightPanel model =
                     , erToAfdButton
                     , removeEpsilonButton
                     , removeLeftRecursionButton
+                    , removeNonDeterminismButton
                     ]
             )
         ]
@@ -520,18 +521,25 @@ removeEpsilonButton : Types.Model -> Maybe (Html Types.Msg)
 removeEpsilonButton model =
     case model.currentItem of
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
-            button
-                (onClick
-                    (Types.Add
-                        (OpGLC.removeEpsilon glc
+            let
+                result =
+                    OpGLC.removeEpsilon glc
+            in
+            if result == glc then
+                Nothing
+
+            else
+                button
+                    (onClick
+                        (result
                             |> Grammars.ContextFree
                             |> Models.Grammar
+                            |> Types.Add
                         )
+                        :: Styles.rightPanelButtonStyles
                     )
-                    :: Styles.rightPanelButtonStyles
-                )
-                [ text "Remover Epsilon" ]
-                |> Just
+                    [ text "Remover Epsilon" ]
+                    |> Just
 
         _ ->
             Nothing
@@ -545,6 +553,13 @@ removeLeftRecursionButton : Types.Model -> Maybe (Html Types.Msg)
 removeLeftRecursionButton model =
     case model.currentItem of
         Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            -- let
+            --     result =
+            --         OpGLC.eliminateLeftRecursion glc
+            -- in
+            -- if result == glc then
+            --     Nothing
+            -- else
             button
                 (onClick
                     (OpGLC.eliminateLeftRecursion glc
@@ -556,6 +571,39 @@ removeLeftRecursionButton model =
                 )
                 [ text "Remover recursão à esquerda" ]
                 |> Just
+
+        _ ->
+            Nothing
+
+
+
+{- Button to remove non determinism -}
+
+
+removeNonDeterminismButton : Types.Model -> Maybe (Html Types.Msg)
+removeNonDeterminismButton model =
+    case model.currentItem of
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            let
+                result =
+                    OpGLC.factorGLC glc
+            in
+            case result of
+                Nothing ->
+                    Nothing
+
+                Just newGlc ->
+                    button
+                        (onClick
+                            (newGlc
+                                |> Grammars.ContextFree
+                                |> Models.Grammar
+                                |> Types.Add
+                            )
+                            :: Styles.rightPanelButtonStyles
+                        )
+                        [ text "Fatorar/Remover não determinismo" ]
+                        |> Just
 
         _ ->
             Nothing

@@ -468,9 +468,62 @@ isIndirectlyRecursiveHelp glc target seen unseen =
 {- Factor GLC -}
 
 
-factorGLC : ContextFreeGrammar -> ContextFreeGrammar
+factorGLC : ContextFreeGrammar -> Maybe ContextFreeGrammar
 factorGLC glc =
-    glc
+    let
+        maxSteps =
+            10
+    in
+    List.foldl
+        (\idx ( finished, accGlc ) ->
+            if finished then
+                if accGlc == Just glc then
+                    ( True, Nothing )
+
+                else
+                    ( True, accGlc )
+
+            else if idx == maxSteps then
+                ( False, Nothing )
+
+            else
+                let
+                    thisStep =
+                        Maybe.map factorGLCStep accGlc
+                in
+                ( thisStep == accGlc, thisStep )
+        )
+        ( False, Just glc )
+        (List.range 1 maxSteps)
+        |> Tuple.second
+
+
+
+{- A step into factoring a GLC -}
+
+
+factorGLCStep : ContextFreeGrammar -> ContextFreeGrammar
+factorGLCStep glc =
+    List.foldl
+        (\accProd accGlc ->
+            let
+                indirectlyFactored =
+                    factorIndirectly accGlc accProd
+
+                newProd =
+                    List.filter (.fromSymbol >> (==) accProd.fromSymbol)
+                        indirectlyFactored.productions
+                        |> List.head
+            in
+            case newProd of
+                Nothing ->
+                    indirectlyFactored
+
+                Just p ->
+                    factorDirectly indirectlyFactored p
+        )
+        glc
+        glc.productions
 
 
 
@@ -554,10 +607,7 @@ factorDirectly glc production =
                             accBodies
                     }
             in
-            if List.length newProduction.bodies == 0 then
-                accGlc
-
-            else
+            if List.length accBodies >= 2 then
                 { accGlc
                     | productions =
                         Utils.replaceBy production
@@ -569,6 +619,9 @@ factorDirectly glc production =
                             newProduction.fromSymbol
                             accGlc.nonTerminals
                 }
+
+            else
+                accGlc
         )
         glc
         groups

@@ -16,7 +16,7 @@ import Utils.Utils exposing (filterMaybe)
 
 
 -- MODEL
--- A model has a current automaton, a history, and a sentence
+{- A model has a current automaton, a history, and a sentence -}
 
 
 type alias Model =
@@ -27,7 +27,7 @@ type alias Model =
 
 
 
--- Initial model - Starts with no history, no automaton and no sentence
+{- Initial model - Starts with no history, no automaton and no sentence -}
 
 
 init : () -> ( Model, Cmd Msg )
@@ -43,8 +43,9 @@ init _ =
 
 
 -- MESSAGE
--- Each message is a communication between the user and the program, according
--- to the Elm Architecture
+{- Each message is a communication between the user and the program, according
+   to the Elm Architecture
+-}
 
 
 type Msg

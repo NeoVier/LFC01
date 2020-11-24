@@ -1,7 +1,23 @@
-module Saving.Grammars exposing (contextFreeGrammarToString, grammarToString, regularGrammarToString)
+{-
+   Saving/Grammars.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to save Grammars
+-}
+
+
+module Saving.Grammars exposing
+    ( contextFreeGrammarToString
+    , grammarToString
+    , regularGrammarToString
+    )
 
 import Models.Alphabet as Alphabet
 import Models.Grammars as Grammars
+
+
+
+{- Transform a grammar into a string -}
 
 
 grammarToString : Grammars.Grammar -> String
@@ -12,6 +28,10 @@ grammarToString grammar =
 
         Grammars.ContextFree glc ->
             contextFreeGrammarToString glc
+
+
+
+{- Transform a regular grammar into a string -}
 
 
 regularGrammarToString : Grammars.RegularGrammar -> String
@@ -45,6 +65,10 @@ regularGrammarToString gr =
                 )
 
 
+
+{- Transform a context free grammar into a string -}
+
+
 contextFreeGrammarToString : Grammars.ContextFreeGrammar -> String
 contextFreeGrammarToString glc =
     let
@@ -62,6 +86,10 @@ contextFreeGrammarToString glc =
             contextFreeProductionToString s
                 :: List.map contextFreeProductionToString nonInitialProductions
                 |> String.join "\n"
+
+
+
+{- Transform a symbol into a string -}
 
 
 symbolToString : Alphabet.Symbol -> String
@@ -82,12 +110,20 @@ symbolToString s =
                 ++ "]"
 
 
+
+{- Transform a context free production into a string -}
+
+
 contextFreeProductionToString : Grammars.ContextFreeProduction -> String
 contextFreeProductionToString prod =
     prod.fromSymbol
         ++ " -> "
         ++ String.join " | "
             (List.map contextFreeProductionBodyToString prod.bodies)
+
+
+
+{- Transform a context free production body into a string -}
 
 
 contextFreeProductionBodyToString : Grammars.ContextFreeProductionBody -> String
@@ -109,11 +145,19 @@ contextFreeProductionBodyToString body =
             |> String.join ""
 
 
+
+{- Transform a regular production into a string -}
+
+
 productionToString : Grammars.Production -> String
 productionToString prod =
     prod.fromSymbol
         ++ " -> "
         ++ String.join " | " (List.map productionBodyToString prod.productions)
+
+
+
+{- Transform a regular production body into a string -}
 
 
 productionBodyToString : Grammars.ProductionBody -> String

@@ -19,7 +19,7 @@ import Utils.Utils as Utils
 
 
 -- UNION
--- Performs the union operation with two AFDs
+{- Performs the union operation with two AFDs -}
 
 
 union : Automata.AFD -> Automata.AFD -> Automata.AFND
@@ -65,7 +65,7 @@ union afd1 afd2 =
 
 
 
--- Generates an AFND so we can diferentiate from the two union automata
+{- Generates an AFND so we can diferentiate from the two union automata -}
 
 
 generateNewAFNDForUnion :
@@ -95,7 +95,7 @@ generateNewAFNDForUnion afd first alphabet =
 
 
 
--- Generates new transitions for the new union automata
+{- Generates new transitions for the new union automata -}
 
 
 generateNewTransitionForUnion :
@@ -111,7 +111,7 @@ generateNewTransitionForUnion prefix transition =
 
 
 -- COMPLEMENT
--- Complements an AFD
+{- Complements an AFD -}
 
 
 complement : Automata.AFD -> Automata.AFD
@@ -128,7 +128,7 @@ complement afd =
 
 
 -- INTERSECTION
--- Performs the intersection operation with two AFDs
+{- Performs the intersection operation with two AFDs -}
 
 
 intersection : Automata.AFD -> Automata.AFD -> Automata.AFD

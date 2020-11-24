@@ -13,7 +13,7 @@ import Parser as P exposing ((|.), (|=), Parser)
 
 
 
--- Parse a single character string
+{- Parse a single character string -}
 
 
 createChar : String -> Parser Char
@@ -27,7 +27,7 @@ createChar xs =
 
 
 
--- Parse a Symbol
+{- Parse a Symbol -}
 
 
 alphabetSymbol : Parser Alphabet.Symbol
@@ -39,7 +39,7 @@ alphabetSymbol =
 
 
 
--- Parse a Symbol.Single
+{- Parse a Symbol.Single -}
 
 
 alphabetSingle : Parser Alphabet.Symbol
@@ -49,7 +49,7 @@ alphabetSingle =
 
 
 
--- Parse a Symbol.Group
+{- Parse a Symbol.Group -}
 
 
 alphabetGroup : Parser Alphabet.Symbol
@@ -66,7 +66,7 @@ alphabetGroup =
 
 
 
--- Parse a single alpha-numeric Char
+{- Parse a single alpha-numeric Char -}
 
 
 singleChar : Parser Char
@@ -76,7 +76,7 @@ singleChar =
 
 
 
--- Parse a (Char, Char) tuple to use in groups
+{- Parse a (Char, Char) tuple to use in groups -}
 
 
 alphabetGroupInner : Parser ( Char, Char )
@@ -88,7 +88,7 @@ alphabetGroupInner =
 
 
 
--- Parse a single word (that only contains alpha-numeric Chars)
+{- Parse a single word (that only contains alpha-numeric Chars) -}
 
 
 parseWord : Parser String

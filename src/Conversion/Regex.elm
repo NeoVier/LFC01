@@ -80,7 +80,7 @@ import Utils.Utils as Utils
     - If n is a (Star c1) node, and i is a position in lastpos(n), then all
         positions in firstpos(n) are in followpos(i)
 -}
--- TreeInfo contains all of the needed info to apply the algorithm
+{- TreeInfo contains all of the needed info to apply the algorithm -}
 
 
 type alias TreeInfo =
@@ -93,7 +93,7 @@ type alias TreeInfo =
 
 
 
--- Shorthand for the kind of Dict used
+{- Shorthand for the kind of Dict used -}
 
 
 type alias TreeInfoDict =
@@ -101,7 +101,7 @@ type alias TreeInfoDict =
 
 
 
--- Default empty TreeInfo
+{- Default empty TreeInfo -}
 
 
 emptyTreeInfo : TreeInfo
@@ -115,7 +115,7 @@ emptyTreeInfo =
 
 
 
--- Extract a TreeInfoDict from a Regex
+{- Extract a TreeInfoDict from a Regex -}
 
 
 treeInfoDict : Regex -> TreeInfoDict
@@ -127,8 +127,9 @@ treeInfoDict r =
 
 
 
--- Cleans a TreeInfoDict by removing everything that doesn't represent a leaf
--- node in the original Regex
+{- Cleans a TreeInfoDict by removing everything that doesn't represent a leaf
+   node in the original Regex
+-}
 
 
 cleanTreeInfoDict : TreeInfoDict -> TreeInfoDict
@@ -145,7 +146,7 @@ cleanTreeInfoDict infoTree =
 
 
 
--- Convert a Regular Expression to an AFD
+{- Convert a Regular Expression to an AFD -}
 
 
 erToAfd : Regex -> Automata.AFD
@@ -188,7 +189,7 @@ erToAfd r =
 
 
 
--- Helper function for erToAfd
+{- Helper function for erToAfd -}
 
 
 erToAfdHelp :
@@ -295,8 +296,9 @@ erToAfdHelp treeInfo statesToCreate seenStates partialAfd =
 
 
 
--- Given a TreeInfoDict and a list of indexes (a state in the result AFD),
--- get a Dict saying which symbols reach which state
+{- Given a TreeInfoDict and a list of indexes (a state in the result AFD),
+   get a Dict saying which symbols reach which state
+-}
 
 
 getSymbolGroups : TreeInfoDict -> List Int -> Dict String (List Int)
@@ -317,7 +319,6 @@ getSymbolGroups treeInfo indexes =
                                 Nothing ->
                                     acc
 
-                                -- TOD
                                 Just fp ->
                                     Dict.update (Utils.symbolToString symbol)
                                         (\dictValue ->
@@ -338,7 +339,9 @@ getSymbolGroups treeInfo indexes =
 
 
 
--- Given a regex and a TreeInfoDict, assign nullable to each node in the regex
+{- Given a regex and a TreeInfoDict, assign nullable to each node in the
+   regex
+-}
 
 
 nullableDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -395,7 +398,9 @@ nullableDict r d =
 
 
 
--- Given a regex and a TreeInfoDict, assign firstPos to each node in the regex
+{- Given a regex and a TreeInfoDict, assign firstPos to each node in the
+   regex
+-}
 
 
 firstPosDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -460,7 +465,7 @@ firstPosDict r d =
 
 
 
--- Given a regex and a TreeInfoDict, assign lastPos to each node in the regex
+{- Given a regex and a TreeInfoDict, assign lastPos to each node in the regex -}
 
 
 lastPosDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -557,7 +562,9 @@ lastPosDict r d =
 
 
 
--- Given a regex and a TreeInfoDict, assign followPos to each node in the regex
+{- Given a regex and a TreeInfoDict, assign followPos to each node in the
+   regex
+-}
 
 
 followPosDict : Regex -> TreeInfoDict -> TreeInfoDict
@@ -727,8 +734,9 @@ followPosDict r d =
 
 
 
--- Get the nullable value of a regex node according to the table at the top of
--- this file
+{- Get the nullable value of a regex node according to the table at the top of
+   this file
+-}
 
 
 nullable : Regex -> Bool
@@ -757,8 +765,9 @@ nullable r =
 
 
 
--- Get the firstPos value of a regex node according to the table at the top of
--- this file
+{- Get the firstPos value of a regex node according to the table at the top of
+   this file
+-}
 
 
 firstPos : Regex -> List Int
@@ -767,7 +776,7 @@ firstPos =
 
 
 
--- Get the firstPos giving the first node value
+{- Get the firstPos giving the first node value -}
 
 
 firstPosFrom : Int -> Regex -> List Int
@@ -776,7 +785,7 @@ firstPosFrom i r =
 
 
 
--- Helper function for firstPos
+{- Helper function for firstPos -}
 
 
 firstPosHelp : Int -> Regex -> ( List Int, Int )
@@ -824,8 +833,9 @@ firstPosHelp count r =
 
 
 
--- Get the lastPos value of a regex node according to the table at the top of
--- this file
+{- Get the lastPos value of a regex node according to the table at the top of
+   this file
+-}
 
 
 lastPos : Regex -> List Int
@@ -834,7 +844,7 @@ lastPos =
 
 
 
--- Get the firstPos giving the first node value
+{- Get the firstPos giving the first node value -}
 
 
 lastPosFrom : Int -> Regex -> List Int
@@ -843,14 +853,7 @@ lastPosFrom i r =
 
 
 
--- let
---     v =
---         lastPosHelp i r |> Tuple.first
---     leafCount =
---         getLeafCount r
--- in
--- List.map (\x -> leafCount - x + 1) v |> List.sort
--- Helper function for lastPos
+{- Helper function for lastPos -}
 
 
 lastPosHelp : Int -> Regex -> ( List Int, Int )
@@ -901,7 +904,7 @@ lastPosHelp count r =
 
 
 
--- Given a Regex, counts how many leaf nodes it has
+{- Given a Regex, counts how many leaf nodes it has -}
 
 
 getLeafCount : Regex -> Int

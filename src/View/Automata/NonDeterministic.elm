@@ -23,7 +23,7 @@ import View.Styles exposing (..)
 
 
 
--- Given an AFND, return a table that represents it
+{- Given an AFND, return a table that represents it -}
 
 
 viewAFND : Automata.AFND -> Html Types.Msg
@@ -35,7 +35,9 @@ viewAFND afnd =
 
 
 
--- Given an AFND, return a list of rows that represent the states and transitions
+{- Given an AFND, return a list of rows that represent the states and
+   transitions
+-}
 
 
 getAutomatonRows : Automata.AFND -> List (Html Types.Msg)
@@ -44,7 +46,7 @@ getAutomatonRows afnd =
 
 
 
--- Given an AFND and a State, return the row that represents the State
+{- Given an AFND and a State, return the row that represents the State -}
 
 
 getStateRow : Automata.AFND -> State.State -> Html Types.Msg
@@ -197,7 +199,7 @@ getStateRow afnd prevState =
 
 
 
--- Helper function to convert the nextState of a Transition to a String
+{- Helper function to convert the nextState of a Transition to a String -}
 
 
 viewFlatNonDeterministicTransition :
@@ -291,9 +293,17 @@ viewFlatNonDeterministicTransition transition afnd =
            ]
 
 
+
+{- Turn an AFND into a general model -}
+
+
 afndToGeneral : Automata.AFND -> Models.General
 afndToGeneral =
     Automata.FiniteNonDeterministic >> Models.Automaton
+
+
+
+{- Turn a list of states into a string -}
 
 
 statesToString : List State.State -> String
@@ -308,6 +318,10 @@ statesToString states =
                 |> String.join ", "
 
 
+
+{- Turn a state into a string -}
+
+
 stateToString : State.State -> String
 stateToString state =
     case state of
@@ -316,6 +330,10 @@ stateToString state =
 
         State.Valid label ->
             label
+
+
+
+{- Read a string into a state -}
 
 
 stringToState : String -> State.State

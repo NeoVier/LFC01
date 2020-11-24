@@ -35,7 +35,7 @@ import View.Styles as Styles
 
 
 
--- The main view function. Defines a title and the viewing areas
+{- The main view function. Defines a title and the viewing areas -}
 
 
 view : Types.Model -> Html Types.Msg
@@ -55,7 +55,7 @@ view model =
 
 
 
--- Defines the look of the left panel
+{- Defines the look of the left panel -}
 
 
 viewLeftPanel : Types.Model -> Html Types.Msg
@@ -67,7 +67,7 @@ viewLeftPanel model =
 
 
 
--- Defines the look of the history
+{- Defines the look of the history -}
 
 
 historyView : Types.Model -> Html Types.Msg
@@ -113,7 +113,7 @@ historyView model =
 
 
 
--- Defines the view of the center panel
+{- Defines the view of the center panel -}
 
 
 viewCenterPanel : Types.Model -> Html Types.Msg
@@ -141,6 +141,10 @@ viewCenterPanel model =
         ]
 
 
+
+{- View the current model -}
+
+
 viewCurrentModel : Types.Model -> Html Types.Msg
 viewCurrentModel model =
     case model.currentItem of
@@ -158,7 +162,7 @@ viewCurrentModel model =
 
 
 
--- Defines the view of the sentence input area
+{- Defines the view of the sentence input area -}
 
 
 viewSentenceInput : Types.Model -> Html Types.Msg
@@ -196,7 +200,7 @@ viewSentenceInput model =
 
 
 
--- Defines the view of the right panel
+{- Defines the view of the right panel -}
 
 
 viewRightPanel : Types.Model -> Html Types.Msg
@@ -256,15 +260,27 @@ viewRightPanel model =
         ]
 
 
+
+{- Button to load a new model -}
+
+
 loadButton : String -> Types.Msg -> Html Types.Msg
 loadButton caption msg =
     button (onClick msg :: Styles.rightPanelButtonStyles)
         [ text ("Carregar " ++ caption) ]
 
 
+
+{- Convert Maybe Html to Html -}
+
+
 maybeHtmlToHtml : Maybe (Html a) -> Html a
 maybeHtmlToHtml =
     Maybe.withDefault (text "")
+
+
+
+{- Button to save the current model -}
 
 
 saveButton : Types.Model -> Maybe (Html Types.Msg)
@@ -319,6 +335,10 @@ saveButton model =
             Nothing
 
 
+
+{- Button to do union -}
+
+
 unionButton : Types.Model -> Maybe (Html Types.Msg)
 unionButton model =
     if Utils.firstTwoAreAFDs model.itemHistory then
@@ -329,6 +349,10 @@ unionButton model =
 
     else
         Nothing
+
+
+
+{- Button to do intersection -}
 
 
 intersectionButton : Types.Model -> Maybe (Html Types.Msg)
@@ -344,6 +368,10 @@ intersectionButton model =
 
     else
         Nothing
+
+
+
+{- Button to convert AFND into AFD -}
 
 
 afndToAfdButton : Types.Model -> Maybe (Html Types.Msg)
@@ -365,6 +393,10 @@ afndToAfdButton model =
 
         _ ->
             Nothing
+
+
+
+{- Button to do complement -}
 
 
 complementButton : Types.Model -> Maybe (Html Types.Msg)
@@ -389,6 +421,10 @@ complementButton model =
             Nothing
 
 
+
+{- Button to minimize -}
+
+
 minimizeButton : Types.Model -> Maybe (Html Types.Msg)
 minimizeButton model =
     case model.currentItem of
@@ -408,6 +444,10 @@ minimizeButton model =
 
         _ ->
             Nothing
+
+
+
+{- Button to convert a GR to an AFND -}
 
 
 grToAfndButton : Types.Model -> Maybe (Html Types.Msg)
@@ -431,6 +471,10 @@ grToAfndButton model =
             Nothing
 
 
+
+{- Button to convert an AFD to a GR -}
+
+
 afdToGrButton : Types.Model -> Maybe (Html Types.Msg)
 afdToGrButton model =
     case model.currentItem of
@@ -452,6 +496,10 @@ afdToGrButton model =
             Nothing
 
 
+
+{- Button to convert an ER to an AFD -}
+
+
 erToAfdButton : Types.Model -> Maybe (Html Types.Msg)
 erToAfdButton model =
     case model.currentItem of
@@ -462,6 +510,10 @@ erToAfdButton model =
 
         _ ->
             Nothing
+
+
+
+{- Button to remove epsilon -}
 
 
 removeEpsilonButton : Types.Model -> Maybe (Html Types.Msg)
@@ -483,6 +535,10 @@ removeEpsilonButton model =
 
         _ ->
             Nothing
+
+
+
+{- Button to remove left recursion -}
 
 
 removeLeftRecursionButton : Types.Model -> Maybe (Html Types.Msg)

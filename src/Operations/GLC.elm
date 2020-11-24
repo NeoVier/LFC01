@@ -15,7 +15,7 @@ import Utils.Utils as Utils
 
 
 -- REMOVE EPSILON
--- Alias NullableInfo
+{- Alias NullableInfo -}
 
 
 type alias NullableInfo =
@@ -23,7 +23,7 @@ type alias NullableInfo =
 
 
 
--- Remove epsilon
+{- Remove epsilon -}
 
 
 removeEpsilon : ContextFreeGrammar -> ContextFreeGrammar
@@ -65,7 +65,7 @@ removeEpsilon glc =
 
 
 
--- Generate new bodies for an Epsilon-free glc
+{- Generate new bodies for an Epsilon-free glc -}
 
 
 newEpsilonFreeBodies :
@@ -131,7 +131,7 @@ conditionalTree l f =
 
 
 
--- Get all the nullable NonTerminals in a glc
+{- Get all the nullable NonTerminals in a glc -}
 
 
 allNullables : ContextFreeGrammar -> List NonTerminalSymbol
@@ -140,7 +140,7 @@ allNullables glc =
 
 
 
--- Auxiliary function
+{- Auxiliary function -}
 
 
 allNullablesHelp :
@@ -183,7 +183,7 @@ allNullablesHelp glc seen =
 
 
 -- LEFT RECURSION
--- Eliminate left recursion from a GLC
+{- Eliminate left recursion from a GLC -}
 
 
 eliminateLeftRecursion : ContextFreeGrammar -> ContextFreeGrammar
@@ -200,16 +200,15 @@ eliminateLeftRecursion glc =
                 withoutEpsilon
                 withoutEpsilon.productions
     in
-    -- if step == glc then
-    --     step
-    -- else
-    --     eliminateLeftRecursion step
-    step
+    if List.any (isIndirectlyRecursive glc) glc.nonTerminals then
+        eliminateLeftRecursion step
+
+    else
+        eliminateAllLeftRecursionDirect glc
 
 
 
--- Given a GLC, return the same GLC, but without direct left recursion
--- (useful for testing)
+{- Given a GLC, return the same GLC, but without direct left recursion -}
 
 
 eliminateAllLeftRecursionDirect : ContextFreeGrammar -> ContextFreeGrammar
@@ -220,8 +219,9 @@ eliminateAllLeftRecursionDirect glc =
 
 
 
--- Given a GLC and a production, return a GLC that removed the direct left
--- recursion from that production
+{- Given a GLC and a production, return a GLC that removed the direct left
+   recursion from that production
+-}
 
 
 eliminateLeftRecursionDirect :
@@ -272,7 +272,7 @@ eliminateLeftRecursionDirect glc prod =
 
 
 
--- Check if a body (given the symbol it comes from) is left recursive
+{- Check if a body (given the symbol it comes from) is left recursive -}
 
 
 isDirectlyRecursive : NonTerminalSymbol -> ContextFreeProductionBody -> Bool
@@ -376,8 +376,9 @@ eliminateLeftRecursionIndirect glc prod =
 
 
 
--- Checks whether or not a production with fromSymbol == symbol is indirectly
--- left recursive
+{- Checks whether or not a production with fromSymbol == symbol is indirectly
+   left recursive
+-}
 
 
 isIndirectlyRecursive : ContextFreeGrammar -> NonTerminalSymbol -> Bool
@@ -409,7 +410,7 @@ isIndirectlyRecursive glc symbol =
 
 
 
--- Helper function
+{- Helper function -}
 
 
 isIndirectlyRecursiveHelp :

@@ -15,9 +15,17 @@ import Utils.Utils as Utils
 import View.Styles as Styles
 
 
+
+{- Turn a list of IdRegex into HTML -}
+
+
 viewIdRegexes : List Regex.IdRegex -> Html msg
 viewIdRegexes =
     List.map viewRegexId >> div []
+
+
+
+{- Turn an IdRegex into HTML -}
 
 
 viewRegexId : Regex.IdRegex -> Html msg
@@ -27,6 +35,10 @@ viewRegexId idRegex =
             div []
                 [ h3 [] [ text <| id ++ ": " ++ viewRegex regex ]
                 ]
+
+
+
+{- Turn a Regex into a string -}
 
 
 viewRegex : Regex.Regex -> String

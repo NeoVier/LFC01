@@ -23,7 +23,7 @@ import View.Styles exposing (..)
 
 
 
--- Given an AFD, return a table that represents it
+{- Given an AFD, return a table that represents it -}
 
 
 viewAFD : Automata.AFD -> Html Types.Msg
@@ -35,7 +35,9 @@ viewAFD afd =
 
 
 
--- Given an AFD, return a list of rows that represent the states and transitions
+{- Given an AFD, return a list of rows that represent the states and
+   transitions
+-}
 
 
 getAutomatonRows : Automata.AFD -> List (Html Types.Msg)
@@ -44,7 +46,7 @@ getAutomatonRows afd =
 
 
 
--- Given an AFD and a State, return the row that represents the State
+{- Given an AFD and a State, return the row that represents the State -}
 
 
 getStateRow : Automata.AFD -> State.State -> Html Types.Msg
@@ -179,6 +181,10 @@ getStateRow afd prevState =
                 transitions
 
 
+
+{- Turn a deterministic transition into HTML -}
+
+
 viewFlatDeterministicTransition :
     Transition.DeterministicTransition
     -> Automata.AFD
@@ -210,9 +216,17 @@ viewFlatDeterministicTransition transition afd =
         )
 
 
+
+{- Turn an AFD into a general model -}
+
+
 afdToGeneral : Automata.AFD -> Models.General
 afdToGeneral =
     Automata.FiniteDeterministic >> Models.Automaton
+
+
+
+{- Turn a state into a string -}
 
 
 stateToString : State.State -> String
@@ -223,6 +237,10 @@ stateToString state =
 
         State.Valid label ->
             label
+
+
+
+{- Create a state out of a string -}
 
 
 stringToState : String -> State.State

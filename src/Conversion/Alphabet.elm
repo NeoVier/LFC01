@@ -12,7 +12,7 @@ import Models.Alphabet as Alphabet
 
 
 
--- Convert a non deterministic alphabet to a deterministic alphabet
+{- Convert a non deterministic alphabet to a deterministic alphabet -}
 
 
 nonDeterministicToDeterministic :

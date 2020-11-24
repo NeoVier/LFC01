@@ -19,7 +19,7 @@ import Models.Transition as Transition
 
 
 
--- Get all transitions that come out of a state from an AFD
+{- Get all transitions that come out of a state from an AFD -}
 
 
 getOutTransitionsDeterministic :
@@ -44,7 +44,7 @@ getOutTransitionsDeterministic afd prevState =
 
 
 
--- Get all transitions that come out of a state from an AFND
+{- Get all transitions that come out of a state from an AFND -}
 
 
 getOutTransitionsNonDeterministic :
@@ -99,8 +99,9 @@ getOutTransitionsNonDeterministic afnd prevState =
 
 
 
--- Given a transition with multiple conditions, return a list of transitions
--- with one condition each
+{- Given a transition with multiple conditions, return a list of transitions
+   with one condition each
+-}
 
 
 getFlatTransitionDeterministic :
@@ -113,8 +114,9 @@ getFlatTransitionDeterministic transition =
 
 
 
--- Given a transition with multiple conditions, return a list of transitions
--- with one condition each
+{- Given a transition with multiple conditions, return a list of transitions
+   with one condition each
+-}
 
 
 getFlatTransitionNonDeterministic :
@@ -146,7 +148,7 @@ getFlatTransitionNonDeterministic transition =
 
 
 
--- Get the flat transitions (one condition each) that come out of a state
+{- Get the flat transitions (one condition each) that come out of a state -}
 
 
 getFlatOutTransitionsDeterministic :
@@ -159,7 +161,7 @@ getFlatOutTransitionsDeterministic afd state =
 
 
 
--- Get the flat transitions (one condition each) that come out of a state
+{- Get the flat transitions (one condition each) that come out of a state -}
 
 
 getFlatOutTransitionsNonDeterministic :
@@ -169,6 +171,10 @@ getFlatOutTransitionsNonDeterministic :
 getFlatOutTransitionsNonDeterministic afnd state =
     getOutTransitionsNonDeterministic afnd state
         |> concatMap getFlatTransitionNonDeterministic
+
+
+
+{- Compare two Symbols -}
 
 
 compareAlphabetSymbols : Alphabet.Symbol -> Alphabet.Symbol -> Order
@@ -189,6 +195,10 @@ compareAlphabetSymbols a b =
 
                 Alphabet.Group g2 ->
                     compare g1 g2
+
+
+
+{- Helper function to use a function to compare two lists -}
 
 
 compareWith : (a -> b -> Order) -> List a -> List b -> Order
@@ -219,6 +229,10 @@ compareWith f a b =
                     LT
 
 
+
+{- Compare two deterministic conditions -}
+
+
 compareDeterministicConditions :
     Transition.DeterministicConditions
     -> Transition.DeterministicConditions
@@ -228,7 +242,7 @@ compareDeterministicConditions =
 
 
 
--- Function to compare two transitions so we can sort them
+{- Function to compare two transitions so we can sort them -}
 
 
 compareTransitionsDeterministic :
@@ -240,7 +254,7 @@ compareTransitionsDeterministic a b =
 
 
 
--- Function to compare two transitions so we can sort them
+{- Function to compare two transitions so we can sort them -}
 
 
 compareTransitionsNonDeterministic :
@@ -262,7 +276,7 @@ compareTransitionsNonDeterministic a b =
 
 
 
--- Swaps the first and last elements of a list
+{- Swaps the first and last elements of a list -}
 
 
 swapFirstAndLast : List a -> List a
@@ -276,7 +290,7 @@ swapFirstAndLast xs =
 
 
 
--- Sorts a list of deterministic transitions
+{- Sorts a list of deterministic transitions -}
 
 
 sortTransitionsDeterministic :
@@ -287,7 +301,7 @@ sortTransitionsDeterministic =
 
 
 
--- Sorts a list of non deterministic transitions
+{- Sorts a list of non deterministic transitions -}
 
 
 sortTransitionsNonDeterministic :
@@ -298,12 +312,16 @@ sortTransitionsNonDeterministic =
 
 
 
--- Returns the element at index
+{- Returns the element at index -}
 
 
 elementAt : Int -> List a -> Maybe a
 elementAt idx list =
     List.drop idx list |> List.head
+
+
+
+{- Gets the last item of a list -}
 
 
 last : List a -> Maybe a
@@ -313,7 +331,7 @@ last list =
 
 
 
--- Given a predicate, return Just a or Nothing
+{- Given a predicate, return Just a or Nothing -}
 
 
 filterMaybe : (a -> Bool) -> a -> Maybe a
@@ -326,7 +344,7 @@ filterMaybe f x =
 
 
 
--- Invert a List (Maybe a) to a Maybe (List a)
+{- Invert a List (Maybe a) to a Maybe (List a) -}
 
 
 listOfMaybesToMaybeList : List (Maybe a) -> Maybe (List a)
@@ -335,7 +353,7 @@ listOfMaybesToMaybeList =
 
 
 
--- Get all the epsilon transitions from an automaton
+{- Get all the epsilon transitions from an automaton -}
 
 
 getEpsilonTransitions :
@@ -360,7 +378,7 @@ getEpsilonTransitions automaton =
 
 
 
--- Given a list of states, create a new state that contains them
+{- Given a list of states, create a new state that contains them -}
 
 
 listOfStatesToState : List State.State -> State.State
@@ -387,7 +405,7 @@ listOfStatesToState states =
 
 
 
--- Given a state, return the list of states that form the state
+{- Given a state, return the list of states that form the state -}
 
 
 stateToListOfStates : State.State -> List State.State
@@ -401,7 +419,7 @@ stateToListOfStates state =
 
 
 
--- Gets the epsilon star for a state
+{- Gets the epsilon star for a state -}
 
 
 getEpsilonStar : Automata.AFND -> State.State -> List State.State
@@ -431,7 +449,7 @@ getEpsilonStar afnd state =
 
 
 
--- Returns all the possible subsequences of a list
+{- Returns all the possible subsequences of a list -}
 
 
 subsequences : List a -> List (List a)
@@ -449,8 +467,9 @@ subsequences l =
 
 
 
--- Given a list of transitions and a condition, get all of the transitions that
--- have the same condition that was passed in
+{- Given a list of transitions and a condition, get all of the transitions that
+   have the same condition that was passed in
+-}
 
 
 transitionsWithSameCondition :
@@ -481,7 +500,7 @@ transitionsWithSameCondition transitions c =
 
 
 
--- Group a list of transitions by their conditions
+{- Group a list of transitions by their conditions -}
 
 
 groupByConditions :
@@ -535,8 +554,9 @@ groupByConditions transitions =
 
 
 
--- Given a list of transitions that all have the same conditions, join them
--- into a single transition
+{- Given a list of transitions that all have the same conditions, join them
+   into a single transition
+-}
 
 
 joinTransitionsWithSameCondition :
@@ -568,7 +588,7 @@ joinTransitionsWithSameCondition transitions =
 
 
 
--- Given two transitions, join them into a single one
+{- Given two transitions, join them into a single one -}
 
 
 joinConditions :
@@ -617,6 +637,10 @@ joinConditions c1 c2 =
         Transition.NoEpsilon newSymbols
 
 
+
+{- Join transitions with the same conditions and state -}
+
+
 joinTransitionsWithConditionsAndStateDeterministic :
     List Transition.DeterministicTransition
     -> Transition.DeterministicConditions
@@ -641,6 +665,10 @@ joinTransitionsWithConditionsAndStateDeterministic transitions conditions state 
                 , conditions = conditions
                 }
            )
+
+
+
+{- Join a list of deterministic transitions -}
 
 
 joinTransitionsDeterministic :
@@ -670,9 +698,17 @@ joinTransitionsDeterministic transitions =
         allStates
 
 
+
+{- Generate the Epsilon* of a state from an AFND -}
+
+
 followEpsilonStar : Automata.AFND -> State.State -> List State.State
 followEpsilonStar afnd state =
     followEpsilonStarHelp afnd [] [ state ]
+
+
+
+{- Helper function -}
 
 
 followEpsilonStarHelp :
@@ -696,7 +732,7 @@ followEpsilonStarHelp afnd seen unseen =
 
 
 
--- Converts a String to a Char. If the length of the String != 1, return Nothing
+{- Converts a String to a Char. If the length of the String != 1, return Nothing -}
 
 
 stringToChar : String -> Maybe Char
@@ -705,7 +741,7 @@ stringToChar =
 
 
 
--- Adds a prefix to the name of a state (if it's a valid state)
+{- Adds a prefix to the name of a state (if it's a valid state) -}
 
 
 addPrefix : String -> State.State -> State.State
@@ -719,7 +755,7 @@ addPrefix prefix state =
 
 
 
--- Joins two deterministic alphabets
+{- Joins two deterministic alphabets -}
 
 
 joinDeterministicAlphabets :
@@ -731,7 +767,7 @@ joinDeterministicAlphabets alph1 alph2 =
 
 
 
--- Determines whether the first two automata in the list are AFDs
+{- Determines whether the first two automata in the list are AFDs -}
 
 
 firstTwoAreAFDs : List Models.General -> Bool
@@ -740,7 +776,7 @@ firstTwoAreAFDs =
 
 
 
--- Gets the first two automata of the list as AFDs
+{- Gets the first two automata of the list as AFDs -}
 
 
 getFirstTwoAsAFDs : List Models.General -> Maybe ( Automata.AFD, Automata.AFD )
@@ -759,7 +795,7 @@ getFirstTwoAsAFDs generals =
 
 
 
--- Converts a Maybe a to Bool
+{- Converts a Maybe a to Bool -}
 
 
 isJust : Maybe a -> Bool
@@ -773,7 +809,7 @@ isJust x =
 
 
 
--- Removes duplicates from list
+{- Removes duplicates from list -}
 
 
 removeDuplicates : List a -> List a
@@ -795,7 +831,7 @@ removeDuplicates =
 
 
 
--- Returns the index of an element in a list
+{- Returns the index of an element in a list -}
 
 
 indexOf : a -> List a -> Int
@@ -813,8 +849,9 @@ indexOf elem xs =
 
 
 
--- Replaces an element by another element. If the original element isn't in the
--- list, the new element is appended to the list
+{- Replaces an element by another element. If the original element isn't in the
+   list, the new element is appended to the list
+-}
 
 
 replaceBy : a -> a -> List a -> List a
@@ -824,6 +861,10 @@ replaceBy original new xs =
             indexOf original xs
     in
     List.take idx xs ++ (new :: List.drop (idx + 1) xs)
+
+
+
+{- Insert an element after another element -}
 
 
 insertAfter : a -> a -> List a -> List a
@@ -836,9 +877,10 @@ insertAfter original new xs =
 
 
 
--- Takes elements from a list up until it finds an element. The resulting list
--- does not contain the target element. If it doesn't find the element, it will
--- return the entire list.
+{- Takes elements from a list up until it finds an element. The resulting list
+   does not contain the target element. If it doesn't find the element, it will
+   return the entire list.
+-}
 
 
 takeUntil : a -> List a -> List a
@@ -855,6 +897,10 @@ takeUntil target l =
                 h :: takeUntil target (List.drop 1 l)
 
 
+
+{- Transform a Maybe (Maybe a) into a Maybe a -}
+
+
 maybeMaybeToMaybe : Maybe (Maybe a) -> Maybe a
 maybeMaybeToMaybe x =
     case x of
@@ -869,7 +915,7 @@ maybeMaybeToMaybe x =
 
 
 
--- Assumes all of the fromSymbols are equal
+{- Assumes all of the fromSymbols are equal -}
 
 
 groupGrammarProductions :
@@ -885,12 +931,20 @@ groupGrammarProductions l =
         (List.head l)
 
 
+
+{- Gets all the productions that have the same from symbol as symbol -}
+
+
 productionsWithSameFromSymbol :
     Grammars.RegularGrammar
     -> Grammars.NonTerminalSymbol
     -> List Grammars.Production
 productionsWithSameFromSymbol gr symbol =
     List.filter (\production -> production.fromSymbol == symbol) gr.productions
+
+
+
+{- Join the productions in a regular grammar -}
 
 
 joinGrammarProductions : Grammars.RegularGrammar -> Grammars.RegularGrammar
@@ -907,6 +961,10 @@ joinGrammarProductions gr =
     { gr | productions = newProductions }
 
 
+
+{- Transform a symbol into a string -}
+
+
 symbolToString : Alphabet.Symbol -> String
 symbolToString s =
     case s of
@@ -920,6 +978,10 @@ symbolToString s =
                 )
                 g
                 |> String.join ","
+
+
+
+{- Read a string and turn it into a symbol -}
 
 
 stringToSymbol : String -> Maybe Alphabet.Symbol

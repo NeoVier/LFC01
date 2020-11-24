@@ -16,7 +16,7 @@ import View.Automata.NonDeterministic as VAFND
 
 
 
--- General view function, that routes to the appropriate function
+{- General view function, that routes to the appropriate function -}
 
 
 viewCurrentAutomaton : Automata.Automaton -> Html Types.Msg

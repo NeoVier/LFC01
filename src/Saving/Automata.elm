@@ -1,3 +1,11 @@
+{-
+   Saving/Automata.elm
+   Author: Henrique da Cunha Buss
+   Creation: October/2020
+   This file contains functions to save Automata
+-}
+
+
 module Saving.Automata exposing
     ( deterministicAutomatonToString
     , nonDeterministicAutomatonToString
@@ -9,6 +17,10 @@ import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
 import Utils.Utils as Utils
+
+
+
+{- Transform an AFD into a string -}
 
 
 deterministicAutomatonToString : Automata.AFD -> String
@@ -56,6 +68,10 @@ deterministicAutomatonToString afd =
         , alphabet
         , transitions
         ]
+
+
+
+{- Transform an AFD into a string -}
 
 
 nonDeterministicAutomatonToString : Automata.AFND -> String
@@ -127,6 +143,10 @@ nonDeterministicAutomatonToString afnd =
         ]
 
 
+
+{- Transform a state into a string -}
+
+
 stateToString : State.State -> String
 stateToString s =
     case s of
@@ -135,6 +155,10 @@ stateToString s =
 
         State.Valid label ->
             label
+
+
+
+{- Transform a symbol into a string -}
 
 
 symbolToString : Alphabet.Symbol -> String
@@ -155,6 +179,10 @@ symbolToString s =
                 ++ "]"
 
 
+
+{- Transform a flat deterministic transition into a string -}
+
+
 flatDeterministicTransitionToString :
     Transition.DeterministicTransition
     -> String
@@ -169,6 +197,10 @@ flatDeterministicTransitionToString t =
                 , symbolToString symbol
                 , stateToString t.nextState
                 ]
+
+
+
+{- Transform a flat non deterministic transition into a string -}
 
 
 flatNonDeterministicTransitionToString :
@@ -204,6 +236,10 @@ flatNonDeterministicTransitionToString t =
                 ]
 
 
+
+{- Rename a state -}
+
+
 renameState : State.State -> String -> State.State
 renameState state newName =
     case state of
@@ -214,6 +250,10 @@ renameState state newName =
             State.Valid newName
 
 
+
+{- Rename a state based on a dict -}
+
+
 findAndRenameState : State.State -> Dict String String -> State.State
 findAndRenameState state dict =
     case Dict.get (stateToString state) dict of
@@ -222,6 +262,10 @@ findAndRenameState state dict =
 
         Just newName ->
             renameState state newName
+
+
+
+{- Transform states into numbers -}
 
 
 labelStatesAsIntsDeterministic : Automata.AFD -> Automata.AFD
@@ -263,6 +307,10 @@ labelStatesAsIntsDeterministic afd =
                 |> List.map State.Valid
         , transitions = List.map renameTransition afd.transitions
     }
+
+
+
+{- Transform states into numbers -}
 
 
 labelStatesAsIntsNonDeterministic : Automata.AFND -> Automata.AFND

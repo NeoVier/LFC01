@@ -17,7 +17,7 @@ import Utils.Utils as Utils
 
 
 -- GR
--- Parse a GR
+{- Parse a GR -}
 
 
 parseGR : String -> Maybe RegularGrammar
@@ -78,7 +78,7 @@ parseGR s =
 
 
 
--- Parse a production
+{- Parse a production -}
 
 
 parseProduction : Parser Production
@@ -99,7 +99,7 @@ parseProduction =
 
 
 
--- Parse a production body
+{- Parse a production body -}
 
 
 parseProductionBody : Parser ProductionBody
@@ -123,7 +123,7 @@ parseProductionBody =
 
 
 -- GLC
--- Parse a GLC
+{- Parse a GLC -}
 
 
 parseGLC : String -> Maybe ContextFreeGrammar
@@ -170,7 +170,7 @@ getAsTerminal x =
 
 
 
--- Parse a Terminal Symbol
+{- Parse a Terminal Symbol -}
 
 
 terminal : Parser TerminalSymbol
@@ -179,7 +179,7 @@ terminal =
 
 
 
--- Parse a Non Terminal Symbol
+{- Parse a Non Terminal Symbol -}
 
 
 nonTerminal : Parser NonTerminalSymbol
@@ -188,7 +188,7 @@ nonTerminal =
 
 
 
--- Parse a Production Item
+{- Parse a Production Item -}
 
 
 contextFreeProductionItem : Parser ContextFreeProductionItem
@@ -200,7 +200,7 @@ contextFreeProductionItem =
 
 
 
--- Parse a Production Body
+{- Parse a Production Body -}
 
 
 contextFreeProductionBody : Parser ContextFreeProductionBody
@@ -220,7 +220,7 @@ contextFreeProductionBody =
 
 
 
--- Parse a Production
+{- Parse a Production -}
 
 
 contextFreeProduction : Parser ContextFreeProduction

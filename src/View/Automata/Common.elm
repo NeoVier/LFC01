@@ -18,7 +18,7 @@ import View.Styles exposing (..)
 
 
 
--- Given an alphabet, returns a table entry
+{- Given an alphabet, returns a table entry -}
 
 
 viewAutomataHeader :
@@ -33,7 +33,7 @@ viewAutomataHeader alphabet =
 
 
 
--- Helper function to assemble the table entry
+{- Helper function to assemble the table entry -}
 
 
 alphabetHeader : Alphabet.Alphabet -> List (Html msg)

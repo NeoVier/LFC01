@@ -15,7 +15,7 @@ import Models.Regex as Regex
 
 
 
--- General type
+{- General type -}
 
 
 type General

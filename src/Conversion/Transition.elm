@@ -15,7 +15,7 @@ import Utils.Utils as Utils
 
 
 
--- Converts a non deterministic transition to a deterministic transition
+{- Converts a non deterministic transition to a deterministic transition -}
 
 
 nonDeterministicToDeterministic :
@@ -29,7 +29,7 @@ nonDeterministicToDeterministic ndt =
 
 
 
--- Converts non deterministic conditions to deterministic conditions
+{- Converts non deterministic conditions to deterministic conditions -}
 
 
 nonDeterministicToDeterministicConditions :
@@ -40,6 +40,5 @@ nonDeterministicToDeterministicConditions ndc =
         Transition.NoEpsilon conditions ->
             conditions
 
-        --
         Transition.WithEpsilon conditions ->
             conditions

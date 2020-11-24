@@ -12,8 +12,9 @@ import Models.Alphabet as Alphabet
 
 
 
--- A Regex can either be Epsilon, a Symbol, the Union between two Regexes,
--- the Concatenation between two Regexes, or a Star, Plus or Question node
+{- A Regex can either be Epsilon, a Symbol, the Union between two Regexes,
+   the Concatenation between two Regexes, or a Star, Plus or Question node
+-}
 
 
 type Regex
@@ -27,7 +28,7 @@ type Regex
 
 
 
--- We can have Regexes with Ids
+{- We can have Regexes with Ids -}
 
 
 type alias IdRegex =

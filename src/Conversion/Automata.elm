@@ -20,7 +20,7 @@ import Utils.Utils as Utils
 
 
 -- AFND to AFD
--- Converts an AFND to AFD
+{- Converts an AFND to AFD -}
 
 
 afndToAfd : Automata.AFND -> Automata.AFD
@@ -110,7 +110,7 @@ getTransitions afnd origin =
 
 
 -- AFD TO GR
--- Converts and AFD to a GR
+{- Converts and AFD to a GR -}
 
 
 afdToGr : Automata.AFD -> Grammars.RegularGrammar
@@ -178,7 +178,7 @@ cleanGR gr =
 
 
 
--- Convert a State to a Maybe Symbol
+{- Convert a State to a Maybe Symbol -}
 
 
 stateToSymbol : State.State -> Maybe Grammars.NonTerminalSymbol
@@ -192,7 +192,7 @@ stateToSymbol state =
 
 
 
--- Converts a Transition into a Maybe Grammars.Production
+{- Converts a Transition into a Maybe Grammars.Production -}
 
 
 transitionToProduction :

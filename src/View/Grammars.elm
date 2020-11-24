@@ -16,7 +16,7 @@ import View.Grammars.Regular as VGR
 
 
 
--- General view function, that routes to the appropriate function
+{- General view function, that routes to the appropriate function -}
 
 
 viewCurrentGrammar : Grammars.Grammar -> Html Types.Msg

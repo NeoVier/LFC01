@@ -15,11 +15,19 @@ import Utils.Utils as Utils
 import View.Styles as Styles
 
 
+
+{- View a GLC -}
+
+
 viewGLC : Grammars.ContextFreeGrammar -> Html msg
 viewGLC =
     .productions
         >> List.map (\prod -> h3 [] [ text (viewGLCProduction prod) ])
         >> div Styles.grammarContainerStyles
+
+
+
+{- View a GLC production -}
 
 
 viewGLCProduction : Grammars.ContextFreeProduction -> String
@@ -33,6 +41,10 @@ viewGLCProduction production =
            )
 
 
+
+{- View a GLC production body -}
+
+
 viewGLCProductionBody : Grammars.ContextFreeProductionBody -> String
 viewGLCProductionBody body =
     case body of
@@ -41,6 +53,10 @@ viewGLCProductionBody body =
 
         _ ->
             List.map viewContextFreeProductionItem body |> String.join ""
+
+
+
+{- View a GLC production item -}
 
 
 viewContextFreeProductionItem : Grammars.ContextFreeProductionItem -> String

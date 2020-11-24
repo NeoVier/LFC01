@@ -18,7 +18,7 @@ import Utils.Utils as Utils
 
 
 -- GENERAL
--- Parse a Regex file
+{- Parse a Regex file -}
 
 
 parseRegex : String -> Maybe (List Regex.IdRegex)
@@ -73,7 +73,7 @@ replaceWord word r new =
 
 
 
--- Get a possible word from a regex node
+{- Get a possible word from a regex node -}
 
 
 getWord : Regex.Regex -> Maybe String
@@ -103,7 +103,7 @@ getWord node =
 
 
 
--- Gets all possible words from a regex
+{- Gets all possible words from a regex -}
 
 
 getAllWords : Regex.Regex -> List String
@@ -135,7 +135,7 @@ getAllWords r =
 
 
 
--- Parse a regex line
+{- Parse a regex line -}
 
 
 regexLine : Parser Regex.IdRegex
@@ -150,7 +150,7 @@ regexLine =
 
 
 
--- Parse the Id part of a line
+{- Parse the Id part of a line -}
 
 
 regexId : Parser String
@@ -159,7 +159,7 @@ regexId =
 
 
 
--- Parse a regex
+{- Parse a regex -}
 
 
 regex : Parser Regex
@@ -183,7 +183,7 @@ regex =
 
 
 -- UNION
--- Parse a union node
+{- Parse a union node -}
 
 
 union : Parser Regex
@@ -207,7 +207,7 @@ union =
 
 
 -- CONCAT
--- Parse a concat node
+{- Parse a concat node -}
 
 
 concat : Parser Regex
@@ -259,7 +259,7 @@ parserFromMaybe regexType =
 
 
 -- UNARY
--- Create a unary operator parser
+{- Create a unary operator parser -}
 
 
 createUnary : String -> (Regex -> Regex) -> Parser Regex
@@ -285,7 +285,7 @@ createUnary id f =
 
 
 
--- Parse a star node
+{- Parse a star node -}
 
 
 star : Parser Regex
@@ -294,7 +294,7 @@ star =
 
 
 
--- Parse a plus node
+{- Parse a plus node -}
 
 
 plus : Parser Regex
@@ -303,7 +303,7 @@ plus =
 
 
 
--- Parse a question node
+{- Parse a question node -}
 
 
 question : Parser Regex
@@ -312,7 +312,7 @@ question =
 
 
 
--- Parse an epsilon node
+{- Parse an epsilon node -}
 
 
 epsilon : Parser Regex
@@ -324,7 +324,7 @@ epsilon =
 
 
 
--- Combine all of the unary operators
+{- Combine all of the unary operators -}
 
 
 unary : Parser Regex
@@ -332,6 +332,10 @@ unary =
     List.map P.backtrackable
         [ epsilon, star, plus, question, regexSymbol ]
         |> P.oneOf
+
+
+
+{- Wrap a regex parser with parens -}
 
 
 wrapWithParens : Parser Regex -> Parser Regex
@@ -345,7 +349,7 @@ wrapWithParens p =
 
 
 
--- Parse a symbol and convert it to a Regex Symbol
+{- Parse a symbol and convert it to a Regex Symbol -}
 
 
 regexSymbol : Parser Regex

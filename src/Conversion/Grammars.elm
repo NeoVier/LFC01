@@ -17,7 +17,7 @@ import Utils.Utils as Utils
 
 
 
--- Convert a GR to an AFND
+{- Convert a GR to an AFND -}
 
 
 grToAfnd : Grammars.RegularGrammar -> Automata.AFND
@@ -55,7 +55,7 @@ grToAfnd gr =
 
 
 
--- Default final state used
+{- Default final state used -}
 
 
 newFinalState : State.State
@@ -64,7 +64,7 @@ newFinalState =
 
 
 
--- Creates a State from a NonTerminalSymbol
+{- Creates a State from a NonTerminalSymbol -}
 
 
 symbolToState : Grammars.NonTerminalSymbol -> State.State
@@ -73,7 +73,7 @@ symbolToState =
 
 
 
--- Converts a Production to a list of NonDeterministicTransition
+{- Converts a Production to a list of NonDeterministicTransition -}
 
 
 productionToTransitions :

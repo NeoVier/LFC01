@@ -8,7 +8,7 @@
 
 module Models.Alphabet exposing (..)
 
--- General Alphabet type
+{- General Alphabet type -}
 
 
 type Alphabet
@@ -17,7 +17,7 @@ type Alphabet
 
 
 
--- A deterministic alphabet is just a set of Symbols
+{- A deterministic alphabet is just a set of Symbols -}
 
 
 type alias DeterministicAlphabet =
@@ -25,7 +25,7 @@ type alias DeterministicAlphabet =
 
 
 
--- A non deterministic alphabet is a set of symbols + Epsilon
+{- A non deterministic alphabet is a set of symbols + Epsilon -}
 
 
 type NonDeterministicAlphabet
@@ -33,7 +33,7 @@ type NonDeterministicAlphabet
 
 
 
--- Epsilon is just a constant
+{- Epsilon is just a constant -}
 
 
 type Epsilon
@@ -41,7 +41,7 @@ type Epsilon
 
 
 
--- A symbol is either a single char or a group (e.g. [0-9], [a-zA-Z])
+{- A symbol is either a single char or a group (e.g. [0-9], [a-zA-Z]) -}
 
 
 type Symbol

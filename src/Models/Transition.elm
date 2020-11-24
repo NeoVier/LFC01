@@ -13,7 +13,7 @@ import Models.State as State
 
 
 
--- General Transition type
+{- General Transition type -}
 
 
 type Transition
@@ -22,8 +22,9 @@ type Transition
 
 
 
--- A Deterministic Transition has a previous state, a next state and a list of
--- conditions (can be interpreted as joined by an OR)
+{- A Deterministic Transition has a previous state, a next state and a list of
+   conditions (can be interpreted as joined by an OR)
+-}
 
 
 type alias DeterministicTransition =
@@ -34,8 +35,9 @@ type alias DeterministicTransition =
 
 
 
--- A Non Deterministic Transition has a previous state, a list of next states it
--- can reach, and a list of conditions (can be interpreted as joined by an OR)
+{- A Non Deterministic Transition has a previous state, a list of next states it
+   can reach, and a list of conditions (can be interpreted as joined by an OR)
+-}
 
 
 type alias NonDeterministicTransition =
@@ -46,7 +48,7 @@ type alias NonDeterministicTransition =
 
 
 
--- Deterministic Conditions are made up of Symbols
+{- Deterministic Conditions are made up of Symbols -}
 
 
 type alias DeterministicConditions =
@@ -54,7 +56,7 @@ type alias DeterministicConditions =
 
 
 
--- A Non Deterministic Condition can have Epsilon or not
+{- A Non Deterministic Condition can have Epsilon or not -}
 
 
 type NonDeterministicConditions

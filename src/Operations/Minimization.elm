@@ -16,7 +16,7 @@ import Utils.Utils as Utils
 
 
 
--- Minimize an AFD
+{- Minimize an AFD -}
 
 
 minimizeAFD : Automata.AFD -> Automata.AFD
@@ -51,7 +51,7 @@ minimizeAFD afd =
 
 
 -- REACHABLE STATES
--- Gets directly reachable states from a state
+{- Gets directly reachable states from a state -}
 
 
 reachableStates : Automata.AFD -> State.State -> List State.State
@@ -62,7 +62,7 @@ reachableStates afd state =
 
 
 
--- Gets all the reachable states in the automaton
+{- Gets all the reachable states in the automaton -}
 
 
 allReachableStates : Automata.AFD -> List State.State
@@ -71,7 +71,7 @@ allReachableStates afd =
 
 
 
--- Gets all the reachable states recursively from a state
+{- Gets all the reachable states recursively from a state -}
 
 
 allReachableStatesFromState : Automata.AFD -> State.State -> List State.State
@@ -80,9 +80,10 @@ allReachableStatesFromState afd origin =
 
 
 
--- Helper function to get reachable states. Receives an AFD, a list of already
--- known reachable states, a list of untested states and a a list of already
--- tested states
+{- Helper function to get reachable states. Receives an AFD, a list of already
+   known reachable states, a list of untested states and a a list of already
+   tested states
+-}
 
 
 allReachableStatesHelper :
@@ -121,7 +122,7 @@ allReachableStatesHelper afd reachable untested tested =
 
 
 -- ALIVE STATES
--- Gets all the states that can reach a final state
+{- Gets all the states that can reach a final state -}
 
 
 allAliveStates : Automata.AFD -> List State.State
@@ -137,7 +138,7 @@ allAliveStates afd =
 
 
 -- CLASSES
--- Type with necessary definitions for a Class
+{- Type with necessary definitions for a Class -}
 
 
 type alias Class =
@@ -149,7 +150,7 @@ type alias Class =
 
 
 
--- Given a Class list, retrieve an AFD
+{- Given a Class list, retrieve an AFD -}
 
 
 afdFromClassList : List Class -> Automata.AFD
@@ -214,7 +215,7 @@ afdFromClassList classes =
 
 
 
--- Given an automaton, retrieve the optimized list of Classes
+{- Given an automaton, retrieve the optimized list of Classes -}
 
 
 afdToClassList : Automata.AFD -> List Class
@@ -258,7 +259,7 @@ afdToClassList afd =
 
 
 
--- Helper function to recurse with classStep
+{- Helper function to recurse with classStep -}
 
 
 recurseClasses : List Class -> Automata.AFD -> List Class
@@ -275,7 +276,7 @@ recurseClasses classes afd =
 
 
 
--- Do a step in the Class assigning algorithm
+{- Do a step in the Class assigning algorithm -}
 
 
 classStep : List Class -> Automata.AFD -> List Class
@@ -286,7 +287,7 @@ classStep classes afd =
 
 
 
--- Insert a state into a Class list
+{- Insert a state into a Class list -}
 
 
 assignClass : State.State -> List Class -> Automata.AFD -> List Class
@@ -353,7 +354,7 @@ assignClass state classes afd =
 
 
 
--- Determine if two lists of transitions are equivalent
+{- Determine if two lists of transitions are equivalent -}
 
 
 equivalentTransitionLists :
@@ -370,7 +371,7 @@ equivalentTransitionLists t1s t2s classes =
 
 
 
--- Determine if two transitions are equivalent
+{- Determine if two transitions are equivalent -}
 
 
 equivalentTransitions :
@@ -417,7 +418,7 @@ equivalentTransitions t1 t2 classes =
 
 
 
--- Get the index of the class to which the state belongs
+{- Get the index of the class to which the state belongs -}
 
 
 getStateClassIndex : State.State -> List Class -> Int

@@ -12,7 +12,7 @@ import Models.Alphabet as Alphabet
 
 
 
--- General Grammar type
+{- General Grammar type -}
 
 
 type Grammar
@@ -21,8 +21,9 @@ type Grammar
 
 
 
--- A Context-Free Grammar is a 4-tuple with a list of non terminal symbols,
--- a list of terminal symbols, a list of productions and an initial symbol.
+{- A Context-Free Grammar is a 4-tuple with a list of non terminal symbols,
+   a list of terminal symbols, a list of productions and an initial symbol
+-}
 
 
 type alias ContextFreeGrammar =
@@ -34,8 +35,9 @@ type alias ContextFreeGrammar =
 
 
 
--- A context-free production has an origin symbol and a list of context-free
--- production bodies
+{- A context-free production has an origin symbol and a list of context-free
+   production bodies
+-}
 
 
 type alias ContextFreeProduction =
@@ -45,8 +47,9 @@ type alias ContextFreeProduction =
 
 
 
--- A context-free production body is a list of terminal/nonterminal symbols,
--- in any order. If the production body is epsilon, the list is empty
+{- A context-free production body is a list of terminal/nonterminal symbols,
+   in any order. If the production body is epsilon, the list is empty
+-}
 
 
 type alias ContextFreeProductionBody =
@@ -54,7 +57,7 @@ type alias ContextFreeProductionBody =
 
 
 
--- A production item can either be a terminal symbol or a non terminal symbol
+{- A production item can either be a terminal symbol or a non terminal symbol -}
 
 
 type ContextFreeProductionItem
@@ -63,9 +66,10 @@ type ContextFreeProductionItem
 
 
 
--- A Regular Grammar is a 4-tuple with a list of non terminal symbols,
--- a list of terminal symbols, a list of productions and an initial symbol.
--- Plus a flag that determines if it accepts the empty word
+{- A Regular Grammar is a 4-tuple with a list of non terminal symbols,
+   a list of terminal symbols, a list of productions and an initial symbol.
+   Plus a flag that determines if it accepts the empty word
+-}
 
 
 type alias RegularGrammar =
@@ -78,7 +82,7 @@ type alias RegularGrammar =
 
 
 
--- A production has an origin symbol and a list of production bodies
+{- A production has an origin symbol and a list of production bodies -}
 
 
 type alias Production =
@@ -88,8 +92,9 @@ type alias Production =
 
 
 
--- A production body has a symbol it consumes, and it may go to another non
--- terminal symbol
+{- A production body has a symbol it consumes, and it may go to another non
+   terminal symbol
+-}
 
 
 type alias ProductionBody =
@@ -99,8 +104,9 @@ type alias ProductionBody =
 
 
 
--- A non terminal symbol is just a regular symbol (by convention, it's upper
--- case)
+{- A non terminal symbol is just a regular symbol (by convention, it's upper
+   case)
+-}
 
 
 type alias NonTerminalSymbol =
@@ -108,7 +114,9 @@ type alias NonTerminalSymbol =
 
 
 
--- A terminal symbol is just a regular symbol (by convention, it's lower case)
+{- A terminal symbol is just a regular symbol (by convention, it's lower
+   case)
+-}
 
 
 type alias TerminalSymbol =

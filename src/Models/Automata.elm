@@ -14,7 +14,7 @@ import Models.Transition as Transition
 
 
 
--- General Automaton type
+{- General Automaton type -}
 
 
 type Automaton
@@ -23,8 +23,9 @@ type Automaton
 
 
 
--- Deterministic Finite Automaton is a 5-tuple of states, initial state, final
--- states, alphabet and transitions
+{- Deterministic Finite Automaton is a 5-tuple of states, initial state, final
+   states, alphabet and transitions
+-}
 
 
 type alias AFD =
@@ -37,8 +38,9 @@ type alias AFD =
 
 
 
--- Non Deterministic Finite Automaton is a 5-tuple of states, initial state,
--- final states, alphabet and transitions
+{- Non Deterministic Finite Automaton is a 5-tuple of states, initial state,
+   final states, alphabet and transitions
+-}
 
 
 type alias AFND =

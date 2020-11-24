@@ -16,8 +16,9 @@ import Utils.Utils as Utils
 
 
 
--- General sentence validation function, routes to the appropriate automaton
--- and checks if the sentence uses only symbols from the alphabet
+{- General sentence validation function, routes to the appropriate automaton
+   and checks if the sentence uses only symbols from the alphabet
+-}
 
 
 validateSentence : Automata.Automaton -> String -> Result String Bool
@@ -49,8 +50,9 @@ validateSentence automaton sentence =
 
 
 
--- Given a Symbol, get the List of Chars it represents (specially useful for
--- Groups)
+{- Given a Symbol, get the List of Chars it represents (specially useful for
+   Groups)
+-}
 
 
 symbolItems : Alphabet.Symbol -> List Char
@@ -64,7 +66,7 @@ symbolItems symbol =
 
 
 
--- Given a group element, inform the List of Chars it contains
+{- Given a group element, inform the List of Chars it contains -}
 
 
 innerGroupRange : ( Char, Char ) -> List Char
@@ -76,7 +78,7 @@ innerGroupRange group =
 
 
 
--- Validate a sentence using an AFD
+{- Validate a sentence using an AFD -}
 
 
 validateSentenceAFD :
@@ -92,7 +94,7 @@ validateSentenceAFD afd sentence =
 
 
 
--- Validate a sentence using an AFD starting from a state
+{- Validate a sentence using an AFD starting from a state -}
 
 
 validateSentenceAFDFromState :
@@ -134,7 +136,7 @@ validateSentenceAFDFromState currState afd sentence =
 
 
 
--- Validate a sentence using an AFND
+{- Validate a sentence using an AFND -}
 
 
 validateSentenceAFND :

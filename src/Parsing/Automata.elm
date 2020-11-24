@@ -19,7 +19,7 @@ import Utils.Utils as Utils
 
 
 
--- Parse an AFD file
+{- Parse an AFD file -}
 
 
 parseAFD : String -> Maybe AFD
@@ -81,7 +81,7 @@ parseAFD content =
 
 
 
--- Parse an AFND file
+{- Parse an AFND file -}
 
 
 parseAFND : String -> Maybe AFND
@@ -143,7 +143,7 @@ parseAFND content =
 
 
 
--- Get a list of states based on an int
+{- Get a list of states based on an int -}
 
 
 stateAmount : Parser (List State.State)
@@ -152,7 +152,7 @@ stateAmount =
 
 
 
--- Get a state based on an int
+{- Get a state based on an int -}
 
 
 state : Parser State.State
@@ -161,7 +161,7 @@ state =
 
 
 
--- Get a list of comma-separated states
+{- Get a list of comma-separated states -}
 
 
 stateList : Parser (List State.State)
@@ -177,7 +177,7 @@ stateList =
 
 
 
--- Parse a deterministic alphabet
+{- Parse a deterministic alphabet -}
 
 
 alphabetDeterministic : Parser Alphabet.DeterministicAlphabet
@@ -193,7 +193,7 @@ alphabetDeterministic =
 
 
 
--- Parse a non deterministic alphabet
+{- Parse a non deterministic alphabet -}
 
 
 alphabetNonDeterministic : Parser Alphabet.NonDeterministicAlphabet
@@ -220,8 +220,9 @@ alphabetNonDeterministic =
 
 
 
--- Removes the '&' symbol from a NonDeterministicAlphabet, because the epsilon
--- parser needs to return a value, but we don't need it
+{- Removes the '&' symbol from a NonDeterministicAlphabet, because the epsilon
+   parser needs to return a value, but we don't need it
+-}
 
 
 removeEpsilon :
@@ -236,7 +237,7 @@ removeEpsilon alph =
 
 
 
--- Parse epsilon as '&'
+{- Parse epsilon as '&' -}
 
 
 epsilon : Parser Alphabet.Symbol
@@ -247,7 +248,7 @@ epsilon =
 
 
 
--- Parse a deterministic transition
+{- Parse a deterministic transition -}
 
 
 transitionDeterministic : Parser Transition.DeterministicTransition
@@ -271,7 +272,7 @@ transitionDeterministic =
 
 
 
--- Parse a non deterministic transition
+{- Parse a non deterministic transition -}
 
 
 transitionNonDeterministic : Parser Transition.NonDeterministicTransition
@@ -328,7 +329,7 @@ transitionNonDeterministic =
 
 
 
--- Helper function to generate states labeled from "0" to "n"
+{- Helper function to generate states labeled from "0" to "n" -}
 
 
 generateStates : Int -> List State.State

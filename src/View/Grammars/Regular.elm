@@ -15,6 +15,10 @@ import Utils.Utils as Utils
 import View.Styles as Styles
 
 
+
+{- Turn a regular grammar into HTML -}
+
+
 viewGR : Grammars.RegularGrammar -> Html msg
 viewGR gr =
     let
@@ -44,6 +48,10 @@ viewGR gr =
         |> div Styles.grammarContainerStyles
 
 
+
+{- Turn a GR production into a string -}
+
+
 viewGRProduction : Grammars.Production -> String
 viewGRProduction production =
     production.fromSymbol
@@ -51,6 +59,10 @@ viewGRProduction production =
         ++ (List.map viewGRProductionBody production.productions
                 |> String.join " | "
            )
+
+
+
+{- Turn a GR production body into a string -}
 
 
 viewGRProductionBody : Grammars.ProductionBody -> String

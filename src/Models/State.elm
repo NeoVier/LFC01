@@ -8,7 +8,7 @@
 
 module Models.State exposing (..)
 
--- A State can either be the Dead state or a Valid State with a label
+{- A State can either be the Dead state or a Valid State with a label -}
 
 
 type State

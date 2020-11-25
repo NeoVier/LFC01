@@ -1013,6 +1013,10 @@ productivesHelp glc ( productiveSymbols, unproductiveSymbols ) item =
                             p.bodies
 
 
+
+{- Recalculates the terminals of a GLC, using the productions -}
+
+
 reassignTerminals : ContextFreeGrammar -> ContextFreeGrammar
 reassignTerminals glc =
     let
@@ -1038,6 +1042,54 @@ reassignTerminals glc =
 
 
 -- CHOMSKY
+{- Remove unitary productions -}
+
+
+removeUnitaryProductions : ContextFreeGrammar -> ContextFreeGrammar
+removeUnitaryProductions glc =
+    List.foldl
+        (\prod accGlc ->
+            { accGlc
+                | productions =
+                    Utils.replaceBy prod
+                        (List.foldl
+                            (\body accProd ->
+                                case body of
+                                    [ NonTerminal x ] ->
+                                        let
+                                            replacementProduction =
+                                                List.filter
+                                                    (.fromSymbol >> (==) x)
+                                                    glc.productions
+                                                    |> List.head
+                                        in
+                                        case replacementProduction of
+                                            Nothing ->
+                                                accProd
+
+                                            Just rep ->
+                                                { accProd
+                                                    | bodies =
+                                                        List.filter ((/=) body)
+                                                            accProd.bodies
+                                                            |> (++) rep.bodies
+                                                            |> Utils.removeDuplicates
+                                                }
+
+                                    _ ->
+                                        accProd
+                            )
+                            prod
+                            prod.bodies
+                        )
+                        accGlc.productions
+            }
+        )
+        glc
+        glc.productions
+
+
+
 -- TESTS (TODO - REMOVE)
 
 
@@ -1052,8 +1104,9 @@ test0 =
                   , NonTerminal "D"
                   ]
                 , [ NonTerminal "B"
-                  , Terminal (Single 'c')
-                  , Terminal (Single 'd')
+
+                  --   , Terminal (Single 'c')
+                  --   , Terminal (Single 'd')
                   ]
                 ]
           , fromSymbol = "S"
@@ -1085,8 +1138,9 @@ sProd =
           , NonTerminal "D"
           ]
         , [ NonTerminal "B"
-          , Terminal (Single 'c')
-          , Terminal (Single 'd')
+
+          --   , Terminal (Single 'c')
+          --   , Terminal (Single 'd')
           ]
         ]
     , fromSymbol = "S"

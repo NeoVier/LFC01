@@ -60,7 +60,7 @@ Student: Henrique da Cunha Buss
     - [x] All
   - [ ] Transform to normal Chomsky
     - [x] Remove epsilon productions
-    - [ ] Remove unitary productions
+    - [x] Remove unitary productions
     - [x] Remove useless symbols
 - [ ] AP
   - TODO

@@ -1,12 +1,12 @@
 {-
-   Conversion/Regex.elm
+   Operations/Conversion/Regex.elm
    Author: Henrique da Cunha Buss
    Creation: October/2020
    This file contains functions to convert Regular Expressions
 -}
 
 
-module Conversion.Regex exposing (erToAfd)
+module Operations.Conversion.Regex exposing (erToAfd)
 
 import Dict exposing (Dict)
 import Models.Alphabet as Alphabet

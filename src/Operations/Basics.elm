@@ -9,11 +9,11 @@
 
 module Operations.Basics exposing (complement, intersection, union)
 
-import Conversion.Automata as CAutomata
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.State as State
 import Models.Transition as Transition
+import Operations.Conversion.Automata as CAutomata
 import Utils.Utils as Utils
 
 

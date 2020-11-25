@@ -1,20 +1,20 @@
 {-
-   Conversion/Automata.elm
+   Operations/Conversion/Automata.elm
    Author: Henrique da Cunha Buss
    Creation: October/2020
    This file contains functions to convert between Automata
 -}
 
 
-module Conversion.Automata exposing (afdToGr, afndToAfd)
+module Operations.Conversion.Automata exposing (afdToGr, afndToAfd)
 
-import Conversion.Alphabet as CAlphabet
-import Conversion.Transition as CTransition
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata
 import Models.Grammars as Grammars
 import Models.State as State
 import Models.Transition as Transition
+import Operations.Conversion.Alphabet as CAlphabet
+import Operations.Conversion.Transition as CTransition
 import Utils.Utils as Utils
 
 

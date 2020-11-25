@@ -8,8 +8,6 @@
 
 module View.View exposing (view)
 
-import Conversion.Automata as CAutomata
-import Conversion.Grammars as CGrammars
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -17,9 +15,12 @@ import Models.Automata as Automata
 import Models.Grammars as Grammars
 import Models.Models as Models
 import Operations.Basics as OpBasics
+import Operations.Conversion.Automata as CAutomata
+import Operations.Conversion.Grammars as CGrammars
 import Operations.GLC as OpGLC
 import Operations.Minimization as OpMin
-import Operations.SentenceValidation as Validation
+import Operations.SentenceValidation.Automata as Validation
+import Operations.SentenceValidation.GLC as GLCValidation
 import Parsing.Automata as PAutomata
 import Parsing.Grammars as PGrammars
 import Parsing.Regex as PRegex
@@ -172,31 +173,43 @@ viewSentenceInput model =
             text ""
 
         Ok (Models.Automaton automaton) ->
-            let
-                validated =
-                    Validation.validateSentence automaton
-                        model.currentSentence
-            in
-            div Styles.sentenceInputStyles
-                [ input
-                    (Styles.sentenceInputStyles
-                        ++ [ placeholder "Insira uma sentença para ser validada"
-                           , value model.currentSentence
-                           , onInput Types.SetSentence
-                           , style "width" "100%"
-                           ]
-                    )
-                    []
-                , case validated of
-                    Ok _ ->
-                        h3 Styles.validSentenceStyles [ text "Sentença Válida" ]
+            viewSentenceInputHelp (Validation.validateSentence automaton)
+                model.currentSentence
 
-                    Err msg ->
-                        h3 Styles.invalidSentenceStyles [ text msg ]
-                ]
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            viewSentenceInputHelp (GLCValidation.validateSentence glc)
+                model.currentSentence
 
         _ ->
             text ""
+
+
+viewSentenceInputHelp :
+    (String -> Result String Bool)
+    -> String
+    -> Html Types.Msg
+viewSentenceInputHelp f sentence =
+    let
+        validated =
+            f sentence
+    in
+    div Styles.sentenceInputStyles
+        [ input
+            (Styles.sentenceInputStyles
+                ++ [ placeholder "Insira uma sentença para ser validada"
+                   , value sentence
+                   , onInput Types.SetSentence
+                   , style "width" "100%"
+                   ]
+            )
+            []
+        , case validated of
+            Ok _ ->
+                h3 Styles.validSentenceStyles [ text "Sentença Válida" ]
+
+            Err msg ->
+                h3 Styles.invalidSentenceStyles [ text msg ]
+        ]
 
 
 

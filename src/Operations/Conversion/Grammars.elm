@@ -1,12 +1,12 @@
 {-
-   Conversion/Grammars.elm
+   Operations/Conversion/Grammars.elm
    Author: Henrique da Cunha Buss
    Creation: October/2020
    This file contains functions to convert Grammars
 -}
 
 
-module Conversion.Grammars exposing (grToAfnd)
+module Operations.Conversion.Grammars exposing (grToAfnd)
 
 import Models.Alphabet as Alphabet
 import Models.Automata as Automata

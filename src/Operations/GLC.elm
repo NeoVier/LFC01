@@ -22,14 +22,6 @@ import Utils.Utils as Utils
 
 
 -- REMOVE EPSILON
-{- Alias NullableInfo -}
-
-
-type alias NullableInfo =
-    Dict NonTerminalSymbol Bool
-
-
-
 {- Remove epsilon -}
 
 
@@ -1066,6 +1058,7 @@ reassignTerminals glc =
 
 
 -- CHOMSKY
+{- Transform a GLC to the normal Chomsky form -}
 
 
 transformToChomsky : ContextFreeGrammar -> ContextFreeGrammar
@@ -1208,6 +1201,10 @@ removeUnitaryProductions glc =
         |> Tuple.second
 
 
+
+{- Helper function -}
+
+
 removeUnitaryProductionsStep : ContextFreeGrammar -> ContextFreeGrammar
 removeUnitaryProductionsStep glc =
     List.foldl
@@ -1252,6 +1249,10 @@ removeUnitaryProductionsStep glc =
         glc.productions
 
 
+
+{- Convert a TerminalSymbol to a NonTerminalSymbol -}
+
+
 terminalToNonTerminal : TerminalSymbol -> NonTerminalSymbol
 terminalToNonTerminal t =
     case t of
@@ -1260,6 +1261,10 @@ terminalToNonTerminal t =
 
         Group g ->
             Utils.symbolToString (Group g)
+
+
+
+{- Create a production in the form of A -> a for a single terminal -}
 
 
 createProductionFromTerminal :

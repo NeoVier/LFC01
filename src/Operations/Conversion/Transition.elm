@@ -1,12 +1,12 @@
 {-
-   Conversion/Transition.elm
+   Operations/Conversion/Transition.elm
    Author: Henrique da Cunha Buss
    Creation: October/2020
    This file contains functions to convert between Transitions
 -}
 
 
-module Conversion.Transition exposing (nonDeterministicToDeterministic)
+module Operations.Conversion.Transition exposing (nonDeterministicToDeterministic)
 
 import Models.Automata as Automata
 import Models.State as State

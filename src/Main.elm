@@ -10,9 +10,6 @@
 module Main exposing (..)
 
 import Browser
-import Conversion.Automata as CAutomata
-import Conversion.Grammars as CGrammars
-import Conversion.Regex as CRegex
 import File exposing (File)
 import File.Download as Download
 import File.Select as Select
@@ -20,6 +17,9 @@ import Models.Automata as Automata
 import Models.Grammars as Grammars
 import Models.Models as Models
 import Operations.Basics as BasicOperations
+import Operations.Conversion.Automata as CAutomata
+import Operations.Conversion.Grammars as CGrammars
+import Operations.Conversion.Regex as CRegex
 import Operations.GLC as OpGLC
 import Operations.Minimization as Minimization
 import Parsing.Automata as PAutomata

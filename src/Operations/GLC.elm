@@ -6,7 +6,13 @@
 -}
 
 
-module Operations.GLC exposing (..)
+module Operations.GLC exposing
+    ( eliminateLeftRecursion
+    , factorGLC
+    , removeEpsilon
+    , removeUseless
+    , transformToChomsky
+    )
 
 import GenericDict as Dict exposing (Dict)
 import Models.Alphabet exposing (Symbol(..))

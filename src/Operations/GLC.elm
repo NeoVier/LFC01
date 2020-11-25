@@ -362,7 +362,10 @@ getNextName glc symbol =
         nextName =
             symbol ++ "'"
     in
-    if List.member nextName glc.nonTerminals then
+    if not (List.member symbol glc.nonTerminals) then
+        symbol
+
+    else if List.member nextName glc.nonTerminals then
         getNextName glc nextName
 
     else
@@ -873,8 +876,8 @@ removeUnreachableHelp glc seen unseen =
 
             else
                 removeUnreachableHelp glc
-                    ((curr :: seen ++ reachables glc curr) |> Utils.removeDuplicates)
-                    (List.drop 1 unseen)
+                    ((curr :: seen) |> Utils.removeDuplicates)
+                    (List.drop 1 unseen ++ reachables glc curr)
 
 
 
@@ -954,7 +957,7 @@ productives glc =
         (\item ( accProductives, accUnproductives ) ->
             if
                 productivesHelp glc
-                    ( accProductives, accUnproductives )
+                    ( accProductives, accUnproductives, [] )
                     (NonTerminal item)
             then
                 ( item :: accProductives, accUnproductives )
@@ -973,17 +976,20 @@ productives glc =
 
 productivesHelp :
     ContextFreeGrammar
-    -> ( List NonTerminalSymbol, List NonTerminalSymbol )
+    -> ( List NonTerminalSymbol, List NonTerminalSymbol, List NonTerminalSymbol )
     -> ContextFreeProductionItem
     -> Bool
-productivesHelp glc ( productiveSymbols, unproductiveSymbols ) item =
+productivesHelp glc ( productiveSymbols, unproductiveSymbols, unkown ) item =
     case item of
+        -- Terminals are always productive
         Terminal _ ->
             True
 
         NonTerminal nt ->
+            -- If we already know it`s productive, no need to check again
             if List.member nt productiveSymbols then
                 True
+                -- If we already know it's not productive, no need to check again
 
             else if List.member nt unproductiveSymbols then
                 False
@@ -995,22 +1001,34 @@ productivesHelp glc ( productiveSymbols, unproductiveSymbols ) item =
                             |> List.head
                 in
                 case production of
+                    -- Impossible, just to get right of Maybe
                     Nothing ->
                         False
 
                     Just p ->
-                        List.any
-                            (\b ->
-                                not (List.member item b)
-                                    && List.all
-                                        (productivesHelp glc
-                                            ( productiveSymbols
-                                            , unproductiveSymbols
-                                            )
-                                        )
-                                        b
+                        -- Don't check bodies that have unkown symbols
+                        List.filter
+                            (not
+                                << List.any
+                                    (\s ->
+                                        case s of
+                                            NonTerminal x ->
+                                                List.member x unkown
+
+                                            Terminal _ ->
+                                                False
+                                    )
                             )
                             p.bodies
+                            |> List.any
+                                (List.all
+                                    (productivesHelp glc
+                                        ( productiveSymbols
+                                        , unproductiveSymbols
+                                        , unkown ++ [ nt ]
+                                        )
+                                    )
+                                )
 
 
 
@@ -1042,11 +1060,150 @@ reassignTerminals glc =
 
 
 -- CHOMSKY
+
+
+transformToChomsky : ContextFreeGrammar -> ContextFreeGrammar
+transformToChomsky glc =
+    let
+        partiallyNormalized =
+            removeEpsilon glc
+                |> removeUnitaryProductions
+                |> removeUseless
+                |> normalizeTerminals
+    in
+    List.foldl (\prod accGlc -> normalizeProduction accGlc prod)
+        partiallyNormalized
+        partiallyNormalized.productions
+
+
+
+{- Transforms all terminals into nonterminals, and creates (when necessary) a
+   production of type A -> a
+-}
+
+
+normalizeTerminals : ContextFreeGrammar -> ContextFreeGrammar
+normalizeTerminals glc =
+    List.foldl (\t accGlc -> createProductionFromTerminal accGlc t)
+        glc
+        glc.terminals
+
+
+
+{- Normalize a production to be in Chomsky form. Assumes that productions
+   in the form of A -> aBc have been normalized (A -> ABC | a, C -> c) through
+   normalizeTerminals
+-}
+
+
+normalizeProduction :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> ContextFreeGrammar
+normalizeProduction glc prod =
+    List.foldl
+        (\body accGlc ->
+            let
+                currProd =
+                    List.filter (.fromSymbol >> (==) prod.fromSymbol)
+                        accGlc.productions
+                        |> List.head
+                        |> Maybe.withDefault prod
+            in
+            case body of
+                -- Already normalized
+                [ Terminal _ ] ->
+                    accGlc
+
+                -- Already normalized
+                [ NonTerminal _, NonTerminal _ ] ->
+                    accGlc
+
+                -- List of NonTerminals with length > 2
+                (NonTerminal head) :: rest ->
+                    let
+                        newNonTerminal =
+                            getNextName accGlc currProd.fromSymbol
+
+                        prevNonTerminal =
+                            String.toList newNonTerminal
+                                |> (\l ->
+                                        List.take (List.length l - 1) l
+                                   )
+                                |> String.fromList
+
+                        prevProduction =
+                            List.filter (.fromSymbol >> (==) prevNonTerminal)
+                                accGlc.productions
+                                |> List.head
+                                |> Maybe.withDefault prod
+                    in
+                    { accGlc
+                        | nonTerminals =
+                            Utils.insertAfter prevNonTerminal
+                                newNonTerminal
+                                accGlc.nonTerminals
+                        , productions =
+                            Utils.insertAfter prevProduction
+                                { fromSymbol = newNonTerminal
+                                , bodies = [ rest ]
+                                }
+                                accGlc.productions
+                                |> Utils.replaceBy currProd
+                                    { currProd
+                                        | bodies =
+                                            Utils.replaceBy body
+                                                [ NonTerminal head
+                                                , NonTerminal newNonTerminal
+                                                ]
+                                                currProd.bodies
+                                    }
+                    }
+
+                -- Impossible (only for &, but they should have been removed)
+                _ ->
+                    accGlc
+        )
+        glc
+        prod.bodies
+
+
+
 {- Remove unitary productions -}
 
 
 removeUnitaryProductions : ContextFreeGrammar -> ContextFreeGrammar
 removeUnitaryProductions glc =
+    let
+        maxSteps =
+            10
+
+        step =
+            removeUnitaryProductionsStep glc
+    in
+    List.foldl
+        (\idx ( finished, accGlc ) ->
+            if finished then
+                ( finished, accGlc )
+
+            else
+                let
+                    result =
+                        removeUnitaryProductionsStep accGlc
+                in
+                if result == accGlc then
+                    ( True, result )
+
+                else
+                    ( False, result )
+        )
+        ( False, glc )
+        (List.range 1 maxSteps)
+        |> Tuple.second
+
+
+removeUnitaryProductionsStep : ContextFreeGrammar -> ContextFreeGrammar
+removeUnitaryProductionsStep glc =
     List.foldl
         (\prod accGlc ->
             { accGlc
@@ -1089,122 +1246,88 @@ removeUnitaryProductions glc =
         glc.productions
 
 
+terminalToNonTerminal : TerminalSymbol -> NonTerminalSymbol
+terminalToNonTerminal t =
+    case t of
+        Single c ->
+            Char.toUpper c |> String.fromChar
 
--- TESTS (TODO - REMOVE)
-
-
-test0 : ContextFreeGrammar
-test0 =
-    { initialSymbol = "S"
-    , nonTerminals = [ "S", "B", "D" ]
-    , productions =
-        [ { bodies =
-                [ [ Terminal (Single 'b')
-                  , Terminal (Single 'c')
-                  , NonTerminal "D"
-                  ]
-                , [ NonTerminal "B"
-
-                  --   , Terminal (Single 'c')
-                  --   , Terminal (Single 'd')
-                  ]
-                ]
-          , fromSymbol = "S"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'b'), NonTerminal "B" ]
-                , [ Terminal (Single 'b') ]
-                ]
-          , fromSymbol = "B"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'd')
-                  , NonTerminal "B"
-                  ]
-                , [ Terminal (Single 'd') ]
-                ]
-          , fromSymbol = "D"
-          }
-        ]
-    , terminals = [ Single 'b', Single 'c', Single 'd' ]
-    }
+        Group g ->
+            Utils.symbolToString (Group g)
 
 
-sProd : ContextFreeProduction
-sProd =
-    { bodies =
-        [ [ Terminal (Single 'b')
-          , Terminal (Single 'c')
-          , NonTerminal "D"
-          ]
-        , [ NonTerminal "B"
+createProductionFromTerminal :
+    ContextFreeGrammar
+    -> TerminalSymbol
+    -> ContextFreeGrammar
+createProductionFromTerminal glc symbol =
+    let
+        nonTerminal =
+            terminalToNonTerminal symbol
+                |> getNextName glc
 
-          --   , Terminal (Single 'c')
-          --   , Terminal (Single 'd')
-          ]
-        ]
-    , fromSymbol = "S"
-    }
+        prevNonTerminal =
+            String.toList nonTerminal
+                |> (\l ->
+                        List.take (List.length l - 1) l
+                   )
+                |> String.fromList
 
+        prevProduction =
+            List.filter (.fromSymbol >> (==) prevNonTerminal)
+                glc.productions
+                |> List.head
+                |> Maybe.withDefault { fromSymbol = "S", bodies = [] }
 
-test1 : ContextFreeGrammar
-test1 =
-    { initialSymbol = "S"
-    , nonTerminals = [ "S", "B", "D", "E" ]
-    , productions =
-        [ { bodies =
-                [ [ Terminal (Single 'b'), Terminal (Single 'c'), NonTerminal "D" ]
-                , [ NonTerminal "B", Terminal (Single 'c'), Terminal (Single 'd') ]
-                ]
-          , fromSymbol = "S"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'b'), NonTerminal "B" ]
-                , [ Terminal (Single 'b') ]
-                ]
-          , fromSymbol = "B"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'd'), NonTerminal "B" ]
-                , [ Terminal (Single 'd') ]
-                ]
-          , fromSymbol = "D"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'c') ]
-                , [ Terminal (Single 'b') ]
-                ]
-          , fromSymbol = "E"
-          }
-        ]
-    , terminals = [ Single 'b', Single 'c', Single 'd' ]
-    }
+        exists =
+            List.any (.bodies >> List.any (\b -> b == [ Terminal symbol ]))
+                glc.productions
 
+        newProductions =
+            List.map
+                (\p ->
+                    { p
+                        | bodies =
+                            List.map
+                                (\b ->
+                                    case b of
+                                        [ Terminal t ] ->
+                                            b
 
-test2 : ContextFreeGrammar
-test2 =
-    { initialSymbol = "S"
-    , nonTerminals = [ "S", "A", "B", "C" ]
-    , productions =
-        [ { bodies =
-                [ [ NonTerminal "A", NonTerminal "B", NonTerminal "B" ]
-                , [ NonTerminal "C", NonTerminal "A", NonTerminal "C" ]
-                ]
-          , fromSymbol = "S"
-          }
-        , { bodies = [ [ Terminal (Single 'a') ] ], fromSymbol = "A" }
-        , { bodies =
-                [ [ NonTerminal "B", Terminal (Single 'c') ]
-                , [ NonTerminal "A", NonTerminal "B", NonTerminal "B" ]
-                ]
-          , fromSymbol = "B"
-          }
-        , { bodies =
-                [ [ Terminal (Single 'b'), NonTerminal "B" ]
-                , [ Terminal (Single 'a') ]
-                ]
-          , fromSymbol = "C"
-          }
-        ]
-    , terminals = [ Single 'a', Single 'c', Single 'b' ]
-    }
+                                        l ->
+                                            List.map
+                                                (\s ->
+                                                    case s of
+                                                        NonTerminal _ ->
+                                                            s
+
+                                                        Terminal x ->
+                                                            if x == symbol then
+                                                                NonTerminal
+                                                                    nonTerminal
+
+                                                            else
+                                                                Terminal x
+                                                )
+                                                l
+                                )
+                                p.bodies
+                    }
+                )
+                glc.productions
+                |> Utils.insertAfter prevProduction
+                    { fromSymbol = nonTerminal
+                    , bodies = [ [ Terminal symbol ] ]
+                    }
+    in
+    if exists then
+        { glc | productions = newProductions }
+
+    else
+        { glc
+            | nonTerminals =
+                Utils.insertAfter prevNonTerminal
+                    nonTerminal
+                    glc.nonTerminals
+            , productions = newProductions
+        }

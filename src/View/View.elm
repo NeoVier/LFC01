@@ -257,6 +257,7 @@ viewRightPanel model =
                     , removeLeftRecursionButton
                     , removeNonDeterminismButton
                     , removeUselessButton
+                    , toChomskyButton
                     ]
             )
         ]
@@ -681,6 +682,38 @@ removeUselessButton model =
                     :: Styles.rightPanelButtonStyles
                 )
                 [ text "Remover símbolos inúteis" ]
+                |> Just
+
+        _ ->
+            Nothing
+
+
+
+{- Button to transform a GLC into the normal Chomsky form -}
+
+
+toChomskyButton : Types.Model -> Maybe (Html Types.Msg)
+toChomskyButton model =
+    case model.currentItem of
+        Ok (Models.Grammar (Grammars.ContextFree glc)) ->
+            button
+                (onClick
+                    (Types.SetWithFunction
+                        (\m ->
+                            case m of
+                                Models.Grammar (Grammars.ContextFree g) ->
+                                    OpGLC.transformToChomsky g
+                                        |> Grammars.ContextFree
+                                        |> Models.Grammar
+                                        |> Ok
+
+                                _ ->
+                                    Ok m
+                        )
+                    )
+                    :: Styles.rightPanelButtonStyles
+                )
+                [ text "Transformar para forma normal de Chomsky" ]
                 |> Just
 
         _ ->

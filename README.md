@@ -42,7 +42,7 @@ Student: Henrique da Cunha Buss
 
 ### [ ] Second Submission (items 8-12, 02/12)
 
-- [ ] GLC
+- [x] GLC
   - [x] Model GLC
   - [x] Display GLC
   - [x] Parse GLC
@@ -58,7 +58,7 @@ Student: Henrique da Cunha Buss
     - [x] Direct
     - [x] Indirect
     - [x] All
-  - [ ] Transform to normal Chomsky
+  - [x] Transform to normal Chomsky
     - [x] Remove epsilon productions
     - [x] Remove unitary productions
     - [x] Remove useless symbols

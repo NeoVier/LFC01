@@ -65,7 +65,7 @@ Student: Henrique da Cunha Buss
 - [ ] AP Sentence validation (LL(1))
   - [x] Assign nullables
   - [x] Assign first
-  - [ ] Assign last
+  - [ ] Assign follow
   - [ ] Create table
   - [ ] Validate sentence
 

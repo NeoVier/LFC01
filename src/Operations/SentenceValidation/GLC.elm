@@ -82,13 +82,21 @@ glcToValidate glc =
 
 
 
-{- Starts an ItemInfoDict, assigning the nullable values, and inserting
-   end of sentence in the follow of the initial symbol
--}
+{- Constructs the entire ItemInfoDict, populating every field -}
 
 
-createItemInfoDict : ContextFreeGrammar -> ItemInfoDict
-createItemInfoDict glc =
+itemInfoDict : ContextFreeGrammar -> ItemInfoDict
+itemInfoDict glc =
+    -- TODO - Multiple follow passes?
+    assignNullables glc |> assignFirsts glc |> assignFollows glc
+
+
+
+{- Starts an ItemInfoDict, assigning the nullable values -}
+
+
+assignNullables : ContextFreeGrammar -> ItemInfoDict
+assignNullables glc =
     let
         nullables =
             GLCUtils.nullables glc
@@ -98,12 +106,7 @@ createItemInfoDict glc =
             ( nt
             , { nullable = List.member nt nullables
               , first = []
-              , follow =
-                    if nt == glc.initialSymbol then
-                        [ endOfSentence ]
-
-                    else
-                        []
+              , follow = []
               }
             )
         )
@@ -121,7 +124,6 @@ assignFirsts glc info =
 
 
 
--- first glc nt Dict.empty
 {- Insert a list of terminal symbols into first -}
 
 
@@ -133,6 +135,25 @@ insertIntoFirst :
 insertIntoFirst info nt ts =
     Dict.update nt
         (Maybe.map (\v -> { v | first = Utils.concatUnique v.first ts }))
+        info
+
+
+
+{- Insert a list of terminal symbols into follow -}
+
+
+insertIntoFollow :
+    ItemInfoDict
+    -> NonTerminalSymbol
+    -> List TerminalSymbol
+    -> ItemInfoDict
+insertIntoFollow info nt ts =
+    Dict.update nt
+        (Maybe.map
+            (\v ->
+                { v | follow = Utils.concatUnique v.follow ts }
+            )
+        )
         info
 
 
@@ -205,6 +226,136 @@ iterateBodyForFirst glc info fromSymbol body =
         ( True, info )
         body
         |> Tuple.second
+
+
+
+{- Assign all the follow fields of an item info dict -}
+
+
+assignFollows : ContextFreeGrammar -> ItemInfoDict -> ItemInfoDict
+assignFollows glc info =
+    insertIntoFollow info glc.initialSymbol [ endOfSentence ]
+        |> followFirstPass glc
+        |> followSecondPass glc
+
+
+
+{- First step for getting follows -}
+
+
+followFirstPass : ContextFreeGrammar -> ItemInfoDict -> ItemInfoDict
+followFirstPass glc info =
+    List.foldl (followFirstPassHelp glc) info glc.nonTerminals
+
+
+
+{- Helper function -}
+
+
+followFirstPassHelp :
+    ContextFreeGrammar
+    -> NonTerminalSymbol
+    -> ItemInfoDict
+    -> ItemInfoDict
+followFirstPassHelp glc nt info =
+    let
+        bodiesAfter =
+            List.concatMap .bodies glc.productions
+                |> List.filter (List.member (NonTerminal nt))
+                |> List.map (Utils.dropUntil (NonTerminal nt))
+    in
+    List.foldl
+        (\body accInfo ->
+            List.foldl
+                (\symbol ( continue, bodyInfo ) ->
+                    if not continue then
+                        ( continue, bodyInfo )
+
+                    else
+                        case symbol of
+                            Terminal x ->
+                                ( False, insertIntoFollow bodyInfo nt [ x ] )
+
+                            NonTerminal x ->
+                                let
+                                    isNullable =
+                                        Dict.get x bodyInfo
+                                            |> Maybe.map .nullable
+                                            |> Maybe.withDefault False
+
+                                    firsts =
+                                        Dict.get x bodyInfo
+                                            |> Maybe.map .first
+                                            |> Maybe.withDefault []
+                                in
+                                ( isNullable
+                                , insertIntoFollow bodyInfo nt firsts
+                                )
+                )
+                ( True, accInfo )
+                body
+                |> Tuple.second
+        )
+        info
+        bodiesAfter
+
+
+
+{- Second step for getting follows -}
+
+
+followSecondPass : ContextFreeGrammar -> ItemInfoDict -> ItemInfoDict
+followSecondPass glc info =
+    List.foldl (\p accInfo -> followSecondPassHelp glc p accInfo)
+        info
+        glc.productions
+
+
+
+{- Helper function -}
+
+
+followSecondPassHelp :
+    ContextFreeGrammar
+    -> ContextFreeProduction
+    -> ItemInfoDict
+    -> ItemInfoDict
+followSecondPassHelp glc prod info =
+    let
+        followA =
+            Dict.get prod.fromSymbol info
+                |> Maybe.map .follow
+                |> Maybe.withDefault []
+    in
+    List.foldl
+        (\reversedBody accInfo ->
+            List.foldl
+                (\symbol ( continue, bodyInfo ) ->
+                    if not continue then
+                        ( continue, bodyInfo )
+
+                    else
+                        case symbol of
+                            Terminal _ ->
+                                ( False, bodyInfo )
+
+                            NonTerminal x ->
+                                let
+                                    isNullable =
+                                        Dict.get x bodyInfo
+                                            |> Maybe.map .nullable
+                                            |> Maybe.withDefault False
+                                in
+                                ( isNullable
+                                , insertIntoFollow bodyInfo x followA
+                                )
+                )
+                ( True, accInfo )
+                reversedBody
+                |> Tuple.second
+        )
+        info
+        (List.map List.reverse prod.bodies)
 
 
 

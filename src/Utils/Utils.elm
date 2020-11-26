@@ -916,6 +916,26 @@ takeUntil target l =
 
 
 
+{- Drops elements from a list up until it finds an element. The resulting list
+   does not contain the target element.
+-}
+
+
+dropUntil : a -> List a -> List a
+dropUntil target l =
+    case List.head l of
+        Nothing ->
+            []
+
+        Just h ->
+            if target == h then
+                List.drop 1 l
+
+            else
+                dropUntil target (List.drop 1 l)
+
+
+
 {- Transform a Maybe (Maybe a) into a Maybe a -}
 
 

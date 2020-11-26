@@ -40,7 +40,7 @@ Student: Henrique da Cunha Buss
   - [x] Add ER from file
   - [x] Convert ER to AFD
 
-### [ ] Second Submission (items 8-12, 02/12)
+### [x] Second Submission (items 8-12, 02/12)
 
 - [x] GLC
   - [x] Model GLC
@@ -62,12 +62,12 @@ Student: Henrique da Cunha Buss
     - [x] Remove epsilon productions
     - [x] Remove unitary productions
     - [x] Remove useless symbols
-- [ ] AP Sentence validation (LL(1))
+- [x] AP Sentence validation (LL(1))
   - [x] Assign nullables
   - [x] Assign first
   - [x] Assign follow
   - [x] Create table
-  - [ ] Validate sentence
+  - [x] Validate sentence
 
 ## Tasks
 
@@ -90,7 +90,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
   2. [x] Transforming GLC to a GLC in normal Chomsky form
   3. [x] Left-recursion elimination
   4. [x] Factoration
-  5. [ ] Recognizing sentences in AP (implementing one of the analysis tables)
+  5. [x] Recognizing sentences in AP (implementing one of the analysis tables)
 
 ### Notes
 

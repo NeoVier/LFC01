@@ -204,8 +204,11 @@ viewSentenceInputHelp f sentence =
             )
             []
         , case validated of
-            Ok _ ->
+            Ok True ->
                 h3 Styles.validSentenceStyles [ text "Sentença Válida" ]
+
+            Ok False ->
+                h3 Styles.invalidSentenceStyles [ text "Sentença Inválida" ]
 
             Err msg ->
                 h3 Styles.invalidSentenceStyles [ text msg ]

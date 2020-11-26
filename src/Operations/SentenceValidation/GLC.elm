@@ -101,10 +101,71 @@ validateSentence inputGlc sentence =
                     Err "LL(1) não pode ser usado (existe interseção entre um follow e um first)"
 
                 else
-                    Err "TODO"
+                    let
+                        table =
+                            analysisTable glc info
+                    in
+                    Ok (validate table glc.initialSymbol sentence)
 
     else
         Err "Existem símbolos inválidos"
+
+
+validate : AnalysisTable -> NonTerminalSymbol -> String -> Bool
+validate table startingPoint input =
+    let
+        inputAsSymbols =
+            String.toList input
+                |> List.map Alphabet.Single
+    in
+    validateHelp table
+        [ NonTerminal startingPoint, Terminal endOfSentence ]
+        (inputAsSymbols ++ [ endOfSentence ])
+
+
+validateHelp :
+    AnalysisTable
+    -> List ContextFreeProductionItem
+    -> List TerminalSymbol
+    -> Bool
+validateHelp table stack input =
+    case List.head input of
+        -- If there's no input, we're done
+        Nothing ->
+            stack
+                == []
+                && input
+                == []
+
+        Just inputHead ->
+            case List.head stack of
+                -- If there's nothing at the stack, but there's still some input
+                -- left, it's invalid
+                Nothing ->
+                    False
+
+                Just (Terminal x) ->
+                    -- If the top of the stack is equal to the input head,
+                    -- we consume the input
+                    if equivalentSymbols x inputHead then
+                        validateHelp table
+                            (List.drop 1 stack)
+                            (List.drop 1 input)
+                        -- If the top of the stack is not equal to the input
+                        -- head, the input is invalid
+
+                    else
+                        False
+
+                Just (NonTerminal x) ->
+                    case getValue table inputHead x of
+                        -- We reached an invalid state at the table
+                        Nothing ->
+                            False
+
+                        -- Consume the stack and recurse
+                        Just v ->
+                            validateHelp table (v ++ List.drop 1 stack) input
 
 
 
@@ -157,7 +218,6 @@ addEpsilonBody :
     -> ContextFreeProductionBody
     -> AnalysisTable
 addEpsilonBody table info nt body =
-    -- TODO - Verify
     let
         follows =
             Dict.get nt info |> Maybe.map .follow |> Maybe.withDefault []
@@ -331,7 +391,6 @@ getValue table t =
 
 itemInfoDict : ContextFreeGrammar -> ItemInfoDict
 itemInfoDict glc =
-    -- TODO - Multiple follow passes?
     assignNullables glc |> assignFirsts glc |> assignFollows glc
 
 
@@ -600,63 +659,3 @@ followSecondPassHelp glc prod info =
         )
         info
         (List.map List.reverse prod.bodies)
-
-
-
--- TESTS (TODO - REMOVE)
-
-
-test0 : ContextFreeGrammar
-test0 =
-    { initialSymbol = "P"
-    , nonTerminals = [ "P", "K", "V", "F", "C" ]
-    , productions =
-        [ { bodies = [ [ NonTerminal "K", NonTerminal "V", NonTerminal "C" ] ]
-          , fromSymbol = "P"
-          }
-        , { bodies = [ [ Terminal (Alphabet.Single 'c'), NonTerminal "K" ], [] ]
-          , fromSymbol = "K"
-          }
-        , { bodies =
-                [ [ Terminal (Alphabet.Single 'v')
-                  , NonTerminal "V"
-                  ]
-                , [ NonTerminal "F" ]
-                ]
-          , fromSymbol = "V"
-          }
-        , { bodies =
-                [ [ Terminal (Alphabet.Single 'f')
-                  , NonTerminal "P"
-                  , Terminal (Alphabet.Single 's')
-                  , NonTerminal "F"
-                  ]
-                , []
-                ]
-          , fromSymbol = "F"
-          }
-        , { bodies =
-                [ [ Terminal (Alphabet.Single 'b')
-                  , NonTerminal "V"
-                  , NonTerminal "C"
-                  , Terminal (Alphabet.Single 'e')
-                  ]
-                , [ Terminal (Alphabet.Single 'm')
-                  , Terminal (Alphabet.Single 's')
-                  , NonTerminal "C"
-                  ]
-                , []
-                ]
-          , fromSymbol = "C"
-          }
-        ]
-    , terminals =
-        [ Alphabet.Single 'c'
-        , Alphabet.Single 'v'
-        , Alphabet.Single 'f'
-        , Alphabet.Single 's'
-        , Alphabet.Single 'b'
-        , Alphabet.Single 'e'
-        , Alphabet.Single 'm'
-        ]
-    }

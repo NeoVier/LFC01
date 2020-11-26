@@ -8,6 +8,7 @@
 
 module Operations.SentenceValidation.Common exposing
     ( allValidSymbols
+    , equivalentSymbols
     , symbolItems
     )
 
@@ -54,3 +55,19 @@ innerGroupRange group =
         ( a, b ) ->
             List.range (Char.toCode a) (Char.toCode b)
                 |> List.map Char.fromCode
+
+
+equivalentSymbols : Alphabet.Symbol -> Alphabet.Symbol -> Bool
+equivalentSymbols s1 s2 =
+    case s1 of
+        Alphabet.Single single1 ->
+            List.member single1 (symbolItems s2)
+
+        Alphabet.Group _ ->
+            case s2 of
+                Alphabet.Single single2 ->
+                    List.member single2 (symbolItems s1)
+
+                Alphabet.Group _ ->
+                    List.any (\s -> List.member s (symbolItems s1))
+                        (symbolItems s2)

@@ -183,8 +183,7 @@ iterateBodyForFirst glc info fromSymbol body =
             else
                 case symbol of
                     Terminal x ->
-                        ( False, insertIntoFirst accInfo (Debug.log "\n\nfromSymbol" fromSymbol) [ Debug.log "terminal" x ] )
-                            |> Debug.log "Found terminal"
+                        ( False, insertIntoFirst accInfo fromSymbol [ x ] )
 
                     NonTerminal x ->
                         let
@@ -192,19 +191,16 @@ iterateBodyForFirst glc info fromSymbol body =
                                 Dict.get x accInfo
                                     |> Maybe.map .nullable
                                     |> Maybe.withDefault False
-                                    |> Debug.log "isNULLABLE"
 
                             result =
-                                first glc (Debug.log "toSymbol" x) accInfo
+                                first glc x accInfo
 
                             xFirst =
                                 Dict.get x result
                                     |> Maybe.map .first
                                     |> Maybe.withDefault []
-                                    |> Debug.log "XFIRST"
                         in
-                        ( isNullable, insertIntoFirst result (Debug.log "\n\nfromSymbol" fromSymbol) xFirst )
-                            |> Debug.log "Found non terminal"
+                        ( isNullable, insertIntoFirst result fromSymbol xFirst )
         )
         ( True, info )
         body

@@ -864,6 +864,24 @@ replaceBy original new xs =
 
 
 
+{- Insert an item only if it's not already in the list -}
+
+
+insertUnique : a -> List a -> List a
+insertUnique x l =
+    if List.member x l then
+        l
+
+    else
+        l ++ [ x ]
+
+
+concatUnique : List a -> List a -> List a
+concatUnique start end =
+    List.foldl (\e s -> insertUnique e s) start end
+
+
+
 {- Insert an element after another element -}
 
 

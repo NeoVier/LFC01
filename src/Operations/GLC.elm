@@ -17,6 +17,7 @@ module Operations.GLC exposing
 import GenericDict as Dict exposing (Dict)
 import Models.Alphabet exposing (Symbol(..))
 import Models.Grammars as Grammars exposing (..)
+import Utils.GLC as GLCUtils
 import Utils.Utils as Utils
 
 
@@ -29,10 +30,10 @@ removeEpsilon : ContextFreeGrammar -> ContextFreeGrammar
 removeEpsilon glc =
     let
         nullables =
-            allNullables glc
+            GLCUtils.nullables glc
 
         newInitial =
-            getNextName glc glc.initialSymbol
+            GLCUtils.getNextName glc glc.initialSymbol
 
         newProductions =
             List.map
@@ -54,9 +55,7 @@ removeEpsilon glc =
             }
 
         previousInitialProduction =
-            List.filter (.fromSymbol >> (==) glc.initialSymbol)
-                glc.productions
-                |> List.head
+            GLCUtils.productionFromSymbol glc glc.initialSymbol
     in
     if List.member glc.initialSymbol nullables then
         case previousInitialProduction of
@@ -150,57 +149,6 @@ conditionalTree l f =
 
             else
                 List.map (\node -> h :: node) nextTree
-
-
-
-{- Get all the nullable NonTerminals in a glc -}
-
-
-allNullables : ContextFreeGrammar -> List NonTerminalSymbol
-allNullables glc =
-    allNullablesHelp glc []
-
-
-
-{- Auxiliary function -}
-
-
-allNullablesHelp :
-    ContextFreeGrammar
-    -> List NonTerminalSymbol
-    -> List NonTerminalSymbol
-allNullablesHelp glc seen =
-    let
-        newSeen =
-            List.filterMap
-                (\production ->
-                    if
-                        List.any
-                            (List.all
-                                (\symbol ->
-                                    case symbol of
-                                        Terminal _ ->
-                                            False
-
-                                        NonTerminal nonTerminal ->
-                                            List.member nonTerminal seen
-                                )
-                            )
-                            production.bodies
-                    then
-                        Just production
-
-                    else
-                        Nothing
-                )
-                glc.productions
-                |> List.map .fromSymbol
-    in
-    if newSeen == seen then
-        seen
-
-    else
-        allNullablesHelp glc newSeen
 
 
 
@@ -302,7 +250,7 @@ eliminateLeftRecursionDirect glc prod =
                 prod.bodies
 
         nextSymbol =
-            getNextName glc prod.fromSymbol
+            GLCUtils.getNextName glc prod.fromSymbol
 
         replacementProduction =
             { prod
@@ -346,28 +294,6 @@ isDirectlyRecursive fromSymbol body =
 
         _ ->
             False
-
-
-
-{- Get the next available name, given a symbol
-   (e.g. S -> S', S' -> S'', A -> A', ...)
--}
-
-
-getNextName : ContextFreeGrammar -> NonTerminalSymbol -> NonTerminalSymbol
-getNextName glc symbol =
-    let
-        nextName =
-            symbol ++ "'"
-    in
-    if not (List.member symbol glc.nonTerminals) then
-        symbol
-
-    else if List.member nextName glc.nonTerminals then
-        getNextName glc nextName
-
-    else
-        nextName
 
 
 
@@ -451,8 +377,7 @@ isIndirectlyRecursive : ContextFreeGrammar -> NonTerminalSymbol -> Bool
 isIndirectlyRecursive glc symbol =
     let
         production =
-            List.filter (.fromSymbol >> (==) symbol) glc.productions
-                |> List.head
+            GLCUtils.productionFromSymbol glc symbol
     in
     case production of
         Nothing ->
@@ -497,8 +422,7 @@ isIndirectlyRecursiveHelp glc target seen unseen =
             else
                 let
                     maybeProduction =
-                        List.filter (.fromSymbol >> (==) curr) glc.productions
-                            |> List.head
+                        GLCUtils.productionFromSymbol glc curr
                 in
                 case maybeProduction of
                     Nothing ->
@@ -594,9 +518,8 @@ factorGLCStep glc =
                     factorIndirectly accGlc accProd
 
                 newProd =
-                    List.filter (.fromSymbol >> (==) accProd.fromSymbol)
-                        indirectlyFactored.productions
-                        |> List.head
+                    GLCUtils.productionFromSymbol indirectlyFactored
+                        accProd.fromSymbol
             in
             case newProd of
                 Nothing ->
@@ -627,9 +550,7 @@ factorIndirectly glc production =
                         Just (NonTerminal nt) ->
                             let
                                 maybeNtProduction =
-                                    List.filter (.fromSymbol >> (==) nt)
-                                        glc.productions
-                                        |> List.head
+                                    GLCUtils.productionFromSymbol glc nt
                             in
                             case maybeNtProduction of
                                 Nothing ->
@@ -683,7 +604,7 @@ factorDirectly glc production =
                     }
 
                 newProduction =
-                    { fromSymbol = getNextName accGlc production.fromSymbol
+                    { fromSymbol = GLCUtils.getNextName accGlc production.fromSymbol
                     , bodies =
                         List.map (List.drop (List.length group))
                             accBodies
@@ -724,15 +645,15 @@ joinByFirstN bodies n =
                 key =
                     List.take n body
             in
-            case Dict.get contextFreeProductionBodyToString key accDict of
+            case Dict.get GLCUtils.contextFreeProductionBodyToString key accDict of
                 Nothing ->
-                    Dict.insert contextFreeProductionBodyToString
+                    Dict.insert GLCUtils.contextFreeProductionBodyToString
                         key
                         [ body ]
                         accDict
 
                 Just v ->
-                    Dict.insert contextFreeProductionBodyToString
+                    Dict.insert GLCUtils.contextFreeProductionBodyToString
                         key
                         (v ++ [ body ])
                         accDict
@@ -759,7 +680,7 @@ getBiggestBlobs l =
     initialDict
         |> Dict.toList
         |> List.map (\( k, v ) -> getBiggestBlobsHelp k v)
-        |> Dict.fromList contextFreeProductionBodyToString
+        |> Dict.fromList GLCUtils.contextFreeProductionBodyToString
 
 
 
@@ -795,29 +716,6 @@ getBiggestBlobsHelp key value =
 
 
 
-{- Transform a Context Free Production Body into a String -}
-
-
-contextFreeProductionBodyToString : ContextFreeProductionBody -> String
-contextFreeProductionBodyToString =
-    List.map contextFreeProductionItemToString >> String.join ""
-
-
-
-{- Transform a Context Free Production Item into a String -}
-
-
-contextFreeProductionItemToString : ContextFreeProductionItem -> String
-contextFreeProductionItemToString x =
-    case x of
-        Terminal t ->
-            Utils.symbolToString t
-
-        NonTerminal nt ->
-            nt
-
-
-
 -- USELESS SYMBOLS
 {- Remove all useless symbols (unreachable and unproductive) -}
 
@@ -835,8 +733,7 @@ removeUnreachables : ContextFreeGrammar -> ContextFreeGrammar
 removeUnreachables glc =
     let
         initialProduction =
-            List.filter (.fromSymbol >> (==) glc.initialSymbol) glc.productions
-                |> List.head
+            GLCUtils.productionFromSymbol glc glc.initialSymbol
     in
     case initialProduction of
         Nothing ->
@@ -899,8 +796,7 @@ reachables glc prod =
             )
         |> List.filterMap
             (\nt ->
-                List.filter (.fromSymbol >> (==) nt) glc.productions
-                    |> List.head
+                GLCUtils.productionFromSymbol glc nt
             )
 
 
@@ -995,8 +891,7 @@ productivesHelp glc ( productiveSymbols, unproductiveSymbols, unkown ) item =
             else
                 let
                     production =
-                        List.filter (.fromSymbol >> (==) nt) glc.productions
-                            |> List.head
+                        GLCUtils.productionFromSymbol glc nt
                 in
                 case production of
                     -- Impossible, just to get right of Maybe
@@ -1104,9 +999,7 @@ normalizeProduction glc prod =
         (\body accGlc ->
             let
                 currProd =
-                    List.filter (.fromSymbol >> (==) prod.fromSymbol)
-                        accGlc.productions
-                        |> List.head
+                    GLCUtils.productionFromSymbol accGlc prod.fromSymbol
                         |> Maybe.withDefault prod
             in
             case body of
@@ -1122,7 +1015,7 @@ normalizeProduction glc prod =
                 (NonTerminal head) :: rest ->
                     let
                         newNonTerminal =
-                            getNextName accGlc currProd.fromSymbol
+                            GLCUtils.getNextName accGlc currProd.fromSymbol
 
                         prevNonTerminal =
                             String.toList newNonTerminal
@@ -1132,9 +1025,7 @@ normalizeProduction glc prod =
                                 |> String.fromList
 
                         prevProduction =
-                            List.filter (.fromSymbol >> (==) prevNonTerminal)
-                                accGlc.productions
-                                |> List.head
+                            GLCUtils.productionFromSymbol accGlc prevNonTerminal
                                 |> Maybe.withDefault prod
                     in
                     { accGlc
@@ -1250,20 +1141,6 @@ removeUnitaryProductionsStep glc =
 
 
 
-{- Convert a TerminalSymbol to a NonTerminalSymbol -}
-
-
-terminalToNonTerminal : TerminalSymbol -> NonTerminalSymbol
-terminalToNonTerminal t =
-    case t of
-        Single c ->
-            Char.toUpper c |> String.fromChar
-
-        Group g ->
-            Utils.symbolToString (Group g)
-
-
-
 {- Create a production in the form of A -> a for a single terminal -}
 
 
@@ -1274,8 +1151,8 @@ createProductionFromTerminal :
 createProductionFromTerminal glc symbol =
     let
         nonTerminal =
-            terminalToNonTerminal symbol
-                |> getNextName glc
+            GLCUtils.terminalToNonTerminal symbol
+                |> GLCUtils.getNextName glc
 
         prevNonTerminal =
             String.toList nonTerminal
@@ -1285,9 +1162,7 @@ createProductionFromTerminal glc symbol =
                 |> String.fromList
 
         prevProduction =
-            List.filter (.fromSymbol >> (==) prevNonTerminal)
-                glc.productions
-                |> List.head
+            GLCUtils.productionFromSymbol glc prevNonTerminal
                 |> Maybe.withDefault { fromSymbol = "S", bodies = [] }
 
         exists =

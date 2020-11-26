@@ -62,8 +62,12 @@ Student: Henrique da Cunha Buss
     - [x] Remove epsilon productions
     - [x] Remove unitary productions
     - [x] Remove useless symbols
-- [ ] AP
-  - TODO
+- [ ] AP Sentence validation (LL(1))
+  - [x] Assign nullables
+  - [x] Assign first
+  - [ ] Assign last
+  - [ ] Create table
+  - [ ] Validate sentence
 
 ## Tasks
 

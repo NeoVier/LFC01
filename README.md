@@ -65,8 +65,8 @@ Student: Henrique da Cunha Buss
 - [ ] AP Sentence validation (LL(1))
   - [x] Assign nullables
   - [x] Assign first
-  - [ ] Assign follow
-  - [ ] Create table
+  - [x] Assign follow
+  - [x] Create table
   - [ ] Validate sentence
 
 ## Tasks
@@ -87,7 +87,7 @@ Grammars, Regular Expressions, Context-Free Grammars and Stack Automata.
 - Second delivery
 
   1. [x] Reading, writing and editing GLC
-  2. [ ] Transforming GLC to a GLC in normal Chomsky form
+  2. [x] Transforming GLC to a GLC in normal Chomsky form
   3. [x] Left-recursion elimination
   4. [x] Factoration
   5. [ ] Recognizing sentences in AP (implementing one of the analysis tables)

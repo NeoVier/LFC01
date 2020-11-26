@@ -34,11 +34,22 @@ type alias ItemInfo =
 
 
 
-{- Shorthand for the kind of Dict used. -}
+{- Shorthand for the kind of Dict used -}
 
 
 type alias ItemInfoDict =
     Dict NonTerminalSymbol ItemInfo
+
+
+type alias AnalysisTable =
+    List AnalysisTableEntry
+
+
+type alias AnalysisTableEntry =
+    { terminal : TerminalSymbol
+    , nonTerminal : NonTerminalSymbol
+    , value : ContextFreeProductionBody
+    }
 
 
 
@@ -66,7 +77,31 @@ validateSentence inputGlc sentence =
                 Err "LL(1) não pode ser usado (gramática não pôde ser fatorada ou ter sua recursão à esquerda eliminada)"
 
             Just glc ->
-                Err "TODO"
+                let
+                    info =
+                        itemInfoDict glc
+
+                    anyIntersections =
+                        List.any
+                            (\v ->
+                                if v.nullable then
+                                    let
+                                        firstPlusFollow =
+                                            v.first ++ v.follow
+                                    in
+                                    Utils.removeDuplicates firstPlusFollow
+                                        /= firstPlusFollow
+
+                                else
+                                    False
+                            )
+                            (Dict.values info)
+                in
+                if anyIntersections then
+                    Err "LL(1) não pode ser usado (existe interseção entre um follow e um first)"
+
+                else
+                    Err "TODO"
 
     else
         Err "Existem símbolos inválidos"
@@ -82,6 +117,215 @@ glcToValidate glc =
 
 
 
+{- Create the analysis table for a grammar with an item info dict -}
+
+
+analysisTable : ContextFreeGrammar -> ItemInfoDict -> AnalysisTable
+analysisTable glc info =
+    List.foldl
+        (\prod accTable ->
+            List.foldl
+                (\body bodyTable ->
+                    case List.head body of
+                        -- Epsilon -
+                        Nothing ->
+                            addEpsilonBody bodyTable info prod.fromSymbol body
+
+                        Just (Terminal x) ->
+                            addTerminalBody bodyTable prod.fromSymbol x body
+
+                        Just (NonTerminal _) ->
+                            addBodyBody bodyTable info prod.fromSymbol body
+                )
+                accTable
+                prod.bodies
+        )
+        []
+        glc.productions
+
+
+
+{- Add body to everything in
+   [prod.fromSymbol, follow(prod.fromSymbol)]
+-}
+
+
+addEpsilonBody :
+    AnalysisTable
+    -> ItemInfoDict
+    -> NonTerminalSymbol
+    -> ContextFreeProductionBody
+    -> AnalysisTable
+addEpsilonBody table info nt body =
+    -- TODO - Verify
+    let
+        follows =
+            Dict.get nt info |> Maybe.map .follow |> Maybe.withDefault []
+    in
+    List.foldl
+        (\t accTable ->
+            Utils.insertUnique
+                { nonTerminal = nt
+                , terminal = t
+                , value = body
+                }
+                accTable
+        )
+        table
+        follows
+
+
+
+{- Add body to [prod.fromSymbol, x] -}
+
+
+addTerminalBody :
+    AnalysisTable
+    -> NonTerminalSymbol
+    -> TerminalSymbol
+    -> ContextFreeProductionBody
+    -> AnalysisTable
+addTerminalBody table nt t body =
+    Utils.insertUnique
+        { nonTerminal = nt
+        , terminal = t
+        , value = body
+        }
+        table
+
+
+
+{- Add body to everything in [prod.fromSymbol, first(body)]
+
+   If body is nullable, add body to everything in
+   [prod.fromSymbol, follow(prod.fromSymbol)]
+-}
+
+
+addBodyBody :
+    AnalysisTable
+    -> ItemInfoDict
+    -> NonTerminalSymbol
+    -> ContextFreeProductionBody
+    -> AnalysisTable
+addBodyBody table info nt body =
+    let
+        initial =
+            List.foldl
+                (\t accTable ->
+                    Utils.insertUnique
+                        { nonTerminal = nt
+                        , terminal = t
+                        , value = body
+                        }
+                        accTable
+                )
+                table
+                (firstFromBody info body)
+    in
+    if isBodyNullable info body then
+        let
+            follows =
+                Dict.get nt info |> Maybe.map .follow |> Maybe.withDefault []
+        in
+        List.foldl
+            (\t accTable ->
+                Utils.insertUnique
+                    { nonTerminal = nt
+                    , terminal = t
+                    , value = body
+                    }
+                    accTable
+            )
+            initial
+            follows
+
+    else
+        initial
+
+
+
+{- Determines if a body is nullable -}
+
+
+isBodyNullable : ItemInfoDict -> ContextFreeProductionBody -> Bool
+isBodyNullable info =
+    List.all
+        (\s ->
+            case s of
+                Terminal _ ->
+                    False
+
+                NonTerminal x ->
+                    Dict.get x info
+                        |> Maybe.map .nullable
+                        |> Maybe.withDefault False
+        )
+
+
+
+{- Get the first for the body -}
+
+
+firstFromBody : ItemInfoDict -> ContextFreeProductionBody -> List TerminalSymbol
+firstFromBody info body =
+    List.foldl
+        (\s ( continue, accFirst ) ->
+            if not continue then
+                ( continue, accFirst )
+
+            else
+                case s of
+                    Terminal x ->
+                        ( False, Utils.insertUnique x accFirst )
+
+                    NonTerminal x ->
+                        let
+                            isNullable =
+                                Dict.get x info
+                                    |> Maybe.map .nullable
+                                    |> Maybe.withDefault False
+
+                            firsts =
+                                Dict.get x info
+                                    |> Maybe.map .first
+                                    |> Maybe.withDefault []
+                        in
+                        ( isNullable, Utils.concatUnique accFirst firsts )
+        )
+        ( True, [] )
+        body
+        |> Tuple.second
+
+
+
+{- Get an entry from an analysis table -}
+
+
+getEntry :
+    AnalysisTable
+    -> TerminalSymbol
+    -> NonTerminalSymbol
+    -> Maybe AnalysisTableEntry
+getEntry table t nt =
+    List.filter (\e -> e.terminal == t && e.nonTerminal == nt) table
+        |> List.head
+
+
+
+{- Get a value from an analysis table -}
+
+
+getValue :
+    AnalysisTable
+    -> TerminalSymbol
+    -> NonTerminalSymbol
+    -> Maybe ContextFreeProductionBody
+getValue table t =
+    getEntry table t >> Maybe.map .value
+
+
+
 {- Constructs the entire ItemInfoDict, populating every field -}
 
 
@@ -89,38 +333,6 @@ itemInfoDict : ContextFreeGrammar -> ItemInfoDict
 itemInfoDict glc =
     -- TODO - Multiple follow passes?
     assignNullables glc |> assignFirsts glc |> assignFollows glc
-
-
-
-{- Starts an ItemInfoDict, assigning the nullable values -}
-
-
-assignNullables : ContextFreeGrammar -> ItemInfoDict
-assignNullables glc =
-    let
-        nullables =
-            GLCUtils.nullables glc
-    in
-    List.map
-        (\nt ->
-            ( nt
-            , { nullable = List.member nt nullables
-              , first = []
-              , follow = []
-              }
-            )
-        )
-        glc.nonTerminals
-        |> Dict.fromList
-
-
-
-{- Assign all the first fields of an item info dict -}
-
-
-assignFirsts : ContextFreeGrammar -> ItemInfoDict -> ItemInfoDict
-assignFirsts glc info =
-    List.foldl (first glc) info glc.nonTerminals
 
 
 
@@ -155,6 +367,38 @@ insertIntoFollow info nt ts =
             )
         )
         info
+
+
+
+{- Starts an ItemInfoDict, assigning the nullable values -}
+
+
+assignNullables : ContextFreeGrammar -> ItemInfoDict
+assignNullables glc =
+    let
+        nullables =
+            GLCUtils.nullables glc
+    in
+    List.map
+        (\nt ->
+            ( nt
+            , { nullable = List.member nt nullables
+              , first = []
+              , follow = []
+              }
+            )
+        )
+        glc.nonTerminals
+        |> Dict.fromList
+
+
+
+{- Assign all the first fields of an item info dict -}
+
+
+assignFirsts : ContextFreeGrammar -> ItemInfoDict -> ItemInfoDict
+assignFirsts glc info =
+    List.foldl (first glc) info glc.nonTerminals
 
 
 

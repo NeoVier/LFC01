@@ -1,0 +1,5 @@
+P -> KVC
+K -> cK | &
+V -> vV | F
+F -> fPsF | &
+C -> [0-9]VCe | msC | &

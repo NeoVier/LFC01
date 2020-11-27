@@ -368,7 +368,8 @@ getEntry :
     -> NonTerminalSymbol
     -> Maybe AnalysisTableEntry
 getEntry table t nt =
-    List.filter (\e -> e.terminal == t && e.nonTerminal == nt) table
+    List.filter (\e -> equivalentSymbols e.terminal t && e.nonTerminal == nt)
+        table
         |> List.head
 
 

@@ -11,6 +11,7 @@ module Utils.GLC exposing
     , contextFreeProductionItemToString
     , getNextName
     , nullables
+    , productionFromBodies
     , productionFromSymbol
     , terminalToNonTerminal
     )
@@ -136,4 +137,13 @@ productionFromSymbol :
     -> Maybe ContextFreeProduction
 productionFromSymbol glc nt =
     List.filter (.fromSymbol >> (==) nt) glc.productions
+        |> List.head
+
+
+productionFromBodies :
+    ContextFreeGrammar
+    -> List ContextFreeProductionBody
+    -> Maybe ContextFreeProduction
+productionFromBodies glc bodies =
+    List.filter (.bodies >> (==) bodies) glc.productions
         |> List.head

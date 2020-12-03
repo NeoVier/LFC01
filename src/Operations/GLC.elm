@@ -182,8 +182,16 @@ eliminateLeftRecursion glc =
                         let
                             thisStep =
                                 eliminateLeftRecursionStep g
+
+                            diff =
+                                List.length thisStep.nonTerminals
+                                    - List.length g.nonTerminals
                         in
-                        ( thisStep == g, Ok thisStep )
+                        if diff == 0 then
+                            ( True, Ok thisStep )
+
+                        else
+                            ( thisStep == g, Ok thisStep )
 
                 Err x ->
                     ( finished, Err x )
@@ -462,9 +470,6 @@ factorGLC glc =
     let
         maxSteps =
             10
-
-        minFactor =
-            5
     in
     List.foldl
         (\idx ( finished, accGlc ) ->
@@ -487,11 +492,14 @@ factorGLC glc =
                         let
                             thisStep =
                                 factorGLCStep prevGlc
+
+                            diff =
+                                List.length
+                                    (List.concatMap .bodies thisStep.productions)
+                                    - List.length
+                                        (List.concatMap .bodies prevGlc.productions)
                         in
-                        if
-                            List.length thisStep.productions
-                                > (minFactor * List.length prevGlc.productions)
-                        then
+                        if diff > 50 then
                             ( False, Err "A gramática cresceu demais em um único passo, então deve ter entrado em loop" )
 
                         else
@@ -965,7 +973,10 @@ transformToChomsky glc =
                 |> removeUseless
                 |> normalizeTerminals
     in
-    List.foldl (\prod accGlc -> normalizeProduction accGlc prod)
+    List.foldl
+        (\prod accGlc ->
+            normalizeProduction accGlc prod
+        )
         partiallyNormalized
         partiallyNormalized.productions
 
@@ -1027,6 +1038,13 @@ normalizeProduction glc prod =
                         prevProduction =
                             GLCUtils.productionFromSymbol accGlc prevNonTerminal
                                 |> Maybe.withDefault prod
+
+                        newProduction =
+                            GLCUtils.productionFromBodies accGlc [ rest ]
+                                |> Maybe.withDefault
+                                    { fromSymbol = newNonTerminal
+                                    , bodies = [ rest ]
+                                    }
                     in
                     { accGlc
                         | nonTerminals =
@@ -1034,17 +1052,21 @@ normalizeProduction glc prod =
                                 newNonTerminal
                                 accGlc.nonTerminals
                         , productions =
-                            Utils.insertAfter prevProduction
-                                { fromSymbol = newNonTerminal
-                                , bodies = [ rest ]
-                                }
+                            (if newProduction.fromSymbol == newNonTerminal then
+                                Utils.insertAfter prevProduction
+                                    newProduction
+                                    accGlc.productions
+
+                             else
                                 accGlc.productions
+                            )
                                 |> Utils.replaceBy currProd
                                     { currProd
                                         | bodies =
                                             Utils.replaceBy body
                                                 [ NonTerminal head
-                                                , NonTerminal newNonTerminal
+                                                , NonTerminal
+                                                    newProduction.fromSymbol
                                                 ]
                                                 currProd.bodies
                                     }
@@ -1163,11 +1185,14 @@ createProductionFromTerminal glc symbol =
 
         prevProduction =
             GLCUtils.productionFromSymbol glc prevNonTerminal
-                |> Maybe.withDefault { fromSymbol = "S", bodies = [] }
+                |> Maybe.withDefault
+                    { fromSymbol = glc.initialSymbol
+                    , bodies = []
+                    }
 
         exists =
-            List.any (.bodies >> List.any (\b -> b == [ Terminal symbol ]))
-                glc.productions
+            GLCUtils.productionFromBodies glc [ [ Terminal symbol ] ]
+                |> Utils.isJust
 
         newProductions =
             List.map

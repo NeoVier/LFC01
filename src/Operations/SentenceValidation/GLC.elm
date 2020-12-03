@@ -70,11 +70,13 @@ validateSentence inputGlc sentence =
     let
         fixedGlc =
             glcToValidate inputGlc
+                |> Debug.log "FIXEDGLC"
     in
     if allValidSymbols inputGlc.terminals sentence then
         case fixedGlc of
             Nothing ->
                 Err "LL(1) não pode ser usado (gramática não pôde ser fatorada ou ter sua recursão à esquerda eliminada)"
+                    |> Debug.log "ERR1"
 
             Just glc ->
                 let
@@ -99,16 +101,19 @@ validateSentence inputGlc sentence =
                 in
                 if anyIntersections then
                     Err "LL(1) não pode ser usado (existe interseção entre um follow e um first)"
+                        |> Debug.log "ERR2"
 
                 else
                     let
                         table =
                             analysisTable glc info
+                                |> Debug.log "TABLE"
                     in
                     Ok (validate table glc.initialSymbol sentence)
 
     else
         Err "Existem símbolos inválidos"
+            |> Debug.log "ERR3"
 
 
 validate : AnalysisTable -> NonTerminalSymbol -> String -> Bool

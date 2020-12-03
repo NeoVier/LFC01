@@ -10093,7 +10093,10 @@ var $author$project$Operations$GLC$eliminateLeftRecursion = function (glc) {
 								$elm$core$Result$Err('Depois de muitos passos, a gramática não se resolveu, então deve ter entrado em loop'));
 						} else {
 							var thisStep = $author$project$Operations$GLC$eliminateLeftRecursionStep(g);
-							return _Utils_Tuple2(
+							var diff = $elm$core$List$length(thisStep.aC) - $elm$core$List$length(g.aC);
+							return (!diff) ? _Utils_Tuple2(
+								true,
+								$elm$core$Result$Ok(thisStep)) : _Utils_Tuple2(
 								_Utils_eq(thisStep, g),
 								$elm$core$Result$Ok(thisStep));
 						}
@@ -10348,7 +10351,6 @@ var $author$project$Operations$GLC$factorGLCStep = function (glc) {
 		glc.ad);
 };
 var $author$project$Operations$GLC$factorGLC = function (glc) {
-	var minFactor = 5;
 	var maxSteps = 10;
 	return A3(
 		$elm$core$List$foldl,
@@ -10371,9 +10373,20 @@ var $author$project$Operations$GLC$factorGLC = function (glc) {
 								$elm$core$Result$Err('Depois de muitos passos, a gramática não se resolveu, então deve ter entrado em loop'));
 						} else {
 							var thisStep = $author$project$Operations$GLC$factorGLCStep(prevGlc);
-							return (_Utils_cmp(
-								$elm$core$List$length(thisStep.ad),
-								minFactor * $elm$core$List$length(prevGlc.ad)) > 0) ? _Utils_Tuple2(
+							var diff = $elm$core$List$length(
+								A2(
+									$elm$core$List$concatMap,
+									function ($) {
+										return $.a2;
+									},
+									thisStep.ad)) - $elm$core$List$length(
+								A2(
+									$elm$core$List$concatMap,
+									function ($) {
+										return $.a2;
+									},
+									prevGlc.ad));
+							return (diff > 50) ? _Utils_Tuple2(
 								false,
 								$elm$core$Result$Err('A gramática cresceu demais em um único passo, então deve ter entrado em loop')) : _Utils_Tuple2(
 								_Utils_eq(thisStep, prevGlc),
@@ -14834,6 +14847,19 @@ var $author$project$View$View$saveButton = function (model) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $author$project$Utils$GLC$productionFromBodies = F2(
+	function (glc, bodies) {
+		return $elm$core$List$head(
+			A2(
+				$elm$core$List$filter,
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.a2;
+					},
+					$elm$core$Basics$eq(bodies)),
+				glc.ad));
+	});
 var $author$project$Operations$GLC$normalizeProduction = F2(
 	function (glc, prod) {
 		return A3(
@@ -14861,6 +14887,18 @@ var $author$project$Operations$GLC$normalizeProduction = F2(
 									var head = body.a.a;
 									var rest = body.b;
 									var newNonTerminal = A2($author$project$Utils$GLC$getNextName, accGlc, currProd.as);
+									var newProduction = A2(
+										$elm$core$Maybe$withDefault,
+										{
+											a2: _List_fromArray(
+												[rest]),
+											as: newNonTerminal
+										},
+										A2(
+											$author$project$Utils$GLC$productionFromBodies,
+											accGlc,
+											_List_fromArray(
+												[rest])));
 									var prevNonTerminal = $elm$core$String$fromList(
 										function (l) {
 											return A2(
@@ -14889,19 +14927,11 @@ var $author$project$Operations$GLC$normalizeProduction = F2(
 															_List_fromArray(
 																[
 																	$author$project$Models$Grammars$NonTerminal(head),
-																	$author$project$Models$Grammars$NonTerminal(newNonTerminal)
+																	$author$project$Models$Grammars$NonTerminal(newProduction.as)
 																]),
 															currProd.a2)
 													}),
-												A3(
-													$author$project$Utils$Utils$insertAfter,
-													prevProduction,
-													{
-														a2: _List_fromArray(
-															[rest]),
-														as: newNonTerminal
-													},
-													accGlc.ad))
+												_Utils_eq(newProduction.as, newNonTerminal) ? A3($author$project$Utils$Utils$insertAfter, prevProduction, newProduction, accGlc.ad) : accGlc.ad)
 										});
 								}
 							}
@@ -14942,7 +14972,7 @@ var $author$project$Operations$GLC$createProductionFromTerminal = F2(
 				$elm$core$String$toList(nonTerminal)));
 		var prevProduction = A2(
 			$elm$core$Maybe$withDefault,
-			{a2: _List_Nil, as: 'S'},
+			{a2: _List_Nil, as: glc.ax},
 			A2($author$project$Utils$GLC$productionFromSymbol, glc, prevNonTerminal));
 		var newProductions = A3(
 			$author$project$Utils$Utils$insertAfter,
@@ -14988,23 +15018,17 @@ var $author$project$Operations$GLC$createProductionFromTerminal = F2(
 						});
 				},
 				glc.ad));
-		var exists = A2(
-			$elm$core$List$any,
+		var exists = $author$project$Utils$Utils$isJust(
 			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.a2;
-				},
-				$elm$core$List$any(
-					function (b) {
-						return _Utils_eq(
-							b,
-							_List_fromArray(
-								[
-									$author$project$Models$Grammars$Terminal(symbol)
-								]));
-					})),
-			glc.ad);
+				$author$project$Utils$GLC$productionFromBodies,
+				glc,
+				_List_fromArray(
+					[
+						_List_fromArray(
+						[
+							$author$project$Models$Grammars$Terminal(symbol)
+						])
+					])));
 		return exists ? _Utils_update(
 			glc,
 			{ad: newProductions}) : _Utils_update(
